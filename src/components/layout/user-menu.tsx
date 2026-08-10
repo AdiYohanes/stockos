@@ -1,0 +1,65 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { LogOut, User as UserIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { logoutMockUser } from "@/features/auth/mock-auth";
+import type { MockUser } from "@/features/auth/types";
+
+interface UserMenuProps {
+  user: MockUser | null;
+}
+
+export function UserMenu({ user }: UserMenuProps) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+  const handleSignOut = () => {
+    setIsLoggingOut(true);
+    logoutMockUser();
+    router.push("/login");
+    router.refresh();
+  };
+
+  const displayName = user?.name || "Demo User";
+  const displayEmail = user?.email || "demo@stockos.com";
+  const displayRole = user?.role || "admin";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+          {initials || <UserIcon className="h-4 w-4" />}
+        </div>
+        <div className="hidden flex-col text-left sm:flex">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-foreground">{displayName}</span>
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono capitalize text-muted-foreground">
+              {displayRole}
+            </span>
+          </div>
+          <span className="text-[11px] text-muted-foreground">{displayEmail}</span>
+        </div>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleSignOut}
+        disabled={isLoggingOut}
+        className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+        title="Sign out"
+      >
+        <LogOut className="h-4 w-4" />
+        <span className="hidden md:inline">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
+      </Button>
+    </div>
+  );
+}
