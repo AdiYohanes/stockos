@@ -11,11 +11,11 @@ import {
   Truck,
   BarChart3,
   Settings,
-  Layers,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { StockOSLogo } from "@/components/stockos-logo";
 
 export interface NavItem {
   title: string;
@@ -46,23 +46,23 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r bg-sidebar text-sidebar-foreground",
+        "flex h-full flex-col border-r border-border bg-sidebar text-sidebar-foreground",
         className
       )}
     >
       {/* Brand Header */}
-      <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6">
+      <div className="flex h-16 items-center justify-between border-b border-border px-5">
         <Link
           href="/"
           onClick={onNavigate}
-          className="flex items-center gap-2.5 font-semibold text-sidebar-foreground transition-opacity hover:opacity-80"
+          className="flex items-center gap-2.5 font-semibold text-sidebar-foreground transition-opacity hover:opacity-90"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Layers className="h-4 w-4" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white border border-black shadow-neo-sm">
+            <StockOSLogo size={20} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-tight">StockOS</span>
-            <span className="text-[10px] font-normal text-muted-foreground">Stock Management</span>
+            <span className="font-heading text-sm font-bold tracking-tight text-foreground">StockOS</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Mini ERP</span>
           </div>
         </Link>
         {isMobile && (
@@ -80,10 +80,10 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
 
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Platform
         </div>
-        <nav className="space-y-1">
+        <nav className="mt-1 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === "/"
@@ -97,16 +97,16 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
                 href={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition-colors",
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition-all",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    ? "bg-[#543afd] text-white border-[1.5px] border-black shadow-neo-sm font-semibold"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-foreground active:translate-y-px"
                 )}
               >
                 <Icon
                   className={cn(
                     "h-4 w-4 shrink-0",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive ? "text-white" : "text-slate-500"
                   )}
                 />
                 <span>{item.title}</span>
@@ -117,10 +117,10 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
       </div>
 
       {/* Footer info */}
-      <div className="border-t border-sidebar-border p-4 text-[11px] text-muted-foreground">
+      <div className="border-t border-border p-4 font-mono text-[11px] text-muted-foreground">
         <div className="flex items-center justify-between">
-          <span>StockOS v0.1.0</span>
-          <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+          <span>v0.1.0</span>
+          <span className="inline-flex items-center rounded-sm border border-black bg-[#dcfce7] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#15803d]">
             Dev Mode
           </span>
         </div>

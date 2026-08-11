@@ -54,7 +54,7 @@ export function AppShell({ children, user }: AppShellProps) {
       {/* Main Container */}
       <div className="flex flex-1 flex-col md:pl-64">
         <Navbar user={user} onOpenMobileSidebar={() => setIsMobileOpen(true)} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-3 sm:p-4 md:p-5">{children}</main>
       </div>
     </div>
   );

@@ -35,13 +35,13 @@ export function UserMenu({ user }: UserMenuProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#ede9fe] font-mono text-xs font-bold text-[#543afd] shadow-neo-sm">
           {initials || <UserIcon className="h-4 w-4" />}
         </div>
         <div className="hidden flex-col text-left sm:flex">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-foreground">{displayName}</span>
-            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono capitalize text-muted-foreground">
+            <span className="text-xs font-semibold text-foreground">{displayName}</span>
+            <span className="rounded-sm border border-black bg-muted px-1.5 py-0.2 font-mono text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
               {displayRole}
             </span>
           </div>
@@ -50,14 +50,14 @@ export function UserMenu({ user }: UserMenuProps) {
       </div>
 
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={handleSignOut}
         disabled={isLoggingOut}
-        className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+        className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
         title="Sign out"
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-3.5 w-3.5" />
         <span className="hidden md:inline">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
       </Button>
     </div>
