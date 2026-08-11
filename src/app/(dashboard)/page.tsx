@@ -1,39 +1,47 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMockAuthState } from "@/features/auth/mock-auth";
+import {
+  DashboardHeader,
+  OverviewCards,
+  StockMovementChart,
+  InventoryHealth,
+  NeedAttentionTable,
+  TopMovingProducts,
+  MOCK_OVERVIEW_METRICS,
+} from "@/features/dashboard";
 
-export default async function DashboardHomePage() {
+export const metadata = {
+  title: "Dashboard | StockOS",
+  description: "Stock management and inventory overview.",
+};
+
+export default async function DashboardPage() {
   const { user } = await getMockAuthState();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-sm text-muted-foreground">
-          Welcome to StockOS Stock Management System.
-        </p>
-      </div>
+    <div className="flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto">
+      {/* 1. Header with integrated Quick Actions */}
+      <DashboardHeader userName={user?.name} />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Authentication State</CardDescription>
-            <CardTitle className="text-lg">Mock Session Active</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">User:</span>
-              <span className="font-medium text-foreground">{user?.name || "Demo User"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Email:</span>
-              <span className="font-mono text-foreground">{user?.email || "demo@stockos.com"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Role:</span>
-              <span className="font-mono uppercase text-foreground">{user?.role || "admin"}</span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* 2. Overview Metrics Cards (4 cards) */}
+      <OverviewCards metrics={MOCK_OVERVIEW_METRICS} />
+
+      {/* 3. Main Analytics 3-Column Desktop Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 items-stretch">
+        {/* Col 1: Stock Movement (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <StockMovementChart />
+        </div>
+
+        {/* Col 2: Need Attention (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <NeedAttentionTable />
+        </div>
+
+        {/* Col 3: Inventory Health & Top Moving Products (3 cols) */}
+        <div className="lg:col-span-3 flex flex-col gap-4 sm:gap-5">
+          <InventoryHealth />
+          <TopMovingProducts />
+        </div>
       </div>
     </div>
   );
