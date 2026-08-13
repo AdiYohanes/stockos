@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { useInventory } from "../hooks/use-inventory";
 import { InventoryHeader } from "./inventory-header";
 import { InventoryMetricsView } from "./inventory-metrics";
@@ -8,10 +9,14 @@ import { InventoryTabs } from "./inventory-tabs";
 import { InventoryToolbar } from "./inventory-toolbar";
 import { InventoryStockTable } from "./inventory-stock-table";
 import { InventoryMovementsTable } from "./inventory-movements-table";
-import { InventoryDetailSheet } from "./inventory-detail-sheet";
 import { StockMovementModal } from "./stock-movement-modal";
 import { StockAdjustmentModal } from "./stock-adjustment-modal";
 import type { InventoryItem } from "../types";
+
+const InventoryDetailSheet = dynamic(
+  () => import("./inventory-detail-sheet").then((m) => m.InventoryDetailSheet),
+  { ssr: false }
+);
 
 export function InventoryContainer() {
   const {
@@ -46,7 +51,6 @@ export function InventoryContainer() {
     adjustStock,
   } = useInventory();
 
-  // Modal states
   const [movementModalState, setMovementModalState] = React.useState<{
     open: boolean;
     targetItem: InventoryItem | null;
@@ -65,7 +69,6 @@ export function InventoryContainer() {
     targetItem: null,
   });
 
-  // Unique warehouse and category options derived from items
   const warehouses = React.useMemo(() => {
     return Array.from(new Set(items.map((i) => i.warehouse)));
   }, [items]);
@@ -74,7 +77,6 @@ export function InventoryContainer() {
     return Array.from(new Set(items.map((i) => i.category)));
   }, [items]);
 
-  // Handlers
   const handleOpenMovementModal = (item?: InventoryItem, type?: "in" | "out") => {
     setMovementModalState({
       open: true,
@@ -92,14 +94,12 @@ export function InventoryContainer() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto pb-12">
-      {/* 1. Header with Catalog Counters & Top CTAs */}
       <InventoryHeader
         totalItems={metrics.totalItems}
         onOpenMovementModal={() => handleOpenMovementModal()}
         onOpenAdjustmentModal={() => handleOpenAdjustmentModal()}
       />
 
-      {/* 2. Top Metric Cards (Clickable Filter Triggers) */}
       <InventoryMetricsView
         metrics={metrics}
         selectedStatus={filterState.status}
@@ -107,7 +107,6 @@ export function InventoryContainer() {
         onSelectTab={setTab}
       />
 
-      {/* 3. Dual Tab Selector (Stock Levels vs Movement Logs) */}
       <InventoryTabs
         activeTab={tab}
         onTabChange={setTab}
@@ -115,7 +114,6 @@ export function InventoryContainer() {
         movementsCount={totalFilteredMovementsCount}
       />
 
-      {/* 4. Unified Search & Filtering Toolbar */}
       <InventoryToolbar
         filterState={filterState}
         hasActiveFilters={hasActiveFilters}
@@ -130,7 +128,6 @@ export function InventoryContainer() {
         onResetFilters={resetFilters}
       />
 
-      {/* 5. High-Density Tables */}
       {tab === "stock_levels" ? (
         <InventoryStockTable
           items={paginatedItems}
@@ -154,23 +151,24 @@ export function InventoryContainer() {
         />
       )}
 
-      {/* 6. Slide-Over Detail Sheet */}
-      <InventoryDetailSheet
-        item={selectedItem}
-        open={selectedItemId !== null}
-        onClose={() => setSelectedItemId(null)}
-        onAdjustStock={(item) => {
-          setSelectedItemId(null);
-          handleOpenAdjustmentModal(item);
-        }}
-        onQuickMove={(item, moveType) => {
-          setSelectedItemId(null);
-          handleOpenMovementModal(item, moveType);
-        }}
-      />
+      {selectedItemId && (
+        <InventoryDetailSheet
+          item={selectedItem}
+          open={selectedItemId !== null}
+          onClose={() => setSelectedItemId(null)}
+          onAdjustStock={(item) => {
+            setSelectedItemId(null);
+            handleOpenAdjustmentModal(item);
+          }}
+          onQuickMove={(item, moveType) => {
+            setSelectedItemId(null);
+            handleOpenMovementModal(item, moveType);
+          }}
+        />
+      )}
 
-      {/* 7. Stock Movement Modal (In / Out) */}
       <StockMovementModal
+        key={movementModalState.targetItem?.id || "new-move"}
         open={movementModalState.open}
         onOpenChange={(open) => setMovementModalState((prev) => ({ ...prev, open }))}
         targetItem={movementModalState.targetItem}
@@ -179,8 +177,8 @@ export function InventoryContainer() {
         onRecordMovement={recordMovement}
       />
 
-      {/* 8. Stock Adjustment Modal (Audit / Correction) */}
       <StockAdjustmentModal
+        key={adjustmentModalState.targetItem?.id || "new-adjust"}
         open={adjustmentModalState.open}
         onOpenChange={(open) => setAdjustmentModalState((prev) => ({ ...prev, open }))}
         targetItem={adjustmentModalState.targetItem}
