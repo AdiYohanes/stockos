@@ -40,6 +40,7 @@ export interface Translations {
     inventory: string;
     warehouses: string;
     suppliers: string;
+    purchaseOrders: string;
     reports: string;
     settings: string;
     logout: string;

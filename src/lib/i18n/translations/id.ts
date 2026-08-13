@@ -40,6 +40,7 @@ export const idTranslations: Translations = {
     inventory: "Stok Inventaris",
     warehouses: "Gudang",
     suppliers: "Pemasok",
+    purchaseOrders: "Purchase Orders",
     reports: "Laporan",
     settings: "Pengaturan",
     logout: "Keluar",

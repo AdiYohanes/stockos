@@ -40,6 +40,7 @@ export const enTranslations: Translations = {
     inventory: "Inventory Stock",
     warehouses: "Warehouses",
     suppliers: "Suppliers",
+    purchaseOrders: "Purchase Orders",
     reports: "Reports",
     settings: "Settings",
     logout: "Sign Out",

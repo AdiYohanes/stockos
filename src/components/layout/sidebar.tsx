@@ -9,6 +9,7 @@ import {
   Boxes,
   Warehouse,
   Truck,
+  ShoppingBag,
   BarChart3,
   Settings,
   X,
@@ -31,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { titleKey: "inventory", href: "/inventory", icon: Boxes },
   { titleKey: "warehouses", href: "/warehouses", icon: Warehouse },
   { titleKey: "suppliers", href: "/suppliers", icon: Truck },
+  { titleKey: "purchaseOrders", href: "/purchase-orders", icon: ShoppingBag },
   { titleKey: "reports", href: "/reports", icon: BarChart3 },
   { titleKey: "settings", href: "/settings", icon: Settings },
 ];
