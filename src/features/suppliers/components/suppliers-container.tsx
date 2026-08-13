@@ -1,14 +1,19 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { useSuppliers } from "../hooks/use-suppliers";
 import { SuppliersHeader } from "./suppliers-header";
 import { SuppliersMetrics } from "./suppliers-metrics";
 import { SuppliersToolbar } from "./suppliers-toolbar";
 import { SuppliersTable } from "./suppliers-table";
-import { SupplierDetailSheet } from "./supplier-detail-sheet";
 import { SupplierFormModal } from "./supplier-form-modal";
 import { DeleteSupplierDialog } from "./delete-supplier-dialog";
+
+const SupplierDetailSheet = dynamic(
+  () => import("./supplier-detail-sheet").then((m) => m.SupplierDetailSheet),
+  { ssr: false }
+);
 
 export function SuppliersContainer() {
   const {
@@ -51,20 +56,17 @@ export function SuppliersContainer() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full">
-      {/* 1. Header & Actions */}
       <SuppliersHeader
         totalCount={suppliers.length}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
       />
 
-      {/* 2. Interactive Metric Cards */}
       <SuppliersMetrics
         metrics={metrics}
         selectedStatus={filterState.status}
         onSelectStatus={setStatus}
       />
 
-      {/* 3. Unified Toolbar */}
       <SuppliersToolbar
         filterState={filterState}
         hasActiveFilters={hasActiveFilters}
@@ -78,7 +80,6 @@ export function SuppliersContainer() {
         onResetFilters={resetFilters}
       />
 
-      {/* 4. High-Density Table */}
       <SuppliersTable
         suppliers={paginatedSuppliers}
         currentPage={filterState.page}
@@ -90,18 +91,19 @@ export function SuppliersContainer() {
         onDeleteSupplier={(sup) => setSupplierToDelete(sup)}
       />
 
-      {/* 5. Slide-Over Detail Sheet */}
-      <SupplierDetailSheet
-        supplier={selectedSupplier}
-        open={!!selectedSupplierId}
-        onClose={() => setSelectedSupplierId(null)}
-        onEditSupplier={(sup) => {
-          setSupplierToEdit(sup);
-        }}
-      />
+      {selectedSupplierId && (
+        <SupplierDetailSheet
+          supplier={selectedSupplier}
+          open={!!selectedSupplierId}
+          onClose={() => setSelectedSupplierId(null)}
+          onEditSupplier={(sup) => {
+            setSupplierToEdit(sup);
+          }}
+        />
+      )}
 
-      {/* 6. Add / Edit Supplier Form Modal */}
       <SupplierFormModal
+        key={supplierToEdit?.id || "new-sup"}
         supplier={supplierToEdit}
         open={isCreateModalOpen || !!supplierToEdit}
         onClose={() => {
@@ -117,7 +119,6 @@ export function SuppliersContainer() {
         }}
       />
 
-      {/* 7. Delete Confirmation Dialog */}
       <DeleteSupplierDialog
         supplier={supplierToDelete}
         open={!!supplierToDelete}

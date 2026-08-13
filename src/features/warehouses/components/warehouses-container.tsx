@@ -1,16 +1,21 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { useWarehouses } from "../hooks/use-warehouses";
 import { WarehousesHeader } from "./warehouses-header";
 import { WarehousesMetrics } from "./warehouses-metrics";
 import { WarehousesToolbar } from "./warehouses-toolbar";
 import { WarehouseGridView } from "./warehouse-grid-view";
 import { WarehouseTableView } from "./warehouse-table-view";
-import { WarehouseDetailSheet } from "./warehouse-detail-sheet";
 import { WarehouseFormModal } from "./warehouse-form-modal";
 import { StockTransferModal } from "./stock-transfer-modal";
 import { DeleteWarehouseDialog } from "./delete-warehouse-dialog";
+
+const WarehouseDetailSheet = dynamic(
+  () => import("./warehouse-detail-sheet").then((m) => m.WarehouseDetailSheet),
+  { ssr: false }
+);
 
 export function WarehousesContainer() {
   const {
@@ -58,21 +63,18 @@ export function WarehousesContainer() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full">
-      {/* 1. Header & Actions */}
       <WarehousesHeader
         totalCount={warehouses.length}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
         onOpenTransferModal={() => setIsTransferModalOpen(true, null)}
       />
 
-      {/* 2. Interactive Metric Cards */}
       <WarehousesMetrics
         metrics={metrics}
         selectedStatus={filterState.status}
         onSelectStatus={setStatus}
       />
 
-      {/* 3. Unified Toolbar */}
       <WarehousesToolbar
         filterState={filterState}
         hasActiveFilters={hasActiveFilters}
@@ -86,7 +88,6 @@ export function WarehousesContainer() {
         onResetFilters={resetFilters}
       />
 
-      {/* 4. Main View: Grid vs High-Density Table */}
       {filterState.viewMode === "grid" ? (
         <WarehouseGridView
           warehouses={filteredWarehouses}
@@ -109,21 +110,22 @@ export function WarehousesContainer() {
         />
       )}
 
-      {/* 5. Slide-Over Detail Sheet */}
-      <WarehouseDetailSheet
-        warehouse={selectedWarehouse}
-        open={!!selectedWarehouseId}
-        onClose={() => setSelectedWarehouseId(null)}
-        onOpenTransferModal={(id) => {
-          setIsTransferModalOpen(true, id);
-        }}
-        onEditWarehouse={(wh) => {
-          setWarehouseToEdit(wh);
-        }}
-      />
+      {selectedWarehouseId && (
+        <WarehouseDetailSheet
+          warehouse={selectedWarehouse}
+          open={!!selectedWarehouseId}
+          onClose={() => setSelectedWarehouseId(null)}
+          onOpenTransferModal={(id) => {
+            setIsTransferModalOpen(true, id);
+          }}
+          onEditWarehouse={(wh) => {
+            setWarehouseToEdit(wh);
+          }}
+        />
+      )}
 
-      {/* 6. Add / Edit Warehouse Form Modal */}
       <WarehouseFormModal
+        key={warehouseToEdit?.id || "new-wh"}
         warehouse={warehouseToEdit}
         open={isCreateModalOpen || !!warehouseToEdit}
         onClose={() => {
@@ -139,16 +141,14 @@ export function WarehousesContainer() {
         }}
       />
 
-      {/* 7. Inter-Warehouse Stock Transfer Modal */}
       <StockTransferModal
+        open={isTransferModalOpen}
         warehouses={warehouses}
         initialSourceWarehouseId={transferSourceWarehouseId}
-        open={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false, null)}
         onTransfer={transferStock}
       />
 
-      {/* 8. Delete Confirmation Dialog */}
       <DeleteWarehouseDialog
         warehouse={warehouseToDelete}
         open={!!warehouseToDelete}

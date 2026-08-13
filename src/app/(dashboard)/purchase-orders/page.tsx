@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import {
   usePurchaseOrders,
   PurchaseOrdersHeader,
@@ -9,8 +10,12 @@ import {
   PurchaseOrdersTable,
   CreatePOModal,
   ReceiveGoodsModal,
-  PODetailSheet,
 } from "@/features/purchase-orders";
+
+const PODetailSheet = dynamic(
+  () => import("@/features/purchase-orders").then((m) => m.PODetailSheet),
+  { ssr: false }
+);
 
 export default function PurchaseOrdersPage() {
   const {
@@ -85,17 +90,20 @@ export default function PurchaseOrdersPage() {
       />
 
       <ReceiveGoodsModal
+        key={receivingPoId || "new-rec"}
         po={receivingPo}
         isOpen={!!receivingPoId}
         onClose={() => setReceivingPoId(null)}
         onConfirmReceive={handleReceiveGoods}
       />
 
-      <PODetailSheet
-        po={selectedPo}
-        isOpen={!!selectedPoId}
-        onClose={() => setSelectedPoId(null)}
-      />
+      {selectedPoId && (
+        <PODetailSheet
+          po={selectedPo}
+          isOpen={!!selectedPoId}
+          onClose={() => setSelectedPoId(null)}
+        />
+      )}
     </div>
   );
 }
