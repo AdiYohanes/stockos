@@ -101,13 +101,15 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
+const emptySubscribe = () => () => {};
+
 export function StockMovementChart() {
   const [timeframe, setTimeframe] = React.useState<"7d" | "30d">("7d");
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   const currentData: StockMovementData =
     timeframe === "7d" ? MOCK_STOCK_MOVEMENT_7D : MOCK_STOCK_MOVEMENT_30D;

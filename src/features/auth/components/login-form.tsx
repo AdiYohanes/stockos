@@ -291,7 +291,7 @@ export function LoginForm() {
 
         {/* Footer Link */}
         <div className="mt-6 text-center text-xs text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/signup"
             className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"

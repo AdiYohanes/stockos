@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NAV_ITEMS } from "@/components/layout/sidebar";
@@ -22,7 +23,7 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
       : pathname === item.href || pathname.startsWith(`${item.href}/`)
   );
 
-  const title = currentNav ? currentNav.title : "StockOS";
+  const currentPageTitle = currentNav ? currentNav.title : "Dashboard";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:px-6">
@@ -36,11 +37,20 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="flex items-center gap-2">
-          <h1 className="text-sm font-semibold tracking-tight text-foreground md:text-base">
-            {title}
-          </h1>
-        </div>
+
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm">
+          <Link
+            href="/"
+            className="font-heading font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            StockOS
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+          <span className="font-heading font-semibold text-foreground truncate">
+            {currentPageTitle}
+          </span>
+        </nav>
       </div>
 
       <div className="flex items-center gap-4">
@@ -49,3 +59,4 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
     </header>
   );
 }
+

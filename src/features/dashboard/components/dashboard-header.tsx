@@ -10,6 +10,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AddProductModal } from "./modals/add-product-modal";
+import { StockInModal } from "./modals/stock-in-modal";
+import { StockOutModal } from "./modals/stock-out-modal";
+import { TransferModal } from "./modals/transfer-modal";
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -17,20 +21,12 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [actionFeedback, setActionFeedback] = React.useState<string | null>(null);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
       setIsRefreshing(false);
     }, 600);
-  };
-
-  const handleQuickAction = (actionName: string) => {
-    setActionFeedback(`${actionName} triggered`);
-    setTimeout(() => {
-      setActionFeedback(null);
-    }, 2500);
   };
 
   return (
@@ -54,45 +50,49 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
 
       {/* Quick Actions & Refresh */}
       <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto max-w-full pb-0.5 sm:pb-0">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleQuickAction("Add Product")}
-          className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
-        >
-          <PackagePlus className="h-3.5 w-3.5 text-primary" />
-          <span>Add Product</span>
-        </Button>
+        <AddProductModal>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
+          >
+            <PackagePlus className="h-3.5 w-3.5 text-primary" />
+            <span>Add Product</span>
+          </Button>
+        </AddProductModal>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleQuickAction("Stock In")}
-          className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
-        >
-          <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Stock In</span>
-        </Button>
+        <StockInModal>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
+          >
+            <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Stock In</span>
+          </Button>
+        </StockInModal>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleQuickAction("Stock Out")}
-          className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
-        >
-          <ArrowUpFromLine className="h-3.5 w-3.5 text-amber-600" />
-          <span>Stock Out</span>
-        </Button>
+        <StockOutModal>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
+          >
+            <ArrowUpFromLine className="h-3.5 w-3.5 text-amber-600" />
+            <span>Stock Out</span>
+          </Button>
+        </StockOutModal>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleQuickAction("Transfer")}
-          className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
-        >
-          <ArrowLeftRight className="h-3.5 w-3.5 text-blue-600" />
-          <span>Transfer</span>
-        </Button>
+        <TransferModal>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
+          >
+            <ArrowLeftRight className="h-3.5 w-3.5 text-blue-600" />
+            <span>Transfer</span>
+          </Button>
+        </TransferModal>
 
         <div className="h-5 w-px bg-border mx-0.5 hidden sm:block" />
 
@@ -109,12 +109,6 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
           <span className="hidden lg:inline font-medium">Refresh</span>
         </Button>
       </div>
-
-      {actionFeedback && (
-        <div className="absolute -top-8 right-0 z-20 rounded-md border border-black bg-foreground px-2.5 py-1 font-mono text-xs font-semibold text-background shadow-neo-sm animate-in fade-in">
-          {actionFeedback}
-        </div>
-      )}
     </header>
   );
 }
