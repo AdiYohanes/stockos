@@ -16,21 +16,23 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { StockOSLogo } from "@/components/stockos-logo";
+import { useI18n } from "@/lib/i18n/context";
+import type { Translations } from "@/lib/i18n/types";
 
 export interface NavItem {
-  title: string;
+  titleKey: keyof Translations["nav"];
   href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Products", href: "/products", icon: Package },
-  { title: "Inventory", href: "/inventory", icon: Boxes },
-  { title: "Warehouses", href: "/warehouses", icon: Warehouse },
-  { title: "Suppliers", href: "/suppliers", icon: Truck },
-  { title: "Reports", href: "/reports", icon: BarChart3 },
-  { title: "Settings", href: "/settings", icon: Settings },
+  { titleKey: "dashboard", href: "/", icon: LayoutDashboard },
+  { titleKey: "products", href: "/products", icon: Package },
+  { titleKey: "inventory", href: "/inventory", icon: Boxes },
+  { titleKey: "warehouses", href: "/warehouses", icon: Warehouse },
+  { titleKey: "suppliers", href: "/suppliers", icon: Truck },
+  { titleKey: "reports", href: "/reports", icon: BarChart3 },
+  { titleKey: "settings", href: "/settings", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -42,6 +44,7 @@ interface SidebarProps {
 
 export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <aside
@@ -80,7 +83,7 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
 
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="px-3 py-1.5 font-mono text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
           Platform
         </div>
         <nav className="mt-1 space-y-1">
@@ -90,6 +93,7 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
                 ? pathname === "/"
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
+            const title = t.nav[item.titleKey];
 
             return (
               <Link
@@ -97,7 +101,7 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
                 href={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition-all",
+                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-[15px] font-medium transition-all",
                   isActive
                     ? "bg-[#543afd] text-white border-[1.5px] border-black shadow-neo-sm font-semibold"
                     : "text-slate-600 hover:bg-slate-100 hover:text-foreground active:translate-y-px"
@@ -105,11 +109,11 @@ export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: Side
               >
                 <Icon
                   className={cn(
-                    "h-4 w-4 shrink-0",
+                    "h-[18px] w-[18px] shrink-0",
                     isActive ? "text-white" : "text-slate-500"
                   )}
                 />
-                <span>{item.title}</span>
+                <span>{title}</span>
               </Link>
             );
           })}

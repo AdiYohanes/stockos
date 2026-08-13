@@ -5,6 +5,8 @@ import { Building2, Boxes, Bell, Users, ShieldAlert } from "lucide-react";
 import { SettingsTab } from "../types";
 import { cn } from "@/lib/utils";
 
+import { useI18n } from "@/lib/i18n/context";
+
 interface SettingsTabNavProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
@@ -18,6 +20,8 @@ export function SettingsTabNav({
   teamCount,
   activeAlertsCount,
 }: SettingsTabNavProps) {
+  const { language, t } = useI18n();
+
   const tabs: Array<{
     id: SettingsTab;
     label: string;
@@ -26,29 +30,29 @@ export function SettingsTabNav({
   }> = [
     {
       id: "company",
-      label: "Profil Usaha",
+      label: language === "id" ? "Profil Usaha" : "Store Profile",
       icon: Building2,
     },
     {
       id: "inventory",
-      label: "Aturan Stok & Valuasi",
+      label: language === "id" ? "Aturan Stok & Valuasi" : "Stock Rules & Valuation",
       icon: Boxes,
     },
     {
       id: "notifications",
-      label: "Notifikasi & Peringatan",
+      label: language === "id" ? "Notifikasi & Peringatan" : "Notifications & Alerts",
       icon: Bell,
-      badge: activeAlertsCount > 0 ? `${activeAlertsCount} Aktif` : undefined,
+      badge: activeAlertsCount > 0 ? (language === "id" ? `${activeAlertsCount} Aktif` : `${activeAlertsCount} Active`) : undefined,
     },
     {
       id: "team",
-      label: "Tim & Akses",
+      label: language === "id" ? "Tim & Akses" : "Team & Access",
       icon: Users,
-      badge: `${teamCount} Anggota`,
+      badge: language === "id" ? `${teamCount} Anggota` : `${teamCount} Members`,
     },
     {
       id: "system",
-      label: "Sistem & Pemeliharaan",
+      label: language === "id" ? "Sistem & Pemeliharaan" : "System & Maintenance",
       icon: ShieldAlert,
     },
   ];

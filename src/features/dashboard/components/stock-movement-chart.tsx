@@ -65,7 +65,7 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-xs bg-[#543afd] shrink-0" />
-            <span className="text-muted-foreground font-medium">Stock In</span>
+            <span className="text-muted-foreground font-medium">Stok Masuk</span>
           </div>
           <span className="font-bold text-[#543afd]">
             +{formatNumber(data.stockIn)}
@@ -75,7 +75,7 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-xs bg-[#09090b] shrink-0" />
-            <span className="text-muted-foreground font-medium">Stock Out</span>
+            <span className="text-muted-foreground font-medium">Stok Keluar</span>
           </div>
           <span className="font-bold text-[#09090b]">
             -{formatNumber(data.stockOut)}
@@ -83,7 +83,7 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
         </div>
 
         <div className="pt-1.5 mt-1 border-t border-border flex items-center justify-between gap-4">
-          <span className="text-muted-foreground font-medium">Net Flow</span>
+          <span className="text-muted-foreground font-medium">Alur Neto</span>
           <span
             className={cn(
               "font-bold text-xs px-1.5 py-0.2 rounded-sm border border-black",
@@ -137,10 +137,10 @@ export function StockMovementChart() {
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold text-foreground">
-                Stock Movement
+                Pergerakan Stok
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Inbound vs outbound inventory flow
+                Alur inventaris masuk vs keluar
               </p>
             </div>
           </div>
@@ -158,7 +158,7 @@ export function StockMovementChart() {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                7D
+                7 Hari
               </button>
               <button
                 type="button"
@@ -170,7 +170,7 @@ export function StockMovementChart() {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                30D
+                30 Hari
               </button>
             </div>
 
@@ -178,7 +178,7 @@ export function StockMovementChart() {
             <Badge
               variant={currentData.netChange >= 0 ? "success" : "destructive"}
             >
-              Net: {currentData.netChange >= 0 ? "+" : ""}
+              Neto: {currentData.netChange >= 0 ? "+" : ""}
               {formatNumber(currentData.netChange)}
             </Badge>
           </div>
@@ -191,7 +191,7 @@ export function StockMovementChart() {
               <ArrowDownToLine className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Total In</div>
+              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Total Masuk</div>
               <div className="font-mono text-xs font-bold text-[#543afd] truncate">
                 +{formatNumber(currentData.totalIn)}
               </div>
@@ -203,7 +203,7 @@ export function StockMovementChart() {
               <ArrowUpFromLine className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Total Out</div>
+              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Total Keluar</div>
               <div className="font-mono text-xs font-bold text-[#09090b] truncate">
                 -{formatNumber(currentData.totalOut)}
               </div>
@@ -215,7 +215,7 @@ export function StockMovementChart() {
               <TrendingUp className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Peak Period</div>
+              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Periode Puncak</div>
               <div className="font-mono text-xs font-bold text-foreground truncate">
                 {peakItem?.period || "-"}
               </div>
@@ -227,7 +227,7 @@ export function StockMovementChart() {
               <Activity className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Avg / Day</div>
+              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">Rata-rata / Hari</div>
               <div className="font-mono text-xs font-bold text-foreground truncate">
                 {formatNumber(avgMovement)}
               </div>
@@ -286,7 +286,7 @@ export function StockMovementChart() {
 
                 <Bar
                   dataKey="stockIn"
-                  name="Stock In"
+                  name="Stok Masuk"
                   fill="#543afd"
                   radius={[3, 3, 0, 0]}
                   maxBarSize={28}
@@ -294,7 +294,7 @@ export function StockMovementChart() {
 
                 <Bar
                   dataKey="stockOut"
-                  name="Stock Out"
+                  name="Stok Keluar"
                   fill="#09090b"
                   radius={[3, 3, 0, 0]}
                   maxBarSize={28}
@@ -312,11 +312,11 @@ export function StockMovementChart() {
         <div className="flex items-center justify-center gap-6 pt-2 font-mono text-[11px] font-semibold text-muted-foreground">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-xs border border-black bg-[#543afd]" />
-            <span className="text-foreground">Stock In (Inbound)</span>
+            <span className="text-foreground">Stok Masuk (Inbound)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-xs border border-black bg-[#09090b]" />
-            <span className="text-foreground">Stock Out (Outbound)</span>
+            <span className="text-foreground">Stok Keluar (Outbound)</span>
           </div>
         </div>
       </CardContent>

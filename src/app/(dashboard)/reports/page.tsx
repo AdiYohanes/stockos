@@ -43,7 +43,7 @@ export default function ReportsPage() {
   } = useReports();
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8f9fa]">
+    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
       <ReportsHeader
         timeframe={timeframe}
@@ -51,15 +51,13 @@ export default function ReportsPage() {
         onOpenExportModal={() => setIsExportModalOpen(true)}
       />
 
-      {/* Main Container */}
-      <div className="flex-1 p-6 space-y-6 max-w-[1600px] w-full mx-auto">
-        {/* Top Metric Cards */}
-        <ReportsMetricCards
-          valuationSummary={valuationSummary}
-          reorderRiskList={reorderRiskList}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+      {/* Top Metric Cards */}
+      <ReportsMetricCards
+        valuationSummary={valuationSummary}
+        reorderRiskList={reorderRiskList}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
         {/* Toolbar & Filter Controls */}
         <ReportsToolbar
@@ -100,7 +98,6 @@ export default function ReportsPage() {
             suppliers={supplierList}
           />
         )}
-      </div>
 
       {/* Export Modal */}
       <ExportReportModal

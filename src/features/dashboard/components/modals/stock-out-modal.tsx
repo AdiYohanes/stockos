@@ -46,11 +46,11 @@ const MOCK_PRODUCTS = [
 ];
 
 const REASONS = [
-  { value: "sale", label: "Sale / Order Fulfillment" },
-  { value: "usage", label: "Internal Usage" },
-  { value: "damaged", label: "Damaged / Defective" },
-  { value: "return_supplier", label: "Return to Supplier" },
-  { value: "other", label: "Other" },
+  { value: "sale", label: "Penjualan / Pemenuhan Pesanan" },
+  { value: "usage", label: "Penggunaan Internal" },
+  { value: "damaged", label: "Rusak / Cacat" },
+  { value: "return_supplier", label: "Retur ke Pemasok" },
+  { value: "other", label: "Lainnya" },
 ];
 
 const INITIAL_FORM_DATA: StockOutFormData = {
@@ -115,10 +115,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Stock Out
+                      Stok Keluar
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Record dispatch, sales, or usage
+                      Catat pengeluaran, penjualan, atau penggunaan
                     </DialogDescription>
                   </div>
                 </div>
@@ -128,7 +128,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-product">Product</Label>
+                      <Label htmlFor="stockout-product">Produk</Label>
                       <select
                         id="stockout-product"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -136,7 +136,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         value={formData.sku}
                         onChange={(e) => handleInputChange("sku", e.target.value)}
                       >
-                        <option value="">Select product</option>
+                        <option value="">Pilih produk</option>
                         {MOCK_PRODUCTS.map((p) => (
                           <option key={p.sku} value={p.sku}>
                             [{p.sku}] {p.name}
@@ -145,20 +145,20 @@ export function StockOutModal({ children }: StockOutModalProps) {
                       </select>
                       {currentStock !== undefined && (
                         <p className="text-[10px] text-muted-foreground">
-                          Current stock:{" "}
+                          Stok saat ini:{" "}
                           <span className="font-mono font-bold text-foreground">{currentStock}</span>
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-qty">Quantity</Label>
+                      <Label htmlFor="stockout-qty">Jumlah</Label>
                       <Input
                         id="stockout-qty"
                         type="number"
                         min="1"
                         max={currentStock}
-                        placeholder="Enter quantity"
+                        placeholder="Masukkan jumlah"
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
@@ -166,7 +166,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-reason">Reason</Label>
+                      <Label htmlFor="stockout-reason">Alasan</Label>
                       <select
                         id="stockout-reason"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -174,7 +174,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         value={formData.reason}
                         onChange={(e) => handleInputChange("reason", e.target.value)}
                       >
-                        <option value="">Select reason</option>
+                        <option value="">Pilih alasan</option>
                         {REASONS.map((r) => (
                           <option key={r.value} value={r.value}>{r.label}</option>
                         ))}
@@ -182,21 +182,21 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-ref">Reference / Order ID</Label>
+                      <Label htmlFor="stockout-ref">Referensi / ID Pesanan</Label>
                       <Input
                         id="stockout-ref"
-                        placeholder="e.g. SO-2026-1234"
+                        placeholder="contoh: SO-2026-1234"
                         value={formData.ref}
                         onChange={(e) => handleInputChange("ref", e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-notes">Notes</Label>
+                      <Label htmlFor="stockout-notes">Catatan</Label>
                       <textarea
                         id="stockout-notes"
                         rows={2}
-                        placeholder="Optional notes..."
+                        placeholder="Catatan opsional..."
                         className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -209,10 +209,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Cancel
+                    Batal
                   </DialogClose>
                   <Button type="submit" size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-black btn-neo">
-                    Dispatch Stock
+                    Simpan Stok Keluar
                   </Button>
                 </DialogFooter>
               </form>
@@ -267,10 +267,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Stock Dispatched Successfully!
+                  Stok Keluar Berhasil Disimpan!
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  Inventory count has been deducted and movement is recorded.
+                  Jumlah stok telah dikurangi dan pergerakan berhasil dicatat.
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
@@ -284,22 +284,22 @@ export function StockOutModal({ children }: StockOutModalProps) {
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono truncate">
                             <Tag className="h-3 w-3" />
-                            {matchedReason || "Dispatch"}
+                            {matchedReason || "Pengeluaran"}
                           </span>
                         </div>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
-                          {matchedProduct?.name || "Selected Product"}
+                          {matchedProduct?.name || "Produk Dipilih"}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-amber-600 font-mono font-bold block">
-                          Stock Deducted
+                          Stok Dikurangi
                         </span>
                         <span className="font-mono text-base font-bold text-amber-700">
                           -{submittedData.qty}{" "}
                           <span className="text-xs font-normal text-muted-foreground">
-                            {matchedProduct?.unit || "units"}
+                            {matchedProduct?.unit || "unit"}
                           </span>
                         </span>
                       </div>
@@ -308,7 +308,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     {submittedData.ref && (
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
                         <FileText className="h-3 w-3 text-foreground/60" />
-                        <span>Order / Ref ID: <span className="font-semibold text-foreground">{submittedData.ref}</span></span>
+                        <span>Pesanan / Ref ID: <span className="font-semibold text-foreground">{submittedData.ref}</span></span>
                       </div>
                     )}
                   </div>
@@ -322,7 +322,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Done
+                    Selesai
                   </Button>
                   <Button
                     type="button"
@@ -330,7 +330,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Dispatch Another Item
+                    Keluarkan Barang Lain
                   </Button>
                 </div>
               </div>

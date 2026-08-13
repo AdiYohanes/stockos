@@ -44,7 +44,7 @@ export default function SettingsPage() {
   }, [settings.notifications]);
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
       <SettingsHeader
         hasUnsavedChanges={hasUnsavedChanges}

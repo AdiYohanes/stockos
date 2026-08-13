@@ -110,10 +110,10 @@ export function StockInModal({ children }: StockInModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Stock In
+                      Stok Masuk
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Receive incoming purchase or shipment
+                      Terima pembelian atau pengiriman masuk
                     </DialogDescription>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export function StockInModal({ children }: StockInModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-product">Product</Label>
+                      <Label htmlFor="stockin-product">Produk</Label>
                       <div className="relative">
                         <select
                           id="stockin-product"
@@ -132,7 +132,7 @@ export function StockInModal({ children }: StockInModalProps) {
                           value={formData.sku}
                           onChange={(e) => handleInputChange("sku", e.target.value)}
                         >
-                          <option value="">Select product</option>
+                          <option value="">Pilih produk</option>
                           {MOCK_PRODUCTS.map((p) => (
                             <option key={p.sku} value={p.sku}>
                               [{p.sku}] {p.name}
@@ -143,12 +143,12 @@ export function StockInModal({ children }: StockInModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockin-qty">Quantity</Label>
+                      <Label htmlFor="stockin-qty">Jumlah</Label>
                       <Input
                         id="stockin-qty"
                         type="number"
                         min="1"
-                        placeholder="Enter quantity"
+                        placeholder="Masukkan jumlah"
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
@@ -156,7 +156,7 @@ export function StockInModal({ children }: StockInModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockin-warehouse">Warehouse</Label>
+                      <Label htmlFor="stockin-warehouse">Gudang</Label>
                       <select
                         id="stockin-warehouse"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -164,7 +164,7 @@ export function StockInModal({ children }: StockInModalProps) {
                         value={formData.warehouse}
                         onChange={(e) => handleInputChange("warehouse", e.target.value)}
                       >
-                        <option value="">Select warehouse</option>
+                        <option value="">Pilih gudang</option>
                         {WAREHOUSES.map((wh) => (
                           <option key={wh} value={wh}>{wh}</option>
                         ))}
@@ -172,21 +172,21 @@ export function StockInModal({ children }: StockInModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-supplier">Supplier / PO Reference</Label>
+                      <Label htmlFor="stockin-supplier">Pemasok / Referensi PO</Label>
                       <Input
                         id="stockin-supplier"
-                        placeholder="e.g. PO-2026-0847 or Supplier name"
+                        placeholder="contoh: PO-2026-0847 atau Nama Pemasok"
                         value={formData.supplier}
                         onChange={(e) => handleInputChange("supplier", e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-notes">Notes</Label>
+                      <Label htmlFor="stockin-notes">Catatan</Label>
                       <textarea
                         id="stockin-notes"
                         rows={2}
-                        placeholder="Optional notes..."
+                        placeholder="Catatan opsional..."
                         className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -199,10 +199,10 @@ export function StockInModal({ children }: StockInModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Cancel
+                    Batal
                   </DialogClose>
                   <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white border-black btn-neo">
-                    Receive Stock
+                    Simpan Stok Masuk
                   </Button>
                 </DialogFooter>
               </form>
@@ -257,10 +257,10 @@ export function StockInModal({ children }: StockInModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Stock Received Successfully!
+                  Stok Masuk Berhasil Disimpan!
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  Incoming shipment has been logged and added to warehouse inventory count.
+                  Pengiriman masuk telah dicatat dan ditambahkan ke jumlah stok gudang.
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
@@ -274,22 +274,22 @@ export function StockInModal({ children }: StockInModalProps) {
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono truncate">
                             <Building2 className="h-3 w-3" />
-                            {submittedData.warehouse || "Default WH"}
+                            {submittedData.warehouse || "Gudang Utama"}
                           </span>
                         </div>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
-                          {matchedProduct?.name || "Selected Product"}
+                          {matchedProduct?.name || "Produk Dipilih"}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-mono font-bold block">
-                          Stock Added
+                          Stok Ditambah
                         </span>
                         <span className="font-mono text-base font-bold text-emerald-700">
                           +{submittedData.qty}{" "}
                           <span className="text-xs font-normal text-muted-foreground">
-                            {matchedProduct?.unit || "units"}
+                            {matchedProduct?.unit || "unit"}
                           </span>
                         </span>
                       </div>
@@ -298,7 +298,7 @@ export function StockInModal({ children }: StockInModalProps) {
                     {submittedData.supplier && (
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
                         <FileText className="h-3 w-3 text-foreground/60" />
-                        <span>Ref / Supplier: <span className="font-semibold text-foreground">{submittedData.supplier}</span></span>
+                        <span>Ref / Pemasok: <span className="font-semibold text-foreground">{submittedData.supplier}</span></span>
                       </div>
                     )}
                   </div>
@@ -312,7 +312,7 @@ export function StockInModal({ children }: StockInModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Done
+                    Selesai
                   </Button>
                   <Button
                     type="button"
@@ -320,7 +320,7 @@ export function StockInModal({ children }: StockInModalProps) {
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Receive Another Item
+                    Terima Barang Lain
                   </Button>
                 </div>
               </div>

@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import { Menu, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/layout/user-menu";
+import { LanguageToggle } from "@/components/layout/language-toggle";
 import { NAV_ITEMS } from "@/components/layout/sidebar";
+import { useI18n } from "@/lib/i18n/context";
 import type { MockUser } from "@/features/auth/types";
 
 interface NavbarProps {
@@ -16,6 +18,7 @@ interface NavbarProps {
 
 export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const currentNav = NAV_ITEMS.find((item) =>
     item.href === "/"
@@ -23,7 +26,7 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
       : pathname === item.href || pathname.startsWith(`${item.href}/`)
   );
 
-  const currentPageTitle = currentNav ? currentNav.title : "Dashboard";
+  const currentPageTitle = currentNav ? t.nav[currentNav.titleKey] : t.nav.dashboard;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:px-6">
@@ -53,7 +56,8 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
         </nav>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <LanguageToggle />
         <UserMenu user={user} />
       </div>
     </header>

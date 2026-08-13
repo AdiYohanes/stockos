@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
 import { logoutMockUser } from "@/features/auth/mock-auth";
 import type { MockUser } from "@/features/auth/types";
 
@@ -14,6 +15,7 @@ interface UserMenuProps {
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const { language, t } = useI18n();
 
   const handleSignOut = () => {
     setIsLoggingOut(true);
@@ -55,10 +57,16 @@ export function UserMenu({ user }: UserMenuProps) {
         onClick={handleSignOut}
         disabled={isLoggingOut}
         className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-        title="Sign out"
+        title={t.nav.logout}
       >
         <LogOut className="h-3.5 w-3.5" />
-        <span className="hidden md:inline">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
+        <span className="hidden md:inline">
+          {isLoggingOut
+            ? language === "id"
+              ? "Keluar..."
+              : "Signing out..."
+            : t.nav.logout}
+        </span>
       </Button>
     </div>
   );

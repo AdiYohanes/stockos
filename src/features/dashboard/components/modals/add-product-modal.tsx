@@ -113,10 +113,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Add New Product
+                      Tambah Produk Baru
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Register new item with SKU & details
+                      Daftarkan produk baru dengan SKU & detail
                     </DialogDescription>
                   </div>
                 </div>
@@ -126,10 +126,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-name">Product Name</Label>
+                      <Label htmlFor="product-name">Nama Produk</Label>
                       <Input
                         id="product-name"
-                        placeholder="e.g. ESP32-WROOM-32D Module"
+                        placeholder="contoh: ESP32-WROOM-32D Module"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
                         required
@@ -137,11 +137,11 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-sku">SKU Code</Label>
+                      <Label htmlFor="product-sku">Kode SKU</Label>
                       <div className="relative">
                         <Input
                           id="product-sku"
-                          placeholder="e.g. ELEC-ESP-32"
+                          placeholder="contoh: ELEC-ESP-32"
                           className="pr-8 font-mono"
                           value={formData.sku}
                           onChange={(e) => handleInputChange("sku", e.target.value.toUpperCase())}
@@ -152,7 +152,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-category">Category</Label>
+                      <Label htmlFor="product-category">Kategori</Label>
                       <select
                         id="product-category"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -160,7 +160,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                         onChange={(e) => handleInputChange("category", e.target.value)}
                         required
                       >
-                        <option value="">Select category</option>
+                        <option value="">Pilih kategori</option>
                         {CATEGORIES.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
@@ -170,7 +170,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-unit">Unit</Label>
+                      <Label htmlFor="product-unit">Satuan</Label>
                       <select
                         id="product-unit"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -187,7 +187,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-initial-stock">Initial Stock</Label>
+                      <Label htmlFor="product-initial-stock">Stok Awal</Label>
                       <Input
                         id="product-initial-stock"
                         type="number"
@@ -199,18 +199,18 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-min-stock">Minimum Stock Level</Label>
+                      <Label htmlFor="product-min-stock">Batas Stok Minimum</Label>
                       <Input
                         id="product-min-stock"
                         type="number"
                         min="0"
-                        placeholder="e.g. 50"
+                        placeholder="contoh: 50"
                         value={formData.minStock}
                         onChange={(e) => handleInputChange("minStock", e.target.value)}
                         required
                       />
                       <p className="text-[10px] text-muted-foreground">
-                        Alert triggers when stock falls below this level
+                        Peringatan muncul saat stok di bawah batas ini
                       </p>
                     </div>
                   </div>
@@ -220,10 +220,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Cancel
+                    Batal
                   </DialogClose>
                   <Button type="submit" size="sm">
-                    Add Product
+                    Tambah Produk
                   </Button>
                 </DialogFooter>
               </form>
@@ -283,10 +283,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Product Successfully Added!
+                  Produk Berhasil Ditambahkan!
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  The product is now registered in StockOS inventory and ready for stock movements.
+                  Produk kini terdaftar dalam inventaris StockOS dan siap untuk transaksi pergerakan stok.
                 </DialogDescription>
 
                 {/* Product Summary Preview Card */}
@@ -300,17 +300,17 @@ export function AddProductModal({ children }: AddProductModalProps) {
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
                             <Layers className="h-3 w-3" />
-                            {submittedProduct.category || "General"}
+                            {submittedProduct.category || "Umum"}
                           </span>
                         </div>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-1">
-                          {submittedProduct.name || "Untitled Product"}
+                          {submittedProduct.name || "Produk Tanpa Judul"}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono block">
-                          Initial Stock
+                          Stok Awal
                         </span>
                         <span className="font-mono text-base font-bold text-foreground">
                           {submittedProduct.initialStock || "0"}{" "}
@@ -331,7 +331,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Done
+                    Selesai
                   </Button>
                   <Button
                     type="button"
@@ -339,7 +339,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     onClick={handleAddAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Add Another Product
+                    Tambah Produk Lain
                   </Button>
                 </div>
               </div>

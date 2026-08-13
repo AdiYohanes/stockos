@@ -33,10 +33,10 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold truncate">
-                Need Attention
+                Perlu Perhatian
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Critical and low inventory items
+                Item inventaris kritis dan menipis
               </p>
             </div>
           </div>
@@ -53,7 +53,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              All ({items.length})
+              Semua ({items.length})
             </button>
             <button
               type="button"
@@ -65,7 +65,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Out ({outOfStockCount})
+              Habis ({outOfStockCount})
             </button>
             <button
               type="button"
@@ -77,7 +77,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Low ({lowStockCount})
+              Menipis ({lowStockCount})
             </button>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   Item & SKU
                 </th>
                 <th scope="col" className="w-[26%] px-2 py-2.5 text-center">
-                  Stock / Min
+                  Stok / Min
                 </th>
                 <th scope="col" className="w-[26%] px-2 py-2.5 text-right">
                   Status
@@ -103,7 +103,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
               {filteredItems.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="py-8 text-center text-xs text-muted-foreground font-mono">
-                    No items require attention
+                    Tidak ada item yang memerlukan perhatian
                   </td>
                 </tr>
               ) : (
@@ -157,12 +157,12 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                         {item.status === "out_of_stock" ? (
                           <Badge variant="destructive" className="max-w-full">
                             <XCircle className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Out of Stock</span>
+                            <span className="truncate">Stok Habis</span>
                           </Badge>
                         ) : (
                           <Badge variant="warning" className="max-w-full">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Low Stock</span>
+                            <span className="truncate">Stok Menipis</span>
                           </Badge>
                         )}
                       </td>

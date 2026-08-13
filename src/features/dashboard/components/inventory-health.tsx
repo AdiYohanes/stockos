@@ -21,7 +21,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold text-foreground">
-                Inventory Health
+                Kesehatan Inventaris
               </CardTitle>
             </div>
           </div>
@@ -40,22 +40,22 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
             aria-valuenow={data.healthy.percentage}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Inventory distribution breakdown"
+            aria-label="Rincian distribusi inventaris"
           >
             <div
               style={{ width: `${data.healthy.percentage}%` }}
               className="h-full bg-emerald-500 transition-all duration-300"
-              title={`Healthy: ${data.healthy.percentage}%`}
+              title={`Sehat: ${data.healthy.percentage}%`}
             />
             <div
               style={{ width: `${data.lowStock.percentage}%` }}
               className="h-full bg-amber-500 transition-all duration-300"
-              title={`Low Stock: ${data.lowStock.percentage}%`}
+              title={`Stok Menipis: ${data.lowStock.percentage}%`}
             />
             <div
               style={{ width: `${data.outOfStock.percentage}%` }}
               className="h-full bg-rose-500 transition-all duration-300"
-              title={`Out of Stock: ${data.outOfStock.percentage}%`}
+              title={`Stok Habis: ${data.outOfStock.percentage}%`}
             />
           </div>
         </div>
@@ -66,7 +66,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
         <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <span className="font-sans font-semibold text-foreground">Healthy</span>
+            <span className="font-sans font-semibold text-foreground">Sehat</span>
             <span className="text-[11px] text-muted-foreground">({data.healthy.percentage}%)</span>
           </div>
           <span className="font-bold text-foreground text-xs">
@@ -78,7 +78,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
         <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-            <span className="font-sans font-semibold text-foreground">Low Stock</span>
+            <span className="font-sans font-semibold text-foreground">Stok Menipis</span>
             <span className="text-[11px] text-muted-foreground">({data.lowStock.percentage}%)</span>
           </div>
           <span className="font-bold text-foreground text-xs">
@@ -90,7 +90,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
         <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
           <div className="flex items-center gap-2">
             <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
-            <span className="font-sans font-semibold text-foreground">Out of Stock</span>
+            <span className="font-sans font-semibold text-foreground">Stok Habis</span>
             <span className="text-[11px] text-muted-foreground">({data.outOfStock.percentage}%)</span>
           </div>
           <span className="font-bold text-destructive text-xs">

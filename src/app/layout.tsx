@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { Archivo, Space_Grotesk, Space_Mono, Geist, Geist_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, Space_Mono, Archivo } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const archivo = Archivo({
@@ -30,6 +26,8 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
+import { I18nProvider } from "@/lib/i18n/context";
+
 export const metadata: Metadata = {
   title: "StockOS",
   description: "Lightweight web-based Stock Management System",
@@ -39,11 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${archivo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        {children}
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );

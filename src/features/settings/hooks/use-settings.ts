@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useSyncExternalStore } from "react";
+import { useState, useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   SystemSettings,
   CompanySettings,
@@ -30,9 +30,17 @@ function getServerSnapshot() {
 
 export function useSettings() {
   const isMounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [settings, setSettings] = useState<SystemSettings>(() => loadSettingsFromStorage());
+  const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedMessage, setLastSavedMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loaded = loadSettingsFromStorage();
+    const handle = requestAnimationFrame(() => {
+      setSettings(loaded);
+    });
+    return () => cancelAnimationFrame(handle);
+  }, []);
 
   const notifyChange = () => {
     setHasUnsavedChanges(true);
@@ -144,7 +152,7 @@ export function useSettings() {
 
   return {
     isMounted,
-    settings: isMounted ? settings : DEFAULT_SETTINGS,
+    settings,
     hasUnsavedChanges,
     lastSavedMessage,
     updateCompany,

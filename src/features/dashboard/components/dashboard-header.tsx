@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import { AddProductModal } from "./modals/add-product-modal";
 import { StockInModal } from "./modals/stock-in-modal";
 import { StockOutModal } from "./modals/stock-out-modal";
@@ -21,6 +22,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const { language, t } = useI18n();
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -29,22 +31,29 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
     }, 600);
   };
 
+  const welcomeText = userName
+    ? language === "id"
+      ? `Selamat datang kembali, ${userName}. `
+      : `Welcome back, ${userName}. `
+    : "";
+
   return (
     <header className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       {/* Title + Meta */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
         <div className="flex items-center gap-2.5">
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Dashboard
+            {t.nav.dashboard}
           </h1>
           <span className="inline-flex items-center gap-1.5 rounded-sm border border-black bg-[#dcfce7] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#15803d]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#15803d] animate-pulse" />
-            Live
+            {t.dashboard.badgeText}
           </span>
         </div>
         <span className="hidden sm:inline text-muted-foreground/30 text-base">•</span>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          {userName ? `Welcome back, ${userName}. ` : ""}Overview of stock activity and inventory health.
+          {welcomeText}
+          {t.dashboard.subtitle}
         </p>
       </div>
 
@@ -57,7 +66,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <PackagePlus className="h-3.5 w-3.5 text-primary" />
-            <span>Add Product</span>
+            <span>{t.dashboard.addProduct}</span>
           </Button>
         </AddProductModal>
 
@@ -68,7 +77,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600" />
-            <span>Stock In</span>
+            <span>{language === "id" ? "Stok Masuk" : "Stock In"}</span>
           </Button>
         </StockInModal>
 
@@ -79,7 +88,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowUpFromLine className="h-3.5 w-3.5 text-amber-600" />
-            <span>Stock Out</span>
+            <span>{language === "id" ? "Stok Keluar" : "Stock Out"}</span>
           </Button>
         </StockOutModal>
 
@@ -90,7 +99,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowLeftRight className="h-3.5 w-3.5 text-blue-600" />
-            <span>Transfer</span>
+            <span>{language === "id" ? "Transfer Stok" : "Stock Transfer"}</span>
           </Button>
         </TransferModal>
 
@@ -106,7 +115,9 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
           <RefreshCw
             className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")}
           />
-          <span className="hidden lg:inline font-medium">Refresh</span>
+          <span className="hidden lg:inline font-medium">
+            {language === "id" ? "Perbarui" : "Refresh"}
+          </span>
         </Button>
       </div>
     </header>

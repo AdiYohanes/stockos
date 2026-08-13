@@ -22,11 +22,11 @@ export function TopMovingProducts({ products = MOCK_TOP_MOVING_PRODUCTS }: TopMo
               <Flame className="h-4 w-4" />
             </div>
             <CardTitle className="text-base sm:text-lg font-bold text-foreground">
-              Top Moving Products
+              Produk Pergerakan Tertinggi
             </CardTitle>
           </div>
           <Badge variant="secondary">
-            30 Days
+            30 Hari
           </Badge>
         </div>
       </CardHeader>

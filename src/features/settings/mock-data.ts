@@ -76,7 +76,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
       permissions: ["Read Only Reports", "Catalog View"],
     },
   ],
-  updatedAt: new Date().toISOString(),
+  updatedAt: "2026-08-13T08:00:00.000Z",
 };
 
 const SETTINGS_STORAGE_KEY = "stockos_settings_v1";

@@ -11,7 +11,7 @@ import {
 
 export const metadata = {
   title: "Dashboard | StockOS",
-  description: "Stock management and inventory overview.",
+  description: "Ringkasan manajemen stok dan ikhtisar inventaris.",
 };
 
 export default async function DashboardPage() {

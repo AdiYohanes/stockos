@@ -244,8 +244,9 @@ React 19 & Feature State Patterns:
 - **Hydration-Safe Mount Detection**: When needing client-only mount checks (e.g. chart rendering), use `React.useSyncExternalStore` rather than `useState(false)` + `useEffect(setMounted(true))`.
 - **Pure Render Handlers**: Do not call impure functions like `Math.random()` during component render. Generate unique IDs or deterministic references inside event handlers or form submissions.
 
-Standard Feature UI Structure (Products, Inventory, Warehouses, Suppliers):
+Standard Feature UI Structure (Products, Inventory, Warehouses, Suppliers, Dashboard, Reports, Settings):
 
+- **Standard Page Header**: Top title header with h1 + monospace status/category badge + bullet separator + description text on left, and responsive action buttons toolbar on right (see Section 6 of `design.md`).
 - **Metric Summary Cards**: 3-4 top cards summarizing volume/health that also act as quick click-to-filter triggers.
 - **Unified Toolbar**: Instant search bar + status pills with live counts + category/warehouse select dropdowns + sort toggle + reset button.
 - **High-Density Table**: Space Mono badges for SKUs/codes, visual ratio/progress bars, currency formatting, status pills, and contextual row actions.

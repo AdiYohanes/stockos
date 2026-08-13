@@ -19,7 +19,7 @@ export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps
   const [activeNotification, setActiveNotification] = React.useState<string | null>(null);
 
   const handleActionClick = (title: string) => {
-    setActiveNotification(`${title} triggered (Placeholder)`);
+    setActiveNotification(`${title} dijalankan (Placeholder)`);
     setTimeout(() => {
       setActiveNotification(null);
     }, 2500);

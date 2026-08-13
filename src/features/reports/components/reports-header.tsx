@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Download, Sparkles } from "lucide-react";
+import { Download, Sparkles, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { ReportTimeframe } from "../types";
 
 interface ReportsHeaderProps {
@@ -12,38 +13,45 @@ interface ReportsHeaderProps {
   onOpenExportModal: () => void;
 }
 
-const TIMEFRAMES: { label: string; value: ReportTimeframe }[] = [
-  { label: "7 Days", value: "7d" },
-  { label: "30 Days", value: "30d" },
-  { label: "90 Days", value: "90d" },
-  { label: "12 Months", value: "12m" },
-];
-
 export function ReportsHeader({
   timeframe,
   onTimeframeChange,
   onOpenExportModal,
 }: ReportsHeaderProps) {
+  const { language, t } = useI18n();
+
+  const TIMEFRAMES: { label: string; value: ReportTimeframe }[] = [
+    { label: language === "id" ? "7 Hari" : "7 Days", value: "7d" },
+    { label: language === "id" ? "30 Hari" : "30 Days", value: "30d" },
+    { label: language === "id" ? "90 Hari" : "90 Days", value: "90d" },
+    { label: language === "id" ? "12 Bulan" : "12 Months", value: "12m" },
+  ];
+
   return (
-    <div className="flex flex-col gap-4 border-b border-border bg-white px-6 py-5 md:flex-row md:items-center md:justify-between">
-      {/* Title & Badge */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2.5">
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            Reports & Intelligence
-          </h1>
-          <span className="inline-flex items-center gap-1 rounded-sm border border-black bg-[#543afd] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-neo-sm">
-            <Sparkles className="h-3 w-3" />
-            Analytics
-          </span>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
+      {/* Title & Icon */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-black bg-[#543afd] text-white shadow-neo shrink-0">
+          <BarChart3 className="h-5.5 w-5.5" />
         </div>
-        <p className="text-xs text-muted-foreground">
-          Operational visibility into stock valuation, movement velocity, reorder risks, and supplier health.
-        </p>
+        <div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              {t.reports.title}
+            </h1>
+            <span className="inline-flex items-center gap-1 rounded-sm border border-black bg-[#543afd] px-2.5 py-0.5 font-mono text-[13px] font-bold uppercase tracking-wider text-white shadow-neo-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              {t.reports.badgeText}
+            </span>
+          </div>
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
+            {t.reports.subtitle}
+          </p>
+        </div>
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 shrink-0">
         {/* Timeframe Selector Pills */}
         <div className="flex items-center rounded-md border border-black bg-[#f8f9fa] p-1 shadow-neo-sm">
           {TIMEFRAMES.map((tf) => {
@@ -68,11 +76,12 @@ export function ReportsHeader({
 
         {/* Primary CTA button */}
         <Button
+          size="sm"
           onClick={onOpenExportModal}
-          className="border-[1.5px] border-black bg-[#543afd] text-white shadow-neo hover:bg-[#462ee0] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          className="h-9 border-[1.5px] border-black bg-[#543afd] text-white font-mono text-xs font-bold shadow-neo-sm hover:bg-[#462ee0] active:translate-x-[1px] active:translate-y-[1px]"
         >
-          <Download className="mr-2 h-4 w-4" />
-          Export Data
+          <Download className="mr-1.5 h-3.5 w-3.5" />
+          {language === "id" ? "Ekspor Data" : "Export Data"}
         </Button>
       </div>
     </div>
