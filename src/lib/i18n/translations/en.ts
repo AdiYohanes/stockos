@@ -50,7 +50,7 @@ export const enTranslations: Translations = {
   dashboard: {
     title: "Operational Overview",
     subtitle: "Monitor stock health, item movements, and warehouse metrics in real-time.",
-    badgeText: "SYSTEM ONLINE",
+    badgeText: "LIVE",
     totalProducts: "Total Products",
     lowStockAlerts: "Low Stock Alerts",
     totalWarehouses: "Active Warehouses",

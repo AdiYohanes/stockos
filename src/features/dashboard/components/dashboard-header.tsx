@@ -40,8 +40,8 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
   return (
     <header className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       {/* Title + Meta */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-2.5 shrink-0">
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {t.nav.dashboard}
           </h1>
@@ -50,15 +50,18 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             {t.dashboard.badgeText}
           </span>
         </div>
-        <span className="hidden sm:inline text-muted-foreground/30 text-base">•</span>
-        <p className="text-xs sm:text-sm text-muted-foreground">
+        <span className="hidden sm:inline text-muted-foreground/30 text-base shrink-0">•</span>
+        <p
+          className="text-xs sm:text-sm text-muted-foreground truncate"
+          title={`${welcomeText}${t.dashboard.subtitle}`}
+        >
           {welcomeText}
           {t.dashboard.subtitle}
         </p>
       </div>
 
       {/* Quick Actions & Refresh */}
-      <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto max-w-full pb-0.5 sm:pb-0">
+      <div className="flex flex-nowrap items-center gap-2 shrink-0 self-start sm:self-auto">
         <AddProductModal>
           <Button
             variant="outline"
@@ -109,7 +112,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
           variant="ghost"
           size="sm"
           onClick={handleRefresh}
-          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground whitespace-nowrap"
           aria-label="Refresh dashboard data"
         >
           <RefreshCw

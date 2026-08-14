@@ -49,8 +49,9 @@ export const idTranslations: Translations = {
   },
   dashboard: {
     title: "Ringkasan Operasional",
-    subtitle: "Pantau kesehatan stok, aktivitas barang, dan metrik gudang secara real-time.",
-    badgeText: "SISTEM AKTIF",
+    subtitle:
+      "Pantau kesehatan stok, pergerakan barang & metrik gudang real-time.",
+    badgeText: "LIVE",
     totalProducts: "Total Produk",
     lowStockAlerts: "Peringatan Stok Rendah",
     totalWarehouses: "Gudang Aktif",
@@ -70,7 +71,8 @@ export const idTranslations: Translations = {
   },
   products: {
     title: "Katalog Produk",
-    subtitle: "Kelola master data produk, SKU, kategori, dan batas minimum persediaan.",
+    subtitle:
+      "Kelola master data produk, SKU, kategori, dan batas minimum persediaan.",
     badgeText: "MASTER DATA",
     addProduct: "Tambah Produk Baru",
     editProduct: "Edit Produk",
@@ -105,7 +107,8 @@ export const idTranslations: Translations = {
   },
   inventory: {
     title: "Stok Inventaris",
-    subtitle: "Pantau tingkat persediaan, alokasi stok, dan histori penyesuaian barang.",
+    subtitle:
+      "Pantau tingkat persediaan, alokasi stok, dan histori penyesuaian barang.",
     badgeText: "KONTROL STOK",
     adjustStock: "Penyesuaian Stok",
     batchCode: "Kode Batch",
@@ -125,7 +128,8 @@ export const idTranslations: Translations = {
   },
   warehouses: {
     title: "Manajemen Gudang",
-    subtitle: "Kelola lokasi penyimpanan, kapasitas fisik, dan penanggung jawab lokasi.",
+    subtitle:
+      "Kelola lokasi penyimpanan, kapasitas fisik, dan penanggung jawab lokasi.",
     badgeText: "LOKASI FISIK",
     addWarehouse: "Tambah Gudang",
     editWarehouse: "Edit Gudang",
@@ -139,7 +143,8 @@ export const idTranslations: Translations = {
   },
   suppliers: {
     title: "Mitra Pemasok",
-    subtitle: "Kelola direktori supplier, kontak penanggung jawab, dan statistik pengiriman.",
+    subtitle:
+      "Kelola direktori supplier, kontak penanggung jawab, dan statistik pengiriman.",
     badgeText: "MITRA PABRIK",
     addSupplier: "Tambah Pemasok",
     editSupplier: "Edit Pemasok",
@@ -153,7 +158,8 @@ export const idTranslations: Translations = {
   },
   reports: {
     title: "Laporan & Analitik",
-    subtitle: "Analisis nilai valur persediaan, pergerakan barang, dan item kritis.",
+    subtitle:
+      "Analisis nilai valur persediaan, pergerakan barang, dan item kritis.",
     badgeText: "ANALITIK",
     tabValuation: "Valuasi Stok",
     tabMovement: "Pergerakan Stok",
@@ -166,7 +172,8 @@ export const idTranslations: Translations = {
   },
   settings: {
     title: "Pengaturan Sistem",
-    subtitle: "Konfigurasi preferensi toko, profil pengguna, notifikasi, dan keamanan.",
+    subtitle:
+      "Konfigurasi preferensi toko, profil pengguna, notifikasi, dan keamanan.",
     badgeText: "KONFIGURASI",
     tabGeneral: "Umum & Toko",
     tabProfile: "Profil Akun",

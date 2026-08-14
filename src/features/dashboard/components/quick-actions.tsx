@@ -27,7 +27,7 @@ export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps
 
   return (
     <div className="relative">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-stretch">
         {actions.map((action) => {
           const iconConfig = getActionIcon(action.icon);
           const IconComponent = iconConfig.icon;
@@ -37,31 +37,39 @@ export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps
               key={action.id}
               type="button"
               onClick={() => handleActionClick(action.title)}
-              className="group flex items-center gap-2.5 rounded-lg border border-border/70 bg-card p-2.5 text-left transition-all duration-150 hover:border-primary/40 hover:bg-muted/30 hover:shadow-xs active:scale-[0.99] cursor-pointer"
+              className="group flex items-start gap-2.5 rounded-lg border border-border/70 bg-card p-2.5 text-left transition-all duration-200 ease-in-out hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] cursor-pointer h-full"
             >
               <div
                 className={cn(
-                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 transition-colors",
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 transition-transform duration-200 group-hover:scale-110 mt-0.5",
                   iconConfig.wrapperClass
                 )}
               >
                 <IconComponent className={cn("h-3.5 w-3.5", iconConfig.iconClass)} />
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                    {action.title}
-                  </span>
-                  {action.badge && (
-                    <span className="text-[9px] font-medium text-muted-foreground uppercase">
-                      {action.badge}
+              <div className="min-w-0 flex-1 flex flex-col justify-between h-full cursor-pointer">
+                <div>
+                  <div className="flex items-center justify-between gap-1">
+                    <span
+                      className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors duration-200 truncate cursor-pointer"
+                      title={action.title}
+                    >
+                      {action.title}
                     </span>
-                  )}
+                    {action.badge && (
+                      <span className="text-[9px] font-medium text-muted-foreground uppercase shrink-0">
+                        {action.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5 cursor-pointer"
+                    title={action.description}
+                  >
+                    {action.description}
+                  </p>
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {action.description}
-                </p>
               </div>
             </button>
           );
