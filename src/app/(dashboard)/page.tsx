@@ -15,7 +15,6 @@ const StockMovementChart = dynamic(
       (mod) => mod.StockMovementChart
     ),
   {
-    ssr: false,
     loading: () => (
       <div className="flex h-[380px] w-full flex-col justify-between rounded-lg border border-border bg-card p-5 shadow-sm animate-pulse">
         <div className="h-6 w-40 rounded bg-muted"></div>
