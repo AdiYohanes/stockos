@@ -1,13 +1,30 @@
+import dynamic from "next/dynamic";
 import { getMockAuthState } from "@/features/auth/mock-auth";
 import {
   DashboardHeader,
   OverviewCards,
-  StockMovementChart,
   InventoryHealth,
   NeedAttentionTable,
   TopMovingProducts,
   MOCK_OVERVIEW_METRICS,
 } from "@/features/dashboard";
+
+const StockMovementChart = dynamic(
+  () =>
+    import("@/features/dashboard/components/stock-movement-chart").then(
+      (mod) => mod.StockMovementChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[380px] w-full flex-col justify-between rounded-lg border border-border bg-card p-5 shadow-sm animate-pulse">
+        <div className="h-6 w-40 rounded bg-muted"></div>
+        <div className="h-[260px] w-full rounded bg-muted/40"></div>
+        <div className="h-4 w-56 rounded bg-muted/60"></div>
+      </div>
+    ),
+  }
+);
 
 export const metadata = {
   title: "Dashboard | StockOS",
