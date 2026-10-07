@@ -11,7 +11,7 @@ function IndonesiaFlag({ className }: { className?: string }) {
       viewBox="0 0 20 14"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn("h-3.5 w-5 rounded-[2px] border border-black/90 overflow-hidden shrink-0 shadow-xs", className)}
+      className={cn("h-3.5 w-5 rounded-[2px] border border-slate-300 dark:border-slate-700 overflow-hidden shrink-0", className)}
     >
       <rect width="20" height="7" fill="#E11D48" />
       <rect y="7" width="20" height="7" fill="#FFFFFF" />
@@ -23,7 +23,7 @@ function UKFlag({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 60 30"
-      className={cn("h-3.5 w-5 rounded-[2px] border border-black/90 overflow-hidden shrink-0 shadow-xs", className)}
+      className={cn("h-3.5 w-5 rounded-[2px] border border-slate-300 dark:border-slate-700 overflow-hidden shrink-0", className)}
     >
       <clipPath id="s">
         <path d="M0,0 v30 h60 v-30 z" />
@@ -54,7 +54,7 @@ export function LanguageToggle() {
       variant="outline"
       size="sm"
       onClick={toggleLanguage}
-      className="h-8 gap-2 border-[1.5px] border-black bg-white px-2.5 font-mono text-xs font-bold uppercase tracking-wider text-foreground shadow-neo-sm transition-all hover:-translate-x-[1px] hover:-translate-y-[1px] hover:bg-slate-100 hover:shadow-neo active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+      className="h-8 gap-1.5 px-2.5 font-mono tabular-nums text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
       title={language === "id" ? "Switch to English" : "Ganti ke Bahasa Indonesia"}
       aria-label="Toggle language"
     >

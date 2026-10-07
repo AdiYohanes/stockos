@@ -79,31 +79,34 @@ export function ProductsContainer() {
         onSelectStatus={setStatus}
       />
 
-      <ProductsToolbar
-        filterState={filterState}
-        metrics={metrics}
-        hasActiveFilters={hasActiveFilters}
-        onSearchChange={setSearchQuery}
-        onCategoryChange={setCategory}
-        onStatusChange={setStatus}
-        onWarehouseChange={setWarehouse}
-        onSortChange={setSorting}
-        onResetFilters={resetFilters}
-      />
+      {/* Unified Search, Filter, and Table Ledger Surface */}
+      <div className="rounded-md border border-border bg-card overflow-hidden">
+        <ProductsToolbar
+          filterState={filterState}
+          metrics={metrics}
+          hasActiveFilters={hasActiveFilters}
+          onSearchChange={setSearchQuery}
+          onCategoryChange={setCategory}
+          onStatusChange={setStatus}
+          onWarehouseChange={setWarehouse}
+          onSortChange={setSorting}
+          onResetFilters={resetFilters}
+        />
 
-      <ProductsTable
-        products={paginatedProducts}
-        totalCount={totalFilteredCount}
-        filterState={filterState}
-        hasActiveFilters={hasActiveFilters}
-        onPageChange={setPage}
-        onResetFilters={resetFilters}
-        onViewDetails={setSelectedProduct}
-        onEdit={setProductToEdit}
-        onDelete={setProductToDelete}
-        onQuickMovement={handleOpenQuickMovement}
-        onAddProductClick={() => setIsAddModalOpen(true)}
-      />
+        <ProductsTable
+          products={paginatedProducts}
+          totalCount={totalFilteredCount}
+          filterState={filterState}
+          hasActiveFilters={hasActiveFilters}
+          onPageChange={setPage}
+          onResetFilters={resetFilters}
+          onViewDetails={setSelectedProduct}
+          onEdit={setProductToEdit}
+          onDelete={setProductToDelete}
+          onQuickMovement={handleOpenQuickMovement}
+          onAddProductClick={() => setIsAddModalOpen(true)}
+        />
+      </div>
 
       {selectedProduct && (
         <ProductDetailSheet

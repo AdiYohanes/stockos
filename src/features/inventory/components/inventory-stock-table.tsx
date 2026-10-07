@@ -1,17 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  SlidersHorizontal,
-  Plus,
-  Minus,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  MapPin,
-  PackageSearch,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 import type { InventoryFilterState, InventoryItem } from "../types";
 
@@ -42,287 +32,210 @@ export function InventoryStockTable({
   const startIndex = (filterState.page - 1) * filterState.pageSize + 1;
   const endIndex = Math.min(filterState.page * filterState.pageSize, totalCount);
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
-
   const getStatusBadge = (item: InventoryItem) => {
     switch (item.status) {
       case "in_stock":
+      case "overstocked":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            IN STOCK
+          <span className="bg-acid border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Optimal
           </span>
         );
       case "low_stock":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-            LOW STOCK
+          <span className="bg-orange-400 border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Low Stock
           </span>
         );
       case "out_of_stock":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-rose-300 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
-            OUT OF STOCK
+          <span className="bg-ink text-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Critical
           </span>
         );
-      case "overstocked":
+      default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-blue-300 bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-blue-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            OVERSTOCKED
+          <span className="bg-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            {item.status}
           </span>
         );
     }
   };
 
+  const getStockValueColor = (item: InventoryItem) => {
+    switch (item.status) {
+      case "out_of_stock":
+        return "text-red-600";
+      case "low_stock":
+        return "text-orange-700";
+      default:
+        return "text-ink";
+    }
+  };
+
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-white shadow-none overflow-hidden">
-      {/* Table Container */}
+    <div className="flex flex-col bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-slate-50/80 font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <th className="py-3 px-4">SKU / Code</th>
-              <th className="py-3 px-4 min-w-[200px]">Product & Location</th>
-              <th className="py-3 px-4">Warehouse</th>
-              <th className="py-3 px-4 min-w-[160px]">Stock Health</th>
-              <th className="py-3 px-4 text-right">On Hand</th>
-              <th className="py-3 px-4 text-right">Available</th>
-              <th className="py-3 px-4 text-right">Valuation</th>
-              <th className="py-3 px-4 text-center">Actions</th>
+        <table className="w-full min-w-[1000px] text-left">
+          <thead className="bg-paper border-b-[3px] border-ink font-mono text-[10px] uppercase tracking-widest">
+            <tr>
+              <th className="px-5 py-4">SKU</th>
+              <th className="px-5 py-4">Product Name</th>
+              <th className="px-5 py-4">Warehouse</th>
+              <th className="px-5 py-4 text-right">Current Stock</th>
+              <th className="px-5 py-4 text-right">Min Level</th>
+              <th className="px-5 py-4">Status</th>
+              <th className="px-5 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border text-xs">
+          <tbody className="divide-y-[2px] divide-black/10">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center">
+                <td colSpan={7} className="py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                      <PackageSearch className="h-5 w-5" />
-                    </div>
-                    <p className="font-heading font-semibold text-foreground text-sm">
-                      No matching inventory items found
+                    <p className="font-display font-bold uppercase text-ink text-lg mt-4">
+                      No matching items
                     </p>
-                    <p className="font-sans text-xs text-muted-foreground max-w-sm">
-                      Try adjusting your search query, status filters, or warehouse selection.
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 max-w-sm">
+                      Try adjusting your search or filters
                     </p>
                     {hasActiveFilters && (
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <button
                         onClick={onResetFilters}
-                        className="mt-2 text-xs border-slate-300"
+                        className="mt-4 press bg-acid border-[3px] border-ink shadow-hard-sm px-4 py-2 font-display font-bold uppercase text-xs"
                       >
-                        Clear all filters
-                      </Button>
+                        Clear Filters
+                      </button>
                     )}
                   </div>
                 </td>
               </tr>
             ) : (
-              items.map((item) => {
-                const stockRatio = Math.min(100, Math.round((item.currentStock / item.maxStock) * 100));
-                const totalValue = item.currentStock * item.unitCost;
-
-                return (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
-                    onClick={() => onSelectItem(item)}
+              items.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-acid/10 cursor-pointer"
+                  onClick={() => onSelectItem(item)}
+                >
+                  <td className="px-5 py-4 font-mono text-xs font-bold text-ink">
+                    {item.sku}
+                  </td>
+                  <td className="px-5 py-4 text-ink">
+                    <p className="font-display font-bold uppercase text-sm">
+                      {item.name}
+                    </p>
+                    <p className="font-mono text-[9px] opacity-45">
+                      {item.category}
+                    </p>
+                  </td>
+                  <td className="px-5 py-4 font-mono text-xs text-ink">
+                    {item.warehouse}
+                  </td>
+                  <td
+                    className={cn(
+                      "px-5 py-4 text-right font-display font-[900]",
+                      getStockValueColor(item)
+                    )}
                   >
-                    {/* 1. SKU */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-foreground">
-                      <span className="inline-block px-1.5 py-0.5 rounded-sm bg-slate-100 text-slate-800 border border-slate-300 text-[11px] group-hover:border-black transition-colors">
-                        {item.sku}
-                      </span>
-                    </td>
-
-                    {/* 2. Name & Bin Tag */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-heading font-semibold text-foreground group-hover:text-[#543afd] transition-colors">
-                          {item.name}
-                        </span>
-                        <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                          <span>{item.category}</span>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-1 py-0.2 rounded-sm border border-slate-200">
-                            <MapPin className="h-2.5 w-2.5" />
-                            {item.locationBin}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* 3. Warehouse */}
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-700">
-                      {item.warehouse}
-                    </td>
-
-                    {/* 4. Stock Health Gauge */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          {getStatusBadge(item)}
-                          <span className="font-mono text-[10px] text-muted-foreground">
-                            Min: {item.minStock}
-                          </span>
-                        </div>
-                        {/* Progress Bar */}
-                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200">
-                          <div
-                            className={cn(
-                              "h-full rounded-full transition-all duration-300",
-                              item.status === "out_of_stock" && "bg-rose-500",
-                              item.status === "low_stock" && "bg-amber-500",
-                              item.status === "in_stock" && "bg-emerald-500",
-                              item.status === "overstocked" && "bg-blue-500"
-                            )}
-                            style={{ width: `${Math.max(4, stockRatio)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* 5. On Hand */}
-                    <td className="py-3.5 px-4 text-right font-mono">
-                      <div className="font-bold text-foreground">
-                        {item.currentStock.toLocaleString("id-ID")}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground font-sans">{item.unit}</div>
-                    </td>
-
-                    {/* 6. Available */}
-                    <td className="py-3.5 px-4 text-right font-mono">
-                      <div className={cn("font-bold", item.availableStock === 0 ? "text-rose-600" : "text-emerald-700")}>
-                        {item.availableStock.toLocaleString("id-ID")}
-                      </div>
-                      {item.reservedStock > 0 && (
-                        <div className="text-[10px] text-amber-600 font-mono">
-                          ({item.reservedStock} resv)
-                        </div>
-                      )}
-                    </td>
-
-                    {/* 7. Valuation */}
-                    <td className="py-3.5 px-4 text-right font-mono">
-                      <div className="font-semibold text-foreground">
-                        {formatCurrency(totalValue)}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        @{formatCurrency(item.unitCost)}
-                      </div>
-                    </td>
-
-                    {/* 8. Contextual Actions */}
-                    <td
-                      className="py-3.5 px-4 text-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-center gap-1">
-                        {/* Quick Stock In */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onQuickMove(item, "in")}
-                          title="Stock In (+)"
-                          className="h-7 w-7 p-0 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </Button>
-
-                        {/* Quick Stock Out */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onQuickMove(item, "out")}
-                          disabled={item.currentStock === 0}
-                          title="Stock Out (-)"
-                          className="h-7 w-7 p-0 text-rose-700 hover:bg-rose-50 hover:text-rose-800 disabled:opacity-30"
-                        >
-                          <Minus className="h-3.5 w-3.5" />
-                        </Button>
-
-                        {/* Adjust Stock */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onAdjustItem(item)}
-                          title="Adjust Stock"
-                          className="h-7 w-7 p-0 text-slate-700 hover:bg-slate-100 hover:text-black"
-                        >
-                          <SlidersHorizontal className="h-3.5 w-3.5" />
-                        </Button>
-
-                        {/* Inspect Details */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onSelectItem(item)}
-                          title="View Details"
-                          className="h-7 w-7 p-0 text-slate-500 hover:bg-slate-100 hover:text-foreground"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+                    {item.currentStock.toLocaleString("id-ID")}
+                  </td>
+                  <td className="px-5 py-4 text-right font-mono text-xs text-ink">
+                    {item.minStock}
+                  </td>
+                  <td className="px-5 py-4">{getStatusBadge(item)}</td>
+                  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => onAdjustItem(item)}
+                        title="Adjust Stock"
+                        className="press w-8 h-8 bg-white border-2 border-ink shadow-hard-sm flex items-center justify-center text-ink"
+                      >
+                        <Icon icon="ph:pencil-simple-bold" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => onSelectItem(item)}
+                        title="View Details"
+                        className="press w-8 h-8 bg-white border-2 border-ink shadow-hard-sm flex items-center justify-center text-ink"
+                      >
+                        <Icon icon="ph:eye-bold" className="text-lg" />
+                      </button>
+                      <button
+                        title="Delete"
+                        className="press w-8 h-8 bg-ink text-acid border-2 border-ink shadow-hard-sm flex items-center justify-center"
+                      >
+                        <Icon icon="ph:trash-bold" className="text-lg" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Footer */}
       {totalCount > 0 && (
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-border px-4 py-3 bg-slate-50/50">
-          <div className="font-mono text-xs text-muted-foreground">
-            Showing <span className="font-bold text-foreground">{startIndex}</span> to{" "}
-            <span className="font-bold text-foreground">{endIndex}</span> of{" "}
-            <span className="font-bold text-foreground">{totalCount}</span> items
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
+        <div className="border-t-[3px] border-ink bg-paper p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 text-ink">
+            Showing {startIndex}-{endIndex} of {totalCount.toLocaleString("id-ID")} items
+          </span>
+          <div className="flex items-center gap-2 text-ink">
+            <button
               onClick={() => onPageChange(filterState.page - 1)}
               disabled={filterState.page <= 1}
-              className="h-8 gap-1 px-2.5 text-xs border-slate-300 font-mono disabled:opacity-40"
+              className="press px-3 py-2 bg-white border-[3px] border-ink shadow-hard-sm font-mono text-[10px] uppercase font-bold disabled:opacity-50"
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              <span>Prev</span>
-            </Button>
+              Previous
+            </button>
 
-            <span className="font-mono text-xs text-slate-700 px-1">
-              Page {filterState.page} of {totalPages}
-            </span>
+            {/* Simulated Pagination Numbers for visual match with draft */}
+            {filterState.page > 1 && (
+              <button
+                onClick={() => onPageChange(1)}
+                className={cn(
+                  "px-3 py-2 border-[3px] border-ink font-mono text-[10px] font-bold",
+                  1 === filterState.page ? "bg-ink text-paper" : "press bg-white shadow-hard-sm"
+                )}
+              >
+                1
+              </button>
+            )}
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
+            {filterState.page > 2 && (
+              <span className="font-mono text-xs">...</span>
+            )}
+
+            <button
+              className={cn(
+                "px-3 py-2 border-[3px] border-ink font-mono text-[10px] font-bold",
+                "bg-ink text-paper"
+              )}
+            >
+              {filterState.page}
+            </button>
+
+            {filterState.page < totalPages - 1 && (
+              <span className="font-mono text-xs">...</span>
+            )}
+
+            {filterState.page < totalPages && (
+              <button
+                onClick={() => onPageChange(totalPages)}
+                className={cn(
+                  "px-3 py-2 border-[3px] border-ink font-mono text-[10px] font-bold press bg-white shadow-hard-sm"
+                )}
+              >
+                {totalPages}
+              </button>
+            )}
+
+            <button
               onClick={() => onPageChange(filterState.page + 1)}
               disabled={filterState.page >= totalPages}
-              className="h-8 gap-1 px-2.5 text-xs border-slate-300 font-mono disabled:opacity-40"
+              className="press px-3 py-2 bg-white border-[3px] border-ink shadow-hard-sm font-mono text-[10px] uppercase font-bold disabled:opacity-50"
             >
-              <span>Next</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+              Next
+            </button>
           </div>
         </div>
       )}

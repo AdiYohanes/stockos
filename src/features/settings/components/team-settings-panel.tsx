@@ -5,6 +5,7 @@ import { TeamMember, TeamRole } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,6 +24,7 @@ export function TeamSettingsPanel({
   onRemoveMember,
   onUpdateRole,
 }: TeamSettingsPanelProps) {
+  const { language, t } = useI18n();
   const [isInviteOpen, setIsInviteOpen] = React.useState(false);
   const [newMemberName, setNewMemberName] = React.useState("");
   const [newMemberEmail, setNewMemberEmail] = React.useState("");
@@ -72,7 +74,7 @@ export function TeamSettingsPanel({
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Total Tim Akses
+                {language === "id" ? "Total Tim Akses" : "Total Team Members"}
               </p>
               <h3 className="font-heading text-2xl font-bold text-slate-900 mt-1">{totalMembers}</h3>
             </div>
@@ -86,7 +88,7 @@ export function TeamSettingsPanel({
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Admin Sistem
+                {language === "id" ? "Admin Sistem" : "System Administrators"}
               </p>
               <h3 className="font-heading text-2xl font-bold text-slate-900 mt-1">{activeAdmins}</h3>
             </div>
@@ -100,7 +102,7 @@ export function TeamSettingsPanel({
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Undangan Pending
+                {language === "id" ? "Undangan Pending" : "Pending Invitations"}
               </p>
               <h3 className="font-heading text-2xl font-bold text-slate-900 mt-1">{pendingInvites}</h3>
             </div>
@@ -116,10 +118,10 @@ export function TeamSettingsPanel({
         <CardHeader className="border-b border-slate-100 pb-4 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <Users className="h-5 w-5 text-[#543afd]" /> Anggota Tim & Peranan Operasional
+              <Users className="h-5 w-5 text-[#543afd]" /> {language === "id" ? "Anggota Tim & Peranan Operasional" : "Team Members & Operational Roles"}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
-              Pengaturan peranan hak akses staf gudang, manajer inventaris, dan administrator.
+              {language === "id" ? "Pengaturan peranan hak akses staf gudang, manajer inventaris, dan administrator." : "Role permissions for warehouse staff, inventory managers, and system admins."}
             </CardDescription>
           </div>
 
@@ -128,7 +130,7 @@ export function TeamSettingsPanel({
             onClick={() => setIsInviteOpen(true)}
             className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0] active:translate-y-px"
           >
-            <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Undang Anggota Tim
+            <UserPlus className="mr-1.5 h-3.5 w-3.5" /> {language === "id" ? "Undang Anggota Tim" : "Invite Team Member"}
           </Button>
         </CardHeader>
 
@@ -136,11 +138,11 @@ export function TeamSettingsPanel({
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">Nama & Email</TableHead>
-                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">Peranan (Role)</TableHead>
-                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">Status</TableHead>
-                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">Aktivitas Terakhir</TableHead>
-                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600 text-right">Aksi</TableHead>
+                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">{language === "id" ? "Nama & Email" : "Name & Email"}</TableHead>
+                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">{language === "id" ? "Peranan (Role)" : "Role"}</TableHead>
+                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">{t.common.status}</TableHead>
+                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600">{language === "id" ? "Aktivitas Terakhir" : "Last Active"}</TableHead>
+                <TableHead className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-600 text-right">{t.common.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -167,10 +169,10 @@ export function TeamSettingsPanel({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Admin">Admin (Akses Penuh)</SelectItem>
+                        <SelectItem value="Admin">{language === "id" ? "Admin (Akses Penuh)" : "Admin (Full Access)"}</SelectItem>
                         <SelectItem value="Warehouse Manager">Warehouse Manager</SelectItem>
                         <SelectItem value="Inventory Clerk">Inventory Clerk</SelectItem>
-                        <SelectItem value="Viewer">Viewer (Lihat Saja)</SelectItem>
+                        <SelectItem value="Viewer">{language === "id" ? "Viewer (Lihat Saja)" : "Viewer (Read Only)"}</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -178,11 +180,11 @@ export function TeamSettingsPanel({
                   <TableCell className="py-3">
                     {member.status === "Active" ? (
                       <span className="inline-flex items-center gap-1 rounded-sm border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800 uppercase tracking-wider">
-                        <CheckCircle className="h-3 w-3 text-emerald-600" /> Aktif
+                        <CheckCircle className="h-3 w-3 text-emerald-600" /> {language === "id" ? "Aktif" : "Active"}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-800 uppercase tracking-wider">
-                        <Clock className="h-3 w-3 text-amber-600" /> Undangan
+                        <Clock className="h-3 w-3 text-amber-600" /> {language === "id" ? "Undangan" : "Invited"}
                       </span>
                     )}
                   </TableCell>
@@ -198,7 +200,7 @@ export function TeamSettingsPanel({
                       onClick={() => onRemoveMember(member.id)}
                       disabled={members.length <= 1}
                       className="h-7 px-2 text-slate-400 hover:bg-red-50 hover:text-red-700 disabled:opacity-30"
-                      title="Hapus akses anggota"
+                      title={language === "id" ? "Hapus akses anggota" : "Remove member access"}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -217,7 +219,7 @@ export function TeamSettingsPanel({
             <div className="flex items-center justify-between border-b border-border bg-purple-50 px-5 py-4">
               <div className="flex items-center gap-2 text-slate-900">
                 <UserPlus className="h-5 w-5 text-[#543afd]" />
-                <h2 className="font-heading text-base font-bold">Undang Anggota Tim Baru</h2>
+                <h2 className="font-heading text-base font-bold">{language === "id" ? "Undang Anggota Tim Baru" : "Invite New Team Member"}</h2>
               </div>
               <button
                 type="button"
@@ -231,13 +233,13 @@ export function TeamSettingsPanel({
             <form onSubmit={handleInviteSubmit} className="p-5 space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="memberName" className="text-xs font-semibold text-slate-700">
-                  Nama Lengkap
+                  {language === "id" ? "Nama Lengkap" : "Full Name"}
                 </Label>
                 <Input
                   id="memberName"
                   value={newMemberName}
                   onChange={(e) => setNewMemberName(e.target.value)}
-                  placeholder="Contoh: Rian Hidayat"
+                  placeholder={language === "id" ? "Contoh: Rian Hidayat" : "e.g. Alex Morgan"}
                   required
                   className="h-9 text-xs focus-visible:ring-[#543afd]"
                 />
@@ -245,14 +247,14 @@ export function TeamSettingsPanel({
 
               <div className="space-y-1.5">
                 <Label htmlFor="memberEmail" className="text-xs font-semibold text-slate-700">
-                  Email Operasional
+                  {language === "id" ? "Email Operasional" : "Operational Email"}
                 </Label>
                 <Input
                   id="memberEmail"
                   type="email"
                   value={newMemberEmail}
                   onChange={(e) => setNewMemberEmail(e.target.value)}
-                  placeholder="rian.hidayat@logistik.com"
+                  placeholder={language === "id" ? "rian.hidayat@logistik.com" : "alex.morgan@logistics.com"}
                   required
                   className="h-9 text-xs focus-visible:ring-[#543afd]"
                 />
@@ -260,17 +262,17 @@ export function TeamSettingsPanel({
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-700">
-                  Pilih Peranan & Hak Akses
+                  {language === "id" ? "Pilih Peranan & Hak Akses" : "Select Role & Access Permissions"}
                 </Label>
                 <Select value={newMemberRole} onValueChange={(v) => setNewMemberRole((v || "Inventory Clerk") as TeamRole)}>
                   <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">Admin (Akses Penuh Seluruh Sistem)</SelectItem>
-                    <SelectItem value="Warehouse Manager">Warehouse Manager (Transfer & Gudang)</SelectItem>
-                    <SelectItem value="Inventory Clerk">Inventory Clerk (Stok Masuk/Keluar)</SelectItem>
-                    <SelectItem value="Viewer">Viewer (Lihat Laporan & Stok)</SelectItem>
+                    <SelectItem value="Admin">{language === "id" ? "Admin (Akses Penuh Seluruh Sistem)" : "Admin (Full System Access)"}</SelectItem>
+                    <SelectItem value="Warehouse Manager">{language === "id" ? "Warehouse Manager (Transfer & Gudang)" : "Warehouse Manager (Transfers & Warehouses)"}</SelectItem>
+                    <SelectItem value="Inventory Clerk">{language === "id" ? "Inventory Clerk (Stok Masuk/Keluar)" : "Inventory Clerk (Stock In/Out)"}</SelectItem>
+                    <SelectItem value="Viewer">{language === "id" ? "Viewer (Lihat Laporan & Stok)" : "Viewer (View Reports & Stock)"}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -283,14 +285,14 @@ export function TeamSettingsPanel({
                   onClick={() => setIsInviteOpen(false)}
                   className="h-9 border-black text-xs font-semibold"
                 >
-                  Batal
+                  {t.common.cancel}
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
                   className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0]"
                 >
-                  Kirim Undangan
+                  {language === "id" ? "Kirim Undangan" : "Send Invitation"}
                 </Button>
               </div>
             </form>

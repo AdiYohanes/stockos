@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useInventory } from "../hooks/use-inventory";
 import { InventoryHeader } from "./inventory-header";
 import { InventoryMetricsView } from "./inventory-metrics";
-import { InventoryTabs } from "./inventory-tabs";
 import { InventoryToolbar } from "./inventory-toolbar";
 import { InventoryStockTable } from "./inventory-stock-table";
 import { InventoryMovementsTable } from "./inventory-movements-table";
@@ -39,11 +38,7 @@ export function InventoryContainer() {
     setTab,
     setSelectedItemId,
     setSearchQuery,
-    setWarehouse,
     setStatus,
-    setMovementType,
-    setCategory,
-    setSorting,
     setPage,
     resetFilters,
 
@@ -69,14 +64,6 @@ export function InventoryContainer() {
     targetItem: null,
   });
 
-  const warehouses = React.useMemo(() => {
-    return Array.from(new Set(items.map((i) => i.warehouse)));
-  }, [items]);
-
-  const categories = React.useMemo(() => {
-    return Array.from(new Set(items.map((i) => i.category)));
-  }, [items]);
-
   const handleOpenMovementModal = (item?: InventoryItem, type?: "in" | "out") => {
     setMovementModalState({
       open: true,
@@ -93,9 +80,10 @@ export function InventoryContainer() {
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto pb-12">
+    <div className="flex flex-col gap-0 pb-12">
       <InventoryHeader
-        totalItems={metrics.totalItems}
+        searchQuery={filterState.searchQuery}
+        onSearchChange={setSearchQuery}
         onOpenMovementModal={() => handleOpenMovementModal()}
         onOpenAdjustmentModal={() => handleOpenAdjustmentModal()}
       />
@@ -107,49 +95,32 @@ export function InventoryContainer() {
         onSelectTab={setTab}
       />
 
-      <InventoryTabs
-        activeTab={tab}
-        onTabChange={setTab}
-        stockCount={totalFilteredItemsCount}
-        movementsCount={totalFilteredMovementsCount}
-      />
+      <InventoryToolbar totalItems={metrics.totalItems} />
 
-      <InventoryToolbar
-        filterState={filterState}
-        hasActiveFilters={hasActiveFilters}
-        warehouses={warehouses}
-        categories={categories}
-        onSearchChange={setSearchQuery}
-        onWarehouseChange={setWarehouse}
-        onStatusChange={setStatus}
-        onMovementTypeChange={setMovementType}
-        onCategoryChange={setCategory}
-        onSortChange={setSorting}
-        onResetFilters={resetFilters}
-      />
-
-      {tab === "stock_levels" ? (
-        <InventoryStockTable
-          items={paginatedItems}
-          totalCount={totalFilteredItemsCount}
-          filterState={filterState}
-          hasActiveFilters={hasActiveFilters}
-          onPageChange={setPage}
-          onResetFilters={resetFilters}
-          onSelectItem={(item) => setSelectedItemId(item.id)}
-          onAdjustItem={(item) => handleOpenAdjustmentModal(item)}
-          onQuickMove={(item, moveType) => handleOpenMovementModal(item, moveType)}
-        />
-      ) : (
-        <InventoryMovementsTable
-          movements={paginatedMovements}
-          totalCount={totalFilteredMovementsCount}
-          filterState={filterState}
-          hasActiveFilters={hasActiveFilters}
-          onPageChange={setPage}
-          onResetFilters={resetFilters}
-        />
-      )}
+      <section className="bg-white border-[3px] border-ink shadow-hard-lg overflow-hidden">
+        {tab === "stock_levels" ? (
+          <InventoryStockTable
+            items={paginatedItems}
+            totalCount={totalFilteredItemsCount}
+            filterState={filterState}
+            hasActiveFilters={hasActiveFilters}
+            onPageChange={setPage}
+            onResetFilters={resetFilters}
+            onSelectItem={(item) => setSelectedItemId(item.id)}
+            onAdjustItem={(item) => handleOpenAdjustmentModal(item)}
+            onQuickMove={(item, moveType) => handleOpenMovementModal(item, moveType)}
+          />
+        ) : (
+          <InventoryMovementsTable
+            movements={paginatedMovements}
+            totalCount={totalFilteredMovementsCount}
+            filterState={filterState}
+            hasActiveFilters={hasActiveFilters}
+            onPageChange={setPage}
+            onResetFilters={resetFilters}
+          />
+        )}
+      </section>
 
       {selectedItemId && (
         <InventoryDetailSheet

@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n/context";
 
 interface TransferModalProps {
   children: React.ReactNode;
@@ -62,6 +63,7 @@ const INITIAL_FORM_DATA: TransferFormData = {
 };
 
 export function TransferModal({ children }: TransferModalProps) {
+  const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [formData, setFormData] = React.useState<TransferFormData>(INITIAL_FORM_DATA);
@@ -112,10 +114,10 @@ export function TransferModal({ children }: TransferModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Transfer Stok
+                      {t.modals.transfer.title}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Pindahkan inventaris antar gudang
+                      {t.modals.transfer.subtitle}
                     </DialogDescription>
                   </div>
                 </div>
@@ -125,7 +127,7 @@ export function TransferModal({ children }: TransferModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="transfer-product">Produk</Label>
+                      <Label htmlFor="transfer-product">{t.modals.product}</Label>
                       <select
                         id="transfer-product"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -133,7 +135,7 @@ export function TransferModal({ children }: TransferModalProps) {
                         value={formData.sku}
                         onChange={(e) => handleInputChange("sku", e.target.value)}
                       >
-                        <option value="">Pilih produk</option>
+                        <option value="">{t.modals.selectProduct}</option>
                         {MOCK_PRODUCTS.map((p) => (
                           <option key={p.sku} value={p.sku}>
                             [{p.sku}] {p.name}
@@ -143,12 +145,12 @@ export function TransferModal({ children }: TransferModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="transfer-qty">Jumlah</Label>
+                      <Label htmlFor="transfer-qty">{t.modals.quantity}</Label>
                       <Input
                         id="transfer-qty"
                         type="number"
                         min="1"
-                        placeholder="Masukkan jumlah"
+                        placeholder={t.modals.enterQuantity}
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
@@ -159,7 +161,7 @@ export function TransferModal({ children }: TransferModalProps) {
                     <div className="sm:col-span-2">
                       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
                         <div className="space-y-1.5">
-                          <Label htmlFor="transfer-from">Dari</Label>
+                          <Label htmlFor="transfer-from">{t.modals.transfer.fromLabel}</Label>
                           <select
                             id="transfer-from"
                             className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -167,7 +169,7 @@ export function TransferModal({ children }: TransferModalProps) {
                             value={formData.fromWarehouse}
                             onChange={(e) => handleInputChange("fromWarehouse", e.target.value)}
                           >
-                            <option value="">Asal</option>
+                            <option value="">{t.modals.transfer.originPlaceholder}</option>
                             {WAREHOUSES.map((wh) => (
                               <option key={wh} value={wh}>{wh}</option>
                             ))}
@@ -181,7 +183,7 @@ export function TransferModal({ children }: TransferModalProps) {
                         </div>
 
                         <div className="space-y-1.5">
-                          <Label htmlFor="transfer-to">Ke</Label>
+                          <Label htmlFor="transfer-to">{t.modals.transfer.toLabel}</Label>
                           <select
                             id="transfer-to"
                             className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -189,7 +191,7 @@ export function TransferModal({ children }: TransferModalProps) {
                             value={formData.toWarehouse}
                             onChange={(e) => handleInputChange("toWarehouse", e.target.value)}
                           >
-                            <option value="">Tujuan</option>
+                            <option value="">{t.modals.transfer.destinationPlaceholder}</option>
                             {WAREHOUSES.filter((wh) => wh !== formData.fromWarehouse).map((wh) => (
                               <option key={wh} value={wh}>{wh}</option>
                             ))}
@@ -199,11 +201,11 @@ export function TransferModal({ children }: TransferModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="transfer-notes">Catatan</Label>
+                      <Label htmlFor="transfer-notes">{t.modals.notes}</Label>
                       <textarea
                         id="transfer-notes"
                         rows={2}
-                        placeholder="Catatan transfer opsional..."
+                        placeholder={t.modals.transfer.notesPlaceholder}
                         className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -216,10 +218,10 @@ export function TransferModal({ children }: TransferModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Batal
+                    {t.common.cancel}
                   </DialogClose>
                   <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white border-black btn-neo">
-                    Simpan Transfer Stok
+                    {t.modals.transfer.submit}
                   </Button>
                 </DialogFooter>
               </form>
@@ -274,10 +276,10 @@ export function TransferModal({ children }: TransferModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Transfer Stok Berhasil Diproses!
+                  {t.modals.transfer.successTitle}
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  Inventaris telah dijadwalkan dan dipindahkan antar lokasi gudang.
+                  {t.modals.transfer.successSubtitle}
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
@@ -289,13 +291,13 @@ export function TransferModal({ children }: TransferModalProps) {
                           {submittedData.sku || "N/A"}
                         </span>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
-                          {matchedProduct?.name || "Produk Dipilih"}
+                          {matchedProduct?.name || t.modals.stockIn.selectedProduct}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-blue-600 font-mono font-bold block">
-                          Jumlah Transfer
+                          {t.modals.transfer.transferQty}
                         </span>
                         <span className="font-mono text-base font-bold text-blue-700">
                           {submittedData.qty}{" "}
@@ -310,11 +312,11 @@ export function TransferModal({ children }: TransferModalProps) {
                     <div className="flex items-center gap-2 text-xs font-mono bg-card p-2 rounded border border-border">
                       <div className="flex items-center gap-1.5 text-muted-foreground truncate">
                         <Building2 className="h-3.5 w-3.5 text-foreground shrink-0" />
-                        <span className="truncate">{submittedData.fromWarehouse || "Asal"}</span>
+                        <span className="truncate">{submittedData.fromWarehouse || t.modals.transfer.originPlaceholder}</span>
                       </div>
                       <ArrowRight className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                       <div className="flex items-center gap-1.5 text-foreground font-semibold truncate">
-                        <span className="truncate">{submittedData.toWarehouse || "Tujuan"}</span>
+                        <span className="truncate">{submittedData.toWarehouse || t.modals.transfer.destinationPlaceholder}</span>
                       </div>
                     </div>
 
@@ -335,7 +337,7 @@ export function TransferModal({ children }: TransferModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Selesai
+                    {t.modals.finish}
                   </Button>
                   <Button
                     type="button"
@@ -343,7 +345,7 @@ export function TransferModal({ children }: TransferModalProps) {
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Transfer Barang Lain
+                    {t.modals.transfer.transferAnother}
                   </Button>
                 </div>
               </div>

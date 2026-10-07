@@ -96,7 +96,7 @@ export function PODetailSheet({ po, isOpen, onClose }: PODetailSheetProps) {
                       </div>
                     ))}
                   </div>
-                  {rc.notes && <p className="text-xs italic text-muted-foreground border-t border-border pt-1">"{rc.notes}"</p>}
+                  {rc.notes && <p className="text-xs italic text-muted-foreground border-t border-border pt-1">&quot;{rc.notes}&quot;</p>}
                 </div>
               ))
             )}

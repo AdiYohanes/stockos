@@ -1,53 +1,44 @@
 "use client";
 
 import * as React from "react";
-import { Plus, ArrowLeftRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared";
-import { useI18n } from "@/lib/i18n/context";
+import { Icon } from "@iconify/react";
 
 interface WarehousesHeaderProps {
-  totalCount: number;
   onOpenCreateModal: () => void;
   onOpenTransferModal: () => void;
 }
 
 export function WarehousesHeader({
-  totalCount,
   onOpenCreateModal,
   onOpenTransferModal,
 }: WarehousesHeaderProps) {
-  const { language, t } = useI18n();
-
-  const actionButtons = (
-    <>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onOpenTransferModal}
-        className="h-9 gap-2 border-[1.5px] border-black bg-white font-medium text-xs text-foreground shadow-neo-sm hover:bg-slate-50 active:translate-x-0.5 active:translate-y-0.5 transition-all"
-      >
-        <ArrowLeftRight className="h-3.5 w-3.5" />
-        <span>{language === "id" ? "Transfer Stok" : "Transfer Stock"}</span>
-      </Button>
-
-      <Button
-        type="button"
-        onClick={onOpenCreateModal}
-        className="h-9 gap-2 bg-[#543afd] hover:bg-[#462ee0] text-white border-[1.5px] border-black font-semibold text-xs shadow-neo-sm active:translate-x-0.5 active:translate-y-0.5 transition-all"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        <span>{t.warehouses.addWarehouse}</span>
-      </Button>
-    </>
-  );
-
   return (
-    <PageHeader
-      title={t.warehouses.title}
-      badgeText={`${totalCount} ${language === "id" ? "LOKASI" : "FACILITIES"}`}
-      description={t.warehouses.subtitle}
-      actions={actionButtons}
-    />
+    <section className="flex flex-wrap items-end justify-between gap-5 mb-8">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[.18em] text-black/50 mb-2">
+          Operations / locations
+        </p>
+        <h2 className="font-display font-[900] text-[clamp(2.4rem,5vw,4.5rem)] uppercase tracking-tighter leading-[.88]">
+          Control the<br />
+          <span className="bg-acid px-2">floor.</span>
+        </h2>
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={onOpenTransferModal}
+          className="press bg-white border-[3px] border-ink shadow-hard px-4 py-3 font-display font-bold uppercase text-sm flex items-center gap-2"
+        >
+          <Icon icon="ph:arrows-left-right-bold" className="text-lg" />
+          Transfer Stock
+        </button>
+        <button
+          onClick={onOpenCreateModal}
+          className="press bg-acid border-[3px] border-ink shadow-hard px-6 py-3 font-display font-[900] uppercase text-sm flex items-center gap-2"
+        >
+          <Icon icon="ph:plus-bold" className="text-lg" />
+          Add Warehouse
+        </button>
+      </div>
+    </section>
   );
 }

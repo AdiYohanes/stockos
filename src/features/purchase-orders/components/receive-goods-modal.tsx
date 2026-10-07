@@ -34,19 +34,16 @@ export function ReceiveGoodsModal({
   onClose,
   onConfirmReceive,
 }: ReceiveGoodsModalProps) {
-  const [receivedQtyMap, setReceivedQtyMap] = React.useState<Record<string, number>>({});
+  const [receivedQtyMap, setReceivedQtyMap] = React.useState<Record<string, number>>(() => {
+    if (!po) return {};
+    const initialMap: Record<string, number> = {};
+    po.lineItems.forEach((item) => {
+      const remaining = Math.max(0, item.orderedQuantity - item.receivedQuantity);
+      initialMap[item.id] = remaining;
+    });
+    return initialMap;
+  });
   const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (po) {
-      const initialMap: Record<string, number> = {};
-      po.lineItems.forEach((item) => {
-        const remaining = Math.max(0, item.orderedQuantity - item.receivedQuantity);
-        initialMap[item.id] = remaining;
-      });
-      setReceivedQtyMap(initialMap);
-    }
-  }, [po]);
 
   if (!po) return null;
 

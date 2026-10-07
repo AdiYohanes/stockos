@@ -21,7 +21,6 @@ export function WarehousesContainer() {
   const {
     warehouses,
     filterState,
-    hasActiveFilters,
     filteredWarehouses,
     paginatedWarehouses,
     totalFilteredCount,
@@ -39,76 +38,54 @@ export function WarehousesContainer() {
     setWarehouseToDelete,
     setIsCreateModalOpen,
     setIsTransferModalOpen,
-    setSearchQuery,
-    setStatus,
-    setType,
     setViewMode,
-    setSorting,
     setPage,
-    resetFilters,
     createWarehouse,
     updateWarehouse,
     deleteWarehouse,
     transferStock,
   } = useWarehouses();
 
-  const statusCounts = React.useMemo(() => {
-    return {
-      all: warehouses.length,
-      active: metrics.activeCount,
-      maintenance: metrics.maintenanceCount,
-      full: metrics.fullCount,
-    };
-  }, [warehouses.length, metrics.activeCount, metrics.maintenanceCount, metrics.fullCount]);
-
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full">
+    <div className="flex flex-col gap-0 pb-12">
       <WarehousesHeader
-        totalCount={warehouses.length}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
         onOpenTransferModal={() => setIsTransferModalOpen(true, null)}
       />
 
       <WarehousesMetrics
         metrics={metrics}
-        selectedStatus={filterState.status}
-        onSelectStatus={setStatus}
       />
 
-      <WarehousesToolbar
-        filterState={filterState}
-        hasActiveFilters={hasActiveFilters}
-        totalFilteredCount={totalFilteredCount}
-        statusCounts={statusCounts}
-        onSearchChange={setSearchQuery}
-        onStatusChange={setStatus}
-        onTypeChange={setType}
-        onViewModeChange={setViewMode}
-        onSortChange={setSorting}
-        onResetFilters={resetFilters}
-      />
+      <section className="bg-white border-[3px] border-ink shadow-hard-lg overflow-hidden">
+        <WarehousesToolbar
+          totalCount={warehouses.length}
+          viewMode={filterState.viewMode}
+          onViewModeChange={setViewMode}
+        />
 
-      {filterState.viewMode === "grid" ? (
-        <WarehouseGridView
-          warehouses={filteredWarehouses}
-          onSelectWarehouse={(id) => setSelectedWarehouseId(id)}
-          onOpenTransferModal={(id) => setIsTransferModalOpen(true, id)}
-          onEditWarehouse={(wh) => setWarehouseToEdit(wh)}
-          onDeleteWarehouse={(wh) => setWarehouseToDelete(wh)}
-        />
-      ) : (
-        <WarehouseTableView
-          warehouses={paginatedWarehouses}
-          currentPage={filterState.page}
-          totalPages={totalPages}
-          totalFilteredCount={totalFilteredCount}
-          onPageChange={setPage}
-          onSelectWarehouse={(id) => setSelectedWarehouseId(id)}
-          onOpenTransferModal={(id) => setIsTransferModalOpen(true, id)}
-          onEditWarehouse={(wh) => setWarehouseToEdit(wh)}
-          onDeleteWarehouse={(wh) => setWarehouseToDelete(wh)}
-        />
-      )}
+        {filterState.viewMode === "grid" ? (
+          <WarehouseGridView
+            warehouses={filteredWarehouses}
+            onSelectWarehouse={(id) => setSelectedWarehouseId(id)}
+            onOpenTransferModal={(id) => setIsTransferModalOpen(true, id)}
+            onEditWarehouse={(wh) => setWarehouseToEdit(wh)}
+            onDeleteWarehouse={(wh) => setWarehouseToDelete(wh)}
+          />
+        ) : (
+          <WarehouseTableView
+            warehouses={paginatedWarehouses}
+            currentPage={filterState.page}
+            totalPages={totalPages}
+            totalFilteredCount={totalFilteredCount}
+            onPageChange={setPage}
+            onSelectWarehouse={(id) => setSelectedWarehouseId(id)}
+            onOpenTransferModal={(id) => setIsTransferModalOpen(true, id)}
+            onEditWarehouse={(wh) => setWarehouseToEdit(wh)}
+            onDeleteWarehouse={(wh) => setWarehouseToDelete(wh)}
+          />
+        )}
+      </section>
 
       {selectedWarehouseId && (
         <WarehouseDetailSheet

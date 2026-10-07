@@ -40,97 +40,76 @@ export const NAV_ITEMS: NavItem[] = [
 interface SidebarProps {
   className?: string;
   onNavigate?: () => void;
-  isMobile?: boolean;
-  onCloseMobile?: () => void;
 }
 
-export function Sidebar({ className, onNavigate, isMobile, onCloseMobile }: SidebarProps) {
+export function Sidebar({ className, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useI18n();
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-border bg-sidebar text-sidebar-foreground",
+        "hidden md:flex w-[240px] shrink-0 h-screen sticky top-0 bg-card border-r-[3px] border-border flex-col z-40",
         className
       )}
     >
       {/* Brand Header */}
-      <div className="flex h-16 items-center justify-between border-b border-border px-5">
+      <div className="p-5 border-b-[3px] border-border flex items-center gap-3">
         <Link
           href="/"
           onClick={onNavigate}
-          className="flex items-center gap-2.5 font-semibold text-sidebar-foreground transition-opacity hover:opacity-90"
+          className="flex items-center gap-3 hover:opacity-90"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white border border-black shadow-neo-sm">
-            <StockOSLogo size={20} />
+          <div className="w-10 h-10 bg-primary border-[3px] border-border shadow-hard-sm flex items-center justify-center">
+            <StockOSLogo size={20} className="text-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="font-heading text-sm font-bold tracking-tight text-foreground">StockOS</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Mini ERP</span>
+            <span className="font-heading font-[900] text-xl tracking-tighter block leading-none text-foreground uppercase">StockOS</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-foreground/80 mt-1">Mini ERP</span>
           </div>
         </Link>
-        {isMobile && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCloseMobile}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close sidebar</span>
-          </Button>
-        )}
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="px-3 py-1.5 font-mono text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Platform
-        </div>
-        <nav className="mt-1 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
-            const title = t.nav[item.titleKey];
+      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground px-3 mb-4">
+          {t.nav.platform}
+        </p>
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const Icon = item.icon;
+          const title = t.nav[item.titleKey];
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-[15px] font-medium transition-all",
-                  isActive
-                    ? "bg-[#543afd] text-white border-[1.5px] border-black shadow-neo-sm font-semibold"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-foreground active:translate-y-px"
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "h-[18px] w-[18px] shrink-0",
-                    isActive ? "text-white" : "text-slate-500"
-                  )}
-                />
-                <span>{title}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-3 px-3 py-3 border-[3px] font-heading font-bold uppercase text-xs transition-colors",
+                isActive
+                  ? "bg-primary border-border shadow-hard-sm text-primary-foreground"
+                  : "border-transparent text-foreground hover:bg-primary hover:border-border"
+              )}
+            >
+              <Icon className="h-5 w-5 shrink-0" />
+              <span>{title}</span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* Footer info */}
-      <div className="border-t border-border p-4 font-mono text-[11px] text-muted-foreground">
-        <div className="flex items-center justify-between">
-          <span>v0.1.0</span>
-          <span className="inline-flex items-center rounded-sm border border-black bg-[#dcfce7] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#15803d]">
-            Dev Mode
-          </span>
+      <div className="p-4 border-t-[3px] border-border bg-background">
+        <div className="flex items-center gap-3 px-3 py-2 font-mono tabular-nums text-[10px] font-bold uppercase tracking-widest">
+          <span className="w-2 h-2 bg-status-healthy border border-border shrink-0" />
+          <span className="text-foreground">Operational</span>
         </div>
       </div>
     </aside>
   );
 }
+

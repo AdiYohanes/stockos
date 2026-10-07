@@ -1,19 +1,23 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-inter: var(--font-inter);
   --font-archivo: var(--font-archivo);
   --font-space-grotesk: var(--font-space-grotesk);
   --font-space-mono: var(--font-space-mono);
+
+  --color-paper: #f4f1ea;
+  --color-ink: #000000;
+  --color-acid: #543AFD;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-space-grotesk), sans-serif;
   --font-mono: var(--font-space-mono), monospace;
-  --font-heading: var(--font-space-grotesk), var(--font-sans);
+  --font-heading: var(--font-archivo), sans-serif;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -22,14 +26,11 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -43,91 +44,126 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.75);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
-  --radius-2xl: calc(var(--radius) * 2);
-  --radius-3xl: calc(var(--radius) * 2.5);
-  --radius-4xl: calc(var(--radius) * 3);
+
+  --color-status-healthy: var(--status-healthy);
+  --color-status-warning: var(--status-warning);
+  --color-status-critical: var(--status-critical);
+  --color-status-transit: var(--status-transit);
+  --color-status-neutral: var(--status-neutral);
+
+  /* Square geometry everywhere */
+  --radius-xs: 0rem;
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: 0rem;
+  --radius-xl: 0rem;
+  --radius-2xl: 0rem;
+  --radius-3xl: 0rem;
+  --radius-4xl: 0rem;
+
+  --shadow-hard-sm: 5px 5px 0 #000;
+  --shadow-hard: 8px 8px 0 #000;
+  --shadow-hard-lg: 12px 12px 0 #000;
 }
 
 :root {
-  --background: #f8f9fa;
-  --foreground: #09090b;
+  /* Canvas & Surfaces */
+  --background: #f4f1ea;
+  --foreground: #000000;
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #000000;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #543afd;
+  --popover-foreground: #000000;
+
+  /* Primary Action */
+  --primary: #543AFD;
+  --primary-hover: #402AD4;
   --primary-foreground: #ffffff;
-  --secondary: #09090b;
-  --secondary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #543afd;
+
+  /* Secondary & Neutral Surfaces */
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #e5e5e5;
+  --muted-foreground: #000000;
+  --accent: #543AFD;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --border: #e2e8f0;
-  --input: #cbd5e1;
-  --ring: #543afd;
-  --chart-1: #09090b;
-  --chart-2: #543afd;
-  --chart-3: #64748b;
-  --chart-4: #94a3b8;
-  --chart-5: #cbd5e1;
-  --radius: 0.5rem;
+
+  /* Semantic Destructive: Critical / Out of Stock */
+  --destructive: #ff1744;
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Focus Rings */
+  --border: #000000;
+  --input: #000000;
+  --ring: #000000;
+
+  /* Functional Status (Semantic Only) */
+  --status-healthy: #00e676;
+  --status-warning: #ff9100;
+  --status-critical: #ff1744;
+  --status-transit: #2979ff;
+  --status-neutral: #000000;
+
+  /* Geometry: Square */
+  --radius: 0rem;
+
+  /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #09090b;
-  --sidebar-primary: #543afd;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #543AFD;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #09090b;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #543afd;
+  --sidebar-accent: #543AFD;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #000000;
+  --sidebar-ring: #000000;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Inverted Hard Neobrutalism (if needed) */
+  --background: #000000;
+  --foreground: #f4f1ea;
+  --card: #111111;
+  --card-foreground: #f4f1ea;
+  --popover: #111111;
+  --popover-foreground: #f4f1ea;
+  --primary: #543AFD;
+  --primary-hover: #604BFF;
+  --primary-foreground: #ffffff;
+  --secondary: #222222;
+  --secondary-foreground: #f4f1ea;
+  --muted: #333333;
+  --muted-foreground: #aaaaaa;
+  --accent: #543AFD;
+  --accent-foreground: #ffffff;
+  --destructive: #ff1744;
+  --destructive-foreground: #ffffff;
+  --border: #f4f1ea;
+  --input: #f4f1ea;
+  --ring: #543AFD;
+  --status-healthy: #00e676;
+  --status-warning: #ff9100;
+  --status-critical: #ff1744;
+  --status-transit: #2979ff;
+  --status-neutral: #aaaaaa;
+  --radius: 0rem;
+  --sidebar: #000000;
+  --sidebar-foreground: #f4f1ea;
+  --sidebar-primary: #543AFD;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #543AFD;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #f4f1ea;
+  --sidebar-ring: #543AFD;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    border-radius: 0 !important;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
   }
   button,
@@ -137,196 +173,159 @@
 }
 
 /* ==========================================================================
-   Hybrid Neo-SaaS Design System Tokens & Utilities (70% SaaS + 30% Neobrutal)
+   Hard Neobrutalism Utilities
    ========================================================================== */
 
-.font-inter {
-  font-family: var(--font-inter), system-ui, sans-serif;
+.grid-dots {
+  background-image: radial-gradient(circle, var(--color-ink) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.dark .grid-dots {
+  background-image: radial-gradient(circle, #f4f1ea 1px, transparent 1px);
 }
 
-.font-space-grotesk {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+.press {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.press:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+.press:active {
+  transform: translate(8px, 8px);
+  box-shadow: none;
 }
 
-.font-space-mono {
-  font-family: var(--font-space-mono), monospace;
-}
-
-.text-md {
-  font-size: 15px;
-  line-height: 22px;
-}
-
-/* Neobrutal Micro-Shadows */
-.shadow-neo-sm,
-.shadow-brutal-sm {
-  box-shadow: 2px 2px 0px #000000;
-}
-
-.shadow-neo,
-.shadow-brutal {
-  box-shadow: 3px 3px 0px #000000;
-}
-
-.shadow-neo-lg,
-.shadow-brutal-lg {
-  box-shadow: 5px 5px 0px #000000;
-}
-
-.shadow-neo-primary,
-.shadow-brutal-primary {
-  box-shadow: 2px 2px 0px #543afd, 2px 2px 0px 1px #000000;
-}
-
-.shadow-neo-primary-sm,
-.shadow-brutal-primary-sm {
-  box-shadow: 2px 2px 0px #543afd;
-}
-
-/* Interactive Tactile Press Buttons */
-.btn-neo,
-.btn-brutal {
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
-}
-.btn-neo:hover,
-.btn-brutal:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-}
-.btn-neo:active,
-.btn-brutal:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
-}
-
-.btn-neo-primary,
-.btn-brutal-primary {
-  background-color: #543afd;
-  color: #ffffff;
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
-}
-.btn-neo-primary:hover,
-.btn-brutal-primary:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-  background-color: #462ee0;
-}
-.btn-neo-primary:active,
-.btn-brutal-primary:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
-}
-
-.btn-neo-black,
-.btn-brutal-black {
-  background-color: #09090b;
-  color: #ffffff;
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
-}
-.btn-neo-black:hover,
-.btn-brutal-black:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-  background-color: #18181b;
-}
-.btn-neo-black:active,
-.btn-brutal-black:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
-}
-
-/* Input Focus */
-.input-neo,
-.input-brutal {
-  border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff;
-  color: #09090b;
-  border-radius: 0.375rem !important;
-  transition: border-color 0.1s ease, box-shadow 0.1s ease;
-}
-.input-neo:focus,
-.input-brutal:focus {
-  border-color: #000000 !important;
-  outline: none !important;
-  box-shadow: 2px 2px 0px #543afd !important;
-}
-.input-neo::placeholder,
-.input-brutal::placeholder {
-  color: rgba(0, 0, 0, 0.45);
+.input-focus:focus {
+  outline: none;
+  background: #fffef2;
+  box-shadow: 8px 8px 0 var(--color-acid), 8px 8px 0 3px var(--border);
 }
 
 /* ==========================================================================
-   Animated Checkmark Keyframes & Utilities
+   Transitional Utilities (Mapped to Hard Neobrutalism)
    ========================================================================== */
 
-@keyframes checkmark-draw-circle {
-  0% {
-    stroke-dashoffset: 160;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
+/* Tabular figures & data styling */
+.font-tabular,
+.tabular-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
-@keyframes checkmark-draw-check {
-  0% {
-    stroke-dashoffset: 50;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
+/* Single-Surface Precision Ledger Container (Now Neobrutalist Block) */
+.ledger-container {
+  border: 3px solid var(--border);
+  background-color: var(--card);
+  box-shadow: var(--shadow-hard-lg);
+  overflow: hidden;
 }
 
-@keyframes checkmark-pop {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.08);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+/* Operational Status Indicator Dots (Replaced with square blocks) */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.status-dot-healthy { background-color: var(--status-healthy); }
+.status-dot-warning { background-color: var(--status-warning); }
+.status-dot-critical { background-color: var(--status-critical); }
+.status-dot-transit { background-color: var(--status-transit); }
+.status-dot-neutral { background-color: var(--status-neutral); }
+
+.text-md {
+  font-size: 14px;
+  line-height: 20px;
 }
 
-@keyframes checkmark-ring-expand {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.4);
-    opacity: 0;
-  }
+/* Neobrutalist Shadows for Legacy Classes */
+.shadow-neo-sm, .shadow-brutal-sm { box-shadow: var(--shadow-hard-sm); }
+.shadow-neo, .shadow-brutal { box-shadow: var(--shadow-hard); }
+.shadow-neo-lg, .shadow-brutal-lg { box-shadow: var(--shadow-hard-lg); }
+
+.shadow-neo-primary, .shadow-brutal-primary { box-shadow: var(--shadow-hard); }
+.shadow-neo-primary-sm, .shadow-brutal-primary-sm { box-shadow: var(--shadow-hard-sm); }
+
+/* Flattened Action Buttons -> Neobrutalist Buttons */
+.btn-neo, .btn-brutal {
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard-sm);
+  background-color: var(--card);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+.btn-neo:hover, .btn-brutal:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+  background-color: var(--muted);
+}
+.btn-neo:active, .btn-brutal:active {
+  transform: translate(8px, 8px);
+  box-shadow: none;
 }
 
-.animate-check-circle {
-  stroke-dasharray: 160;
-  stroke-dashoffset: 160;
-  animation: checkmark-draw-circle 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+.btn-neo-primary, .btn-brutal-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard);
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-neo-primary:hover, .btn-brutal-primary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+  background-color: var(--primary-hover);
+}
+.btn-neo-primary:active, .btn-brutal-primary:active {
+  transform: translate(8px, 8px);
+  box-shadow: none;
 }
 
-.animate-check-path {
-  stroke-dasharray: 50;
-  stroke-dashoffset: 50;
-  animation: checkmark-draw-check 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.35s forwards;
+.btn-neo-black, .btn-brutal-black {
+  background-color: var(--foreground);
+  color: var(--background);
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard);
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-neo-black:hover, .btn-brutal-black:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+  background-color: var(--foreground);
+}
+.btn-neo-black:active, .btn-brutal-black:active {
+  transform: translate(8px, 8px);
+  box-shadow: none;
 }
 
-.animate-check-pop {
-  animation: checkmark-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* Inputs -> Neobrutalist Inputs */
+.input-neo, .input-brutal {
+  border: 3px solid var(--border) !important;
+  background-color: var(--card);
+  color: var(--foreground);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.input-neo:focus, .input-brutal:focus {
+  outline: none !important;
+  background-color: #fffef2;
+  box-shadow: 8px 8px 0 var(--primary), 8px 8px 0 3px var(--border) !important;
+}
+.input-neo::placeholder, .input-brutal::placeholder {
+  color: var(--muted-foreground);
 }
 
-.animate-ring-pulse {
-  animation: checkmark-ring-expand 1.2s ease-out infinite;
-}
+/* Checkmarks (keep for UI) */
+@keyframes checkmark-draw-circle { 0% { stroke-dashoffset: 160; } 100% { stroke-dashoffset: 0; } }
+@keyframes checkmark-draw-check { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }
+@keyframes checkmark-pop { 0% { transform: scale(0.6); opacity: 0; } 50% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes checkmark-ring-expand { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+
+.animate-check-circle { stroke-dasharray: 160; stroke-dashoffset: 160; animation: checkmark-draw-circle 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.animate-check-path { stroke-dasharray: 50; stroke-dashoffset: 50; animation: checkmark-draw-check 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.35s forwards; }
+.animate-check-pop { animation: checkmark-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-ring-pulse { animation: checkmark-ring-expand 1.2s ease-out infinite; }

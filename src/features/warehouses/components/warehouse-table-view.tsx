@@ -1,16 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-  Building2,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 import type { WarehouseItem, WarehouseStatus, WarehouseType } from "../types";
-import { WarehouseRowActions } from "./warehouse-row-actions";
 
 interface WarehouseTableViewProps {
   warehouses: WarehouseItem[];
@@ -35,273 +28,234 @@ export function WarehouseTableView({
   onEditWarehouse,
   onDeleteWarehouse,
 }: WarehouseTableViewProps) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
+  const startIndex = (currentPage - 1) * 10 + 1;
+  const endIndex = Math.min(currentPage * 10, totalFilteredCount);
 
   const getStatusBadge = (status: WarehouseStatus) => {
     switch (status) {
       case "active":
         return (
-          <span className="inline-flex items-center rounded-sm border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+          <span className="bg-acid border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
             Active
           </span>
         );
       case "maintenance":
         return (
-          <span className="inline-flex items-center rounded-sm border border-amber-600 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-700">
+          <span className="bg-orange-400 border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
             Maintenance
           </span>
         );
       case "full":
         return (
-          <span className="inline-flex items-center rounded-sm border border-red-600 bg-red-50 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-700">
-            Near Full
+          <span className="bg-ink text-acid border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Full
           </span>
         );
       case "inactive":
         return (
-          <span className="inline-flex items-center rounded-sm border border-slate-400 bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-600">
+          <span className="bg-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink/70">
             Inactive
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
+            {status}
           </span>
         );
     }
   };
 
-  const getTypeBadge = (type: WarehouseType) => {
-    const map: Record<WarehouseType, { label: string; text: string }> = {
-      central_hub: { label: "Central Hub", text: "text-[#543afd]" },
-      regional_depot: { label: "Regional Depot", text: "text-blue-700" },
-      cold_storage: { label: "Cold Storage", text: "text-cyan-700" },
-      fulfillment: { label: "Fulfillment", text: "text-indigo-700" },
-      transit: { label: "Transit Hub", text: "text-slate-700" },
+  const getTypeLabel = (type: WarehouseType) => {
+    const labels: Record<WarehouseType, string> = {
+      central_hub: "Central Hub",
+      regional_depot: "Regional Depot",
+      cold_storage: "Cold Storage",
+      fulfillment: "Fulfillment",
+      transit: "Transit",
     };
-
-    const config = map[type] || map.central_hub;
-    return (
-      <span className={cn("font-mono text-[10px] font-semibold", config.text)}>
-        {config.label}
-      </span>
-    );
+    return labels[type] || type;
   };
 
-  if (warehouses.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-12 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-3">
-          <Building2 className="h-6 w-6" />
-        </div>
-        <h3 className="font-heading text-base font-semibold text-foreground">
-          No warehouses found
-        </h3>
-        <p className="font-sans text-xs text-muted-foreground mt-1 max-w-sm">
-          No facilities match your active search filters.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-lg border border-border bg-white shadow-none overflow-hidden">
-      {/* High-Density Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-slate-50/80 font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <th className="py-3 px-4 w-[100px]">Code</th>
-              <th className="py-3 px-4 min-w-[180px]">Facility & Type</th>
-              <th className="py-3 px-4 min-w-[150px]">Location</th>
-              <th className="py-3 px-4 min-w-[200px]">Capacity Utilization</th>
-              <th className="py-3 px-4 min-w-[120px]">Stock Volume</th>
-              <th className="py-3 px-4 min-w-[130px]">Valuation</th>
-              <th className="py-3 px-4 min-w-[140px]">Manager</th>
-              <th className="py-3 px-4 min-w-[110px]">Status</th>
-              <th className="py-3 px-4 w-[60px] text-right">Actions</th>
+    <div className="overflow-x-auto border-t-0">
+      <table className="w-full min-w-[1100px] text-left">
+        <thead className="bg-paper border-b-[3px] border-ink font-mono text-[9px] uppercase tracking-widest text-ink">
+          <tr>
+            <th className="px-5 py-4">Facility</th>
+            <th className="px-5 py-4">Location</th>
+            <th className="px-5 py-4">Capacity Utilization</th>
+            <th className="px-5 py-4">Stock Volume</th>
+            <th className="px-5 py-4">Manager</th>
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y-[2px] divide-black/10">
+          {warehouses.length === 0 ? (
+            <tr>
+              <td colSpan={7} className="py-12 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <p className="font-display font-bold uppercase text-ink text-lg mt-4">
+                    No matching facilities
+                  </p>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 max-w-sm">
+                    Try adjusting your filters
+                  </p>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-sans">
-            {warehouses.map((wh) => {
+          ) : (
+            warehouses.map((wh) => {
               const utilPercent =
                 wh.totalCapacityUnits > 0
-                  ? Math.round((wh.usedCapacityUnits / wh.totalCapacityUnits) * 1000) / 10
+                  ? Math.round((wh.usedCapacityUnits / wh.totalCapacityUnits) * 100)
                   : 0;
               const isNearFull = utilPercent >= 90;
-              const isModerate = utilPercent >= 75 && utilPercent < 90;
 
               return (
                 <tr
                   key={wh.id}
-                  className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                  className="hover:bg-acid/10 cursor-pointer"
                   onClick={() => onSelectWarehouse(wh.id)}
                 >
-                  {/* Col 1: Code */}
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center rounded border border-black bg-black px-2 py-0.5 font-mono text-[11px] font-bold text-white shadow-neo-sm">
-                      {wh.code}
-                    </span>
-                  </td>
-
-                  {/* Col 2: Name & Type */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-col">
-                      <span className="font-heading text-xs font-bold text-foreground group-hover:text-[#543afd] transition-colors">
+                  <td className="px-5 py-4">
+                    <div className="flex flex-col text-ink">
+                      <span className="font-display font-[900] text-lg uppercase">
+                        {wh.code}
+                      </span>
+                      <span className="font-display font-bold text-sm uppercase">
                         {wh.name}
                       </span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {getTypeBadge(wh.type)}
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          • {wh.zones.length} Zones
-                        </span>
+                      <span className="font-mono text-[9px] opacity-45">
+                        {getTypeLabel(wh.type)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="flex items-start gap-2 text-ink">
+                      <Icon icon="ph:map-pin-bold" className="text-lg mt-0.5" />
+                      <div>
+                        <p className="font-display font-bold uppercase text-sm">
+                          {wh.address.city}
+                        </p>
+                        <p className="font-mono text-[9px] opacity-45">
+                          {wh.address.street}
+                        </p>
                       </div>
                     </div>
                   </td>
-
-                  {/* Col 3: Location */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1 text-slate-700">
-                      <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <span className="truncate">{wh.address.city}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-sans truncate block max-w-[150px]">
-                      {wh.address.street}
-                    </span>
-                  </td>
-
-                  {/* Col 4: Capacity Bar */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-col gap-1 w-full max-w-[180px]">
+                  <td className="px-5 py-4 w-48">
+                    <div className="flex flex-col gap-1 w-full text-ink">
                       <div className="flex items-center justify-between font-mono text-[10px]">
-                        <span className="text-muted-foreground">
-                          {wh.usedCapacityUnits.toLocaleString("id-ID")} / {wh.totalCapacityUnits.toLocaleString("id-ID")}
+                        <span className="opacity-50">
+                          {wh.usedCapacityUnits.toLocaleString("id-ID")} /{" "}
+                          {wh.totalCapacityUnits.toLocaleString("id-ID")}
                         </span>
                         <span
                           className={cn(
                             "font-bold",
-                            isNearFull
-                              ? "text-red-600"
-                              : isModerate
-                              ? "text-amber-600"
-                              : "text-[#543afd]"
+                            isNearFull ? "text-red-600" : ""
                           )}
                         >
                           {utilPercent}%
                         </span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                      <div className="h-2 w-full border-[2px] border-ink flex">
                         <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            isNearFull
-                              ? "bg-red-500"
-                              : isModerate
-                              ? "bg-amber-500"
-                              : "bg-[#543afd]"
-                          )}
-                          style={{ width: `${Math.min(100, utilPercent)}%` }}
+                          className="h-full bg-ink transition-all"
+                          style={{ width: `${utilPercent}%` }}
+                        />
+                        <div
+                          className="h-full bg-paper transition-all"
+                          style={{ width: `${100 - utilPercent}%` }}
                         />
                       </div>
                     </div>
                   </td>
-
-                  {/* Col 5: Stock Volume */}
-                  <td className="py-3 px-4 font-mono">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-foreground">
-                        {wh.usedCapacityUnits.toLocaleString("id-ID")} units
+                  <td className="px-5 py-4">
+                    <div className="flex flex-col text-ink">
+                      <span className="font-display font-[900] text-lg">
+                        {wh.usedCapacityUnits.toLocaleString("id-ID")}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="font-mono text-[9px] opacity-45">
                         {wh.totalSkusCount} SKUs stored
                       </span>
                     </div>
                   </td>
-
-                  {/* Col 6: Valuation */}
-                  <td className="py-3 px-4 font-mono font-semibold text-foreground">
-                    {formatCurrency(wh.totalValuation)}
-                  </td>
-
-                  {/* Col 7: Manager */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-300 font-mono text-[10px] font-bold text-slate-700">
-                        {wh.manager.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="flex flex-col truncate">
-                        <span className="font-medium text-foreground truncate max-w-[100px]">
-                          {wh.manager.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">
-                          {wh.manager.phone}
-                        </span>
-                      </div>
+                  <td className="px-5 py-4">
+                    <div className="flex flex-col text-ink">
+                      <span className="font-display font-bold uppercase text-sm">
+                        {wh.manager.name}
+                      </span>
+                      <span className="font-mono text-[9px] opacity-45">
+                        {wh.manager.phone}
+                      </span>
                     </div>
                   </td>
-
-                  {/* Col 8: Status */}
-                  <td className="py-3 px-4">{getStatusBadge(wh.status)}</td>
-
-                  {/* Col 9: Row Actions */}
-                  <td
-                    className="py-3 px-4 text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <WarehouseRowActions
-                      warehouse={wh}
-                      onSelectWarehouse={onSelectWarehouse}
-                      onOpenTransferModal={onOpenTransferModal}
-                      onEditWarehouse={onEditWarehouse}
-                      onDeleteWarehouse={onDeleteWarehouse}
-                    />
+                  <td className="px-5 py-4">{getStatusBadge(wh.status)}</td>
+                  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => onOpenTransferModal(wh.id)}
+                        title="Transfer Stock"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center text-ink"
+                      >
+                        <Icon icon="ph:arrows-left-right-bold" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => onEditWarehouse(wh)}
+                        title="Edit Warehouse"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center text-ink"
+                      >
+                        <Icon icon="ph:pencil-bold" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => onSelectWarehouse(wh.id)}
+                        title="View Details"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center text-ink"
+                      >
+                        <Icon icon="ph:eye-bold" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteWarehouse(wh)}
+                        title="Delete"
+                        className="press w-8 h-8 border-2 border-ink bg-ink flex items-center justify-center text-acid"
+                      >
+                        <Icon icon="ph:trash-bold" className="text-lg" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
-            })}
-          </tbody>
-        </table>
-      </div>
+            })
+          )}
+        </tbody>
+      </table>
 
-      {/* Pagination Footer */}
-      <div className="flex items-center justify-between border-t border-border px-4 py-3 bg-slate-50/50">
-        <div className="font-mono text-xs text-muted-foreground">
-          Showing <span className="font-semibold text-foreground">{warehouses.length}</span> of{" "}
-          <span className="font-semibold text-foreground">{totalFilteredCount}</span> facilities
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={currentPage <= 1}
-            onClick={() => onPageChange(currentPage - 1)}
-            className="h-8 gap-1 border-slate-300 text-xs"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Previous</span>
-          </Button>
-
-          <span className="font-mono text-xs text-muted-foreground px-2">
-            Page <strong className="text-foreground">{currentPage}</strong> of{" "}
-            <strong className="text-foreground">{totalPages}</strong>
+      {totalFilteredCount > 0 && (
+        <div className="p-4 border-t-[3px] border-ink flex items-center justify-between text-ink">
+          <span className="font-mono text-[9px] uppercase tracking-widest opacity-50">
+            Showing {startIndex}-{endIndex} of {totalFilteredCount} facilities
           </span>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={currentPage >= totalPages}
-            onClick={() => onPageChange(currentPage + 1)}
-            className="h-8 gap-1 border-slate-300 text-xs"
-          >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="press border-[2px] border-ink bg-white w-8 h-8 flex items-center justify-center disabled:opacity-50"
+            >
+              <Icon icon="ph:caret-left-bold" className="text-lg" />
+            </button>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="press border-[2px] border-ink bg-acid w-8 h-8 flex items-center justify-center disabled:opacity-50"
+            >
+              <Icon icon="ph:caret-right-bold" className="text-lg" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -172,6 +172,15 @@ The UI should operate on stable domain types.
 
 Mock data provides temporary values for those types.
 
+### Schema & Centralized Domain Types (Zod)
+
+Domain types and validation are centralized via Zod in `src/features/[feature]/schemas/`:
+
+- **Single Source of Truth**: Base entity schema defines domain structure (`export const ProductSchema = z.object({...})`).
+- **Inferred Domain Types**: Types are extracted directly via `export type Product = z.infer<typeof ProductSchema>`.
+- **Unified Validation**: The same schemas validate mock data (`Schema.array().parse(MOCK_DATA)`) and form inputs (`react-hook-form` + `@hookform/resolvers/zod`).
+- **Backward Compatibility**: `src/features/[feature]/types.ts` re-exports domain types from schemas, maintaining clean cross-feature imports.
+
 Later:
 
 ```text

@@ -8,3 +8,4 @@ export * from "./components/purchase-orders-table";
 export * from "./components/create-po-modal";
 export * from "./components/receive-goods-modal";
 export * from "./components/po-detail-sheet";
+export * from "./components/purchase-orders-activity";

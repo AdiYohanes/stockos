@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SkuBadge } from "@/components/shared/sku-badge";
 import { SlidersHorizontal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AdjustmentReason, InventoryItem } from "../types";
@@ -106,15 +107,17 @@ function StockAdjustmentForm({
             Select Inventory Item
           </Label>
           {initialItem ? (
-            <div className="p-2.5 rounded-md border border-slate-300 bg-slate-50 text-xs flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="font-heading font-semibold text-foreground">{initialItem.name}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  SKU: {initialItem.sku} • {initialItem.warehouse}
+            <div className="p-3 rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+              <div className="flex flex-col gap-1 min-w-0 pr-2">
+                <SkuBadge code={initialItem.sku} />
+                <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
+                <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
+                  Location: {initialItem.warehouse} • Bin {initialItem.locationBin}
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-foreground">
-                {initialItem.currentStock} {initialItem.unit} on hand
+              <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
+                {initialItem.currentStock} {initialItem.unit}
+                <span className="block text-[10px] font-sans text-muted-foreground font-normal">on hand</span>
               </span>
             </div>
           ) : (
@@ -126,7 +129,7 @@ function StockAdjustmentForm({
                 const nextItem = allItems.find((i) => i.id === e.target.value);
                 if (nextItem) setNewStockStr(nextItem.currentStock.toString());
               }}
-              className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-foreground focus:border-black focus:outline-none"
+              className="w-full h-9 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -138,19 +141,19 @@ function StockAdjustmentForm({
         </div>
 
         {/* 2. Current vs New Stock Comparison & Delta */}
-        <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+        <div className="grid grid-cols-2 gap-3 p-3 rounded-md bg-slate-50/60 dark:bg-slate-900/40 border border-border">
           <div>
             <span className="text-[11px] font-mono uppercase text-muted-foreground block">
               Current On-Hand
             </span>
-            <span className="font-mono text-lg font-bold text-slate-700">
-              {currentStock} <span className="text-xs font-normal text-muted-foreground">{activeItem?.unit}</span>
+            <span className="font-mono tabular-nums text-lg font-semibold text-foreground">
+              {currentStock} <span className="text-xs font-normal text-muted-foreground font-sans">{activeItem?.unit}</span>
             </span>
           </div>
 
           <div>
             <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Actual Physical Count
+              Actual Physical Count *
             </Label>
             <Input
               id="newStock"
@@ -158,19 +161,19 @@ function StockAdjustmentForm({
               min="0"
               value={newStockStr}
               onChange={(e) => setNewStockStr(e.target.value)}
-              className="h-8 text-xs font-mono font-bold bg-white border-slate-300 focus:border-black"
+              className="h-8 text-xs font-mono tabular-nums font-semibold bg-background border-border focus:border-slate-900"
             />
           </div>
 
           {/* Delta feedback */}
-          <div className="col-span-2 pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-mono">
-            <span className="text-muted-foreground">Calculated Adjustment:</span>
+          <div className="col-span-2 pt-2 border-t border-border flex items-center justify-between text-xs font-mono tabular-nums">
+            <span className="text-muted-foreground font-sans">Calculated Adjustment:</span>
             <span
               className={cn(
-                "font-bold px-2 py-0.5 rounded-sm border",
-                delta > 0 && "bg-emerald-50 text-emerald-800 border-emerald-300",
-                delta < 0 && "bg-rose-50 text-rose-800 border-rose-300",
-                delta === 0 && "bg-slate-100 text-slate-700 border-slate-300"
+                "font-medium px-2 py-0.5 rounded-sm border",
+                delta > 0 && "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
+                delta < 0 && "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
+                delta === 0 && "bg-slate-100 text-slate-700 border-border dark:bg-slate-800 dark:text-slate-300"
               )}
             >
               {delta > 0 ? `+${delta}` : delta} {activeItem?.unit || "units"}
@@ -188,7 +191,7 @@ function StockAdjustmentForm({
               id="reasonSelect"
               value={reason}
               onChange={(e) => setReason(e.target.value as AdjustmentReason)}
-              className="w-full h-9 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-medium text-foreground focus:border-black focus:outline-none"
+              className="w-full h-9 rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
             >
               <option value="cycle_count">Cycle Count Audit</option>
               <option value="damaged_goods">Damaged Goods</option>
@@ -201,14 +204,15 @@ function StockAdjustmentForm({
 
           <div className="space-y-1.5">
             <Label htmlFor="adjReference" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Reference Code
+              Reference Code *
             </Label>
             <Input
               id="adjReference"
               type="text"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="h-9 text-xs font-mono uppercase border-slate-300 focus:border-black"
+              required
+              className="h-9 text-xs font-mono tabular-nums uppercase border-border focus:border-slate-900"
             />
           </div>
         </div>
@@ -224,13 +228,13 @@ function StockAdjustmentForm({
             placeholder="e.g. Annual physical count variance in shelf A-02"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-slate-300 focus:border-black"
+            className="h-9 text-xs border-border focus:border-slate-900"
           />
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-sans flex items-center gap-2">
+          <div className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -238,15 +242,16 @@ function StockAdjustmentForm({
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="gap-2 pt-2">
+      <DialogFooter className="mt-4 pt-3 border-t border-border">
         <DialogClose
-          render={<Button type="button" variant="outline" onClick={onCancel} className="text-xs border-slate-300" />}
+          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-border hover:border-slate-400" />}
         >
           Cancel
         </DialogClose>
         <Button
           type="submit"
-          className="text-xs font-semibold bg-black hover:bg-slate-800 border-[1.5px] border-black text-white shadow-neo-sm active:translate-x-0.5 active:translate-y-0.5"
+          size="sm"
+          className="h-9 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
         >
           Apply Adjustment
         </Button>
@@ -269,13 +274,13 @@ export function StockAdjustmentModal({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md border-[1.5px] border-black p-0 shadow-neo">
+        <DialogPopup className="max-w-md overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="font-heading text-lg font-bold flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
+            <DialogTitle className="font-sans text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
               <span>Stock Adjustment & Audit</span>
             </DialogTitle>
-            <DialogDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            <DialogDescription className="font-mono tabular-nums text-xs uppercase tracking-wider text-muted-foreground">
               Reconcile physical stock count with audit reason codes
             </DialogDescription>
           </DialogHeader>

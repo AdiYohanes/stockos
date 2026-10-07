@@ -1,116 +1,82 @@
 "use client";
 
 import * as React from "react";
-import { Users, CheckCircle2, DollarSign, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { SupplierMetrics, SupplierStatus } from "../types";
+import { Icon } from "@iconify/react";
+import type { SupplierMetrics } from "../types";
 
 interface SuppliersMetricsProps {
   metrics: SupplierMetrics;
-  selectedStatus: "all" | SupplierStatus;
-  onSelectStatus: (status: "all" | SupplierStatus) => void;
-}
-
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000) {
-    return `Rp ${(amount / 1_000_000).toFixed(1)}M`;
-  }
-  if (amount >= 1_000) {
-    return `Rp ${(amount / 1_000).toFixed(0)}K`;
-  }
-  return `Rp ${amount.toLocaleString()}`;
 }
 
 export function SuppliersMetrics({
   metrics,
-  selectedStatus,
-  onSelectStatus,
 }: SuppliersMetricsProps) {
-  const cards = [
-    {
-      label: "Total Suppliers",
-      value: metrics.totalSuppliers.toString(),
-      icon: Users,
-      filterStatus: "all" as const,
-      color: "text-slate-700",
-      bgColor: "bg-slate-50",
-    },
-    {
-      label: "Active Vendors",
-      value: metrics.activeCount.toString(),
-      icon: CheckCircle2,
-      filterStatus: "active" as const,
-      color: "text-emerald-700",
-      bgColor: "bg-emerald-50",
-    },
-    {
-      label: "Total Spend",
-      value: formatCurrency(metrics.totalSpend),
-      icon: DollarSign,
-      filterStatus: null,
-      color: "text-violet-700",
-      bgColor: "bg-violet-50",
-    },
-    {
-      label: "Avg On-Time",
-      value: `${metrics.avgOnTimeDelivery}%`,
-      icon: Clock,
-      filterStatus: null,
-      color: "text-blue-700",
-      bgColor: "bg-blue-50",
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {cards.map((card) => {
-        const isClickable = card.filterStatus !== null;
-        const isSelected = isClickable && selectedStatus === card.filterStatus;
-        const Icon = card.icon;
-
-        return (
-          <button
-            key={card.label}
-            type="button"
-            disabled={!isClickable}
-            onClick={() => {
-              if (isClickable) onSelectStatus(card.filterStatus!);
-            }}
-            className={cn(
-              "group relative flex flex-col gap-2 rounded-lg border p-4 text-left transition-all",
-              isClickable && "cursor-pointer",
-              !isClickable && "cursor-default",
-              isSelected
-                ? "border-[1.5px] border-black bg-white shadow-neo-sm"
-                : "border-border bg-white hover:border-slate-300"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-md",
-                  card.bgColor
-                )}
-              >
-                <Icon className={cn("h-4 w-4", card.color)} />
-              </div>
-              {isSelected && (
-                <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary">
-                  FILTERED
-                </span>
-              )}
-            </div>
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                {card.label}
-              </p>
-              <p className="font-heading text-xl font-bold tracking-tight text-foreground mt-0.5">
-                {card.value}
-              </p>
-            </div>
-          </button>
-        );
-      })}
-    </div>
+    <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+      <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+        <div className="flex justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+            Total Vendors
+          </span>
+          <span className="w-8 h-8 bg-paper border-2 border-ink flex items-center justify-center">
+            <Icon icon="ph:users-bold" className="text-lg" />
+          </span>
+        </div>
+        <b className="font-display font-[900] text-4xl block mt-3">
+          {metrics.totalSuppliers}
+        </b>
+        <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+          <span className="font-bold">2 pending</span> compliance review
+        </div>
+      </div>
+      <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+        <div className="flex justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+            Avg Delivery Score
+          </span>
+          <span className="w-8 h-8 bg-acid border-2 border-ink flex items-center justify-center">
+            <Icon icon="ph:target-bold" className="text-lg" />
+          </span>
+        </div>
+        <b className="font-display font-[900] text-4xl block mt-3">
+          {metrics.avgOnTimeDelivery}%
+        </b>
+        <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+          <span className="font-bold">+1.2%</span> vs last month
+        </div>
+      </div>
+      <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+        <div className="flex justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+            Active Contracts
+          </span>
+          <span className="w-8 h-8 bg-white border-2 border-ink flex items-center justify-center">
+            <Icon icon="ph:file-text-bold" className="text-lg" />
+          </span>
+        </div>
+        <b className="font-display font-[900] text-4xl block mt-3">
+          {metrics.activeCount}
+        </b>
+        <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+          <span className="font-bold text-orange-700">3 expiring</span> in 30 days
+        </div>
+      </div>
+      <div className="bg-ink text-paper border-[3px] border-ink shadow-hard p-5">
+        <div className="flex justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-paper/50">
+            Total Spend (YTD)
+          </span>
+          <span className="w-8 h-8 bg-acid text-ink border-2 border-paper flex items-center justify-center">
+            <Icon icon="ph:currency-dollar-bold" className="text-lg" />
+          </span>
+        </div>
+        <b className="font-display font-[900] text-4xl text-acid block mt-3">
+          ${(metrics.totalSpend / 1000).toFixed(1)}K
+        </b>
+        <div className="mt-4 pt-3 border-t-2 border-paper/20 font-mono text-[9px] uppercase">
+          Across {metrics.totalSuppliers} suppliers
+        </div>
+      </div>
+    </section>
   );
 }

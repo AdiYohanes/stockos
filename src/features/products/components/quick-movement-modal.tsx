@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SkuBadge } from "@/components/shared/sku-badge";
 import { cn } from "@/lib/utils";
 import type { Product } from "../types";
 
@@ -75,17 +76,15 @@ function QuickMovementForm({
     <form onSubmit={handleSubmit}>
       <DialogBody className="space-y-3">
         {/* Product Info Card */}
-        <div className="rounded-lg border border-border bg-muted/40 p-3 flex items-center justify-between">
-          <div className="min-w-0 pr-2">
-            <span className="font-mono text-[10px] uppercase font-bold text-primary tracking-wider">
-              {product.sku}
-            </span>
-            <p className="font-heading font-semibold text-xs text-foreground truncate">
+        <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 flex items-center justify-between">
+          <div className="min-w-0 pr-2 space-y-1">
+            <SkuBadge code={product.sku} />
+            <p className="font-sans font-medium text-xs text-foreground truncate">
               {product.name}
             </p>
           </div>
-          <div className="text-right shrink-0 font-mono text-xs">
-            <span className="text-[10px] text-muted-foreground block">Current</span>
+          <div className="text-right shrink-0 font-mono tabular-nums text-xs">
+            <span className="text-[10px] text-muted-foreground block font-sans">Current</span>
             <strong>{product.currentStock} {product.unit}</strong>
           </div>
         </div>
@@ -103,7 +102,7 @@ function QuickMovementForm({
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             required
-            className="input-neo font-mono text-base font-bold"
+            className="h-9 font-mono tabular-nums text-sm font-semibold"
           />
         </div>
 
@@ -116,7 +115,7 @@ function QuickMovementForm({
             onChange={(e) => setReference(e.target.value)}
             placeholder="e.g. PO-2026-101"
             required
-            className="input-neo font-mono uppercase"
+            className="h-9 font-mono tabular-nums uppercase text-xs sm:text-sm"
           />
         </div>
 
@@ -128,14 +127,14 @@ function QuickMovementForm({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Brief note..."
-            className="input-neo"
+            className="h-9 text-xs sm:text-sm"
           />
         </div>
       </DialogBody>
 
       <DialogFooter className="mt-4 pt-3 border-t border-border">
         <DialogClose
-          render={<Button variant="outline" size="sm" type="button" className="btn-neo" />}
+          render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
         >
           Cancel
         </DialogClose>
@@ -143,11 +142,13 @@ function QuickMovementForm({
           type="submit"
           size="sm"
           className={cn(
-            "gap-1.5",
-            isIn ? "btn-neo bg-[#15803d] text-white hover:bg-[#166534]" : "btn-neo bg-[#b91c1c] text-white hover:bg-[#991b1b]"
+            "h-9 text-xs font-medium gap-1.5 text-white",
+            isIn
+              ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+              : "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700"
           )}
         >
-          {isIn ? <ArrowDownToLine className="h-4 w-4" /> : <ArrowUpFromLine className="h-4 w-4" />}
+          {isIn ? <ArrowDownToLine className="h-3.5 w-3.5" /> : <ArrowUpFromLine className="h-3.5 w-3.5" />}
           Confirm {isIn ? "Stock In" : "Stock Out"}
         </Button>
       </DialogFooter>
@@ -169,19 +170,21 @@ export function QuickMovementModal({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden border-2 border-black shadow-neo">
+        <DialogPopup className="max-w-md overflow-hidden">
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full border border-black shadow-neo-sm shrink-0",
-                  isIn ? "bg-[#dcfce7] text-[#15803d]" : "bg-[#fee2e2] text-[#b91c1c]"
+                  "flex h-9 w-9 items-center justify-center rounded-md border shrink-0",
+                  isIn
+                    ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+                    : "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"
                 )}
               >
-                {isIn ? <ArrowDownToLine className="h-5 w-5" /> : <ArrowUpFromLine className="h-5 w-5" />}
+                {isIn ? <ArrowDownToLine className="h-4.5 w-4.5" /> : <ArrowUpFromLine className="h-4.5 w-4.5" />}
               </div>
               <div>
-                <DialogTitle className="text-base font-bold text-foreground font-heading">
+                <DialogTitle className="text-base font-semibold text-foreground font-sans">
                   {isIn ? "Stock In (Receive Inventory)" : "Stock Out (Issue Inventory)"}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">

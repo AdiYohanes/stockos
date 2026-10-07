@@ -52,13 +52,6 @@ export function WarehouseDetailSheet({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
-  // Reset active tab when warehouse changes
-  React.useEffect(() => {
-    if (warehouse) {
-      setActiveTab("overview");
-    }
-  }, [warehouse?.id]);
-
   if (!open || !warehouse) return null;
 
   const formatCurrency = (val: number) => {

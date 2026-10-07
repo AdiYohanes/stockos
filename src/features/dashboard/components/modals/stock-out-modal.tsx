@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n/context";
 
 interface StockOutModalProps {
   children: React.ReactNode;
@@ -45,14 +46,6 @@ const MOCK_PRODUCTS = [
   { sku: "SENS-ENV-BME", name: "BME280 Sensor Module", stock: 115, unit: "pcs" },
 ];
 
-const REASONS = [
-  { value: "sale", label: "Penjualan / Pemenuhan Pesanan" },
-  { value: "usage", label: "Penggunaan Internal" },
-  { value: "damaged", label: "Rusak / Cacat" },
-  { value: "return_supplier", label: "Retur ke Pemasok" },
-  { value: "other", label: "Lainnya" },
-];
-
 const INITIAL_FORM_DATA: StockOutFormData = {
   sku: "",
   qty: "",
@@ -62,10 +55,19 @@ const INITIAL_FORM_DATA: StockOutFormData = {
 };
 
 export function StockOutModal({ children }: StockOutModalProps) {
+  const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [formData, setFormData] = React.useState<StockOutFormData>(INITIAL_FORM_DATA);
   const [submittedData, setSubmittedData] = React.useState<StockOutFormData | null>(null);
+
+  const REASONS = [
+    { value: "sale", label: t.modals.stockOut.reasons.sale },
+    { value: "usage", label: t.modals.stockOut.reasons.usage },
+    { value: "damaged", label: t.modals.stockOut.reasons.damaged },
+    { value: "return_supplier", label: t.modals.stockOut.reasons.returnSupplier },
+    { value: "other", label: t.modals.stockOut.reasons.other },
+  ];
 
   const currentStock = MOCK_PRODUCTS.find((p) => p.sku === formData.sku)?.stock;
 
@@ -115,10 +117,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Stok Keluar
+                      {t.modals.stockOut.title}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Catat pengeluaran, penjualan, atau penggunaan
+                      {t.modals.stockOut.subtitle}
                     </DialogDescription>
                   </div>
                 </div>
@@ -128,7 +130,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-product">Produk</Label>
+                      <Label htmlFor="stockout-product">{t.modals.product}</Label>
                       <select
                         id="stockout-product"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -136,7 +138,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         value={formData.sku}
                         onChange={(e) => handleInputChange("sku", e.target.value)}
                       >
-                        <option value="">Pilih produk</option>
+                        <option value="">{t.modals.selectProduct}</option>
                         {MOCK_PRODUCTS.map((p) => (
                           <option key={p.sku} value={p.sku}>
                             [{p.sku}] {p.name}
@@ -145,20 +147,20 @@ export function StockOutModal({ children }: StockOutModalProps) {
                       </select>
                       {currentStock !== undefined && (
                         <p className="text-[10px] text-muted-foreground">
-                          Stok saat ini:{" "}
+                          {t.modals.stockOut.currentStock}{" "}
                           <span className="font-mono font-bold text-foreground">{currentStock}</span>
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-qty">Jumlah</Label>
+                      <Label htmlFor="stockout-qty">{t.modals.quantity}</Label>
                       <Input
                         id="stockout-qty"
                         type="number"
                         min="1"
                         max={currentStock}
-                        placeholder="Masukkan jumlah"
+                        placeholder={t.modals.enterQuantity}
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
@@ -166,7 +168,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-reason">Alasan</Label>
+                      <Label htmlFor="stockout-reason">{t.modals.stockOut.reasonLabel}</Label>
                       <select
                         id="stockout-reason"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -174,7 +176,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         value={formData.reason}
                         onChange={(e) => handleInputChange("reason", e.target.value)}
                       >
-                        <option value="">Pilih alasan</option>
+                        <option value="">{t.modals.stockOut.selectReason}</option>
                         {REASONS.map((r) => (
                           <option key={r.value} value={r.value}>{r.label}</option>
                         ))}
@@ -182,21 +184,21 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-ref">Referensi / ID Pesanan</Label>
+                      <Label htmlFor="stockout-ref">{t.modals.stockOut.orderRefLabel}</Label>
                       <Input
                         id="stockout-ref"
-                        placeholder="contoh: SO-2026-1234"
+                        placeholder={t.modals.stockOut.orderRefPlaceholder}
                         value={formData.ref}
                         onChange={(e) => handleInputChange("ref", e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-notes">Catatan</Label>
+                      <Label htmlFor="stockout-notes">{t.modals.notes}</Label>
                       <textarea
                         id="stockout-notes"
                         rows={2}
-                        placeholder="Catatan opsional..."
+                        placeholder={t.modals.notesOptional}
                         className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -209,10 +211,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Batal
+                    {t.common.cancel}
                   </DialogClose>
                   <Button type="submit" size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-black btn-neo">
-                    Simpan Stok Keluar
+                    {t.modals.stockOut.submit}
                   </Button>
                 </DialogFooter>
               </form>
@@ -267,10 +269,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Stok Keluar Berhasil Disimpan!
+                  {t.modals.stockOut.successTitle}
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  Jumlah stok telah dikurangi dan pergerakan berhasil dicatat.
+                  {t.modals.stockOut.successSubtitle}
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
@@ -284,17 +286,17 @@ export function StockOutModal({ children }: StockOutModalProps) {
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono truncate">
                             <Tag className="h-3 w-3" />
-                            {matchedReason || "Pengeluaran"}
+                            {matchedReason || t.modals.stockOut.reasonLabel}
                           </span>
                         </div>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
-                          {matchedProduct?.name || "Produk Dipilih"}
+                          {matchedProduct?.name || t.modals.stockIn.selectedProduct}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-amber-600 font-mono font-bold block">
-                          Stok Dikurangi
+                          {t.modals.stockOut.stockDeducted}
                         </span>
                         <span className="font-mono text-base font-bold text-amber-700">
                           -{submittedData.qty}{" "}
@@ -308,7 +310,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     {submittedData.ref && (
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
                         <FileText className="h-3 w-3 text-foreground/60" />
-                        <span>Pesanan / Ref ID: <span className="font-semibold text-foreground">{submittedData.ref}</span></span>
+                        <span>Ref ID: <span className="font-semibold text-foreground">{submittedData.ref}</span></span>
                       </div>
                     )}
                   </div>
@@ -322,7 +324,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Selesai
+                    {t.modals.finish}
                   </Button>
                   <Button
                     type="button"
@@ -330,7 +332,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Keluarkan Barang Lain
+                    {t.modals.stockOut.dispatchAnother}
                   </Button>
                 </div>
               </div>

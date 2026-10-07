@@ -20,7 +20,7 @@ interface OverviewCardsProps {
 }
 
 export function OverviewCards({ metrics }: OverviewCardsProps) {
-  const { language, t } = useI18n();
+  const { t } = useI18n();
 
   const getMetricLabel = (metric: OverviewMetric) => {
     switch (metric.id) {
@@ -38,26 +38,23 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
   };
 
   const getSupportingText = (metric: OverviewMetric) => {
-    if (language === "en") {
-      switch (metric.id) {
-        case "products":
-          return "Across 8 categories";
-        case "inventory_value":
-          return "Avg cost $174.12";
-        case "low_stock":
-          return "Below min reorder threshold";
-        case "out_of_stock":
-          return "Zero units available";
-        default:
-          return metric.supportingText;
-      }
+    switch (metric.id) {
+      case "products":
+        return t.dashboard.acrossCategories;
+      case "inventory_value":
+        return t.dashboard.avgCost;
+      case "low_stock":
+        return t.dashboard.belowMinReorder;
+      case "out_of_stock":
+        return t.dashboard.zeroUnitsAvailable;
+      default:
+        return metric.supportingText;
     }
-    return metric.supportingText;
   };
 
   return (
     <section
-      aria-label="Ringkasan Ikhtisar Inventaris"
+      aria-label={t.dashboard.inventoryOverview}
       className="grid grid-cols-2 gap-3 lg:grid-cols-4"
     >
       {metrics.map((metric) => {

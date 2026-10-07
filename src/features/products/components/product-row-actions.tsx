@@ -10,6 +10,7 @@ import {
   ArrowUpFromLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
 import type { Product } from "../types";
 
 interface ProductRowActionsProps {
@@ -27,6 +28,7 @@ export function ProductRowActions({
   onDelete,
   onQuickMovement,
 }: ProductRowActionsProps) {
+  const { t } = useI18n();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -56,20 +58,20 @@ export function ProductRowActions({
           e.stopPropagation();
           setMenuOpen((prev) => !prev);
         }}
-        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-slate-200/60 rounded-md"
+        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
         title="More actions"
       >
         <MoreHorizontal className="h-4 w-4" />
         <span className="sr-only">Actions</span>
       </Button>
 
-      {/* Popover Menu */}
+      {/* Popover Menu: 1px hairline boundary with soft shadow-md */}
       {menuOpen && (
         <div
-          className="absolute right-0 z-50 mt-1 w-44 rounded-md border border-black bg-card p-1 shadow-neo animate-in fade-in zoom-in-95 duration-100"
+          className="absolute right-0 z-50 mt-1 w-44 rounded-md border border-border bg-popover p-1 shadow-md animate-in fade-in zoom-in-95 duration-100"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground border-b border-border">
+          <div className="px-2 py-1 text-[10px] font-mono tabular-nums uppercase tracking-wider text-muted-foreground border-b border-border">
             {product.sku}
           </div>
 
@@ -79,10 +81,10 @@ export function ProductRowActions({
               setMenuOpen(false);
               onViewDetails(product);
             }}
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-muted hover:text-primary transition-colors cursor-pointer text-left"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
           >
-            <Eye className="h-3.5 w-3.5" />
-            <span>View Details</span>
+            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>{t.products.actions.view}</span>
           </button>
 
           {onQuickMovement && (
@@ -93,10 +95,10 @@ export function ProductRowActions({
                   setMenuOpen(false);
                   onQuickMovement(product, "in");
                 }}
-                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-emerald-50 hover:text-emerald-700 transition-colors cursor-pointer text-left font-medium"
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer text-left font-medium"
               >
                 <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Receive Stock (In)</span>
+                <span>{t.products.actions.receiveStock}</span>
               </button>
 
               <button
@@ -105,10 +107,10 @@ export function ProductRowActions({
                   setMenuOpen(false);
                   onQuickMovement(product, "out");
                 }}
-                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer text-left font-medium"
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer text-left font-medium"
               >
                 <ArrowUpFromLine className="h-3.5 w-3.5 text-rose-600" />
-                <span>Issue Stock (Out)</span>
+                <span>{t.products.actions.issueStock}</span>
               </button>
             </>
           )}
@@ -121,8 +123,8 @@ export function ProductRowActions({
             }}
             className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
           >
-            <Edit2 className="h-3.5 w-3.5" />
-            <span>Edit Product</span>
+            <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>{t.products.actions.edit}</span>
           </button>
 
           <div className="my-1 border-t border-border" />
@@ -133,10 +135,10 @@ export function ProductRowActions({
               setMenuOpen(false);
               onDelete(product);
             }}
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left font-medium"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer text-left font-medium"
           >
             <Trash2 className="h-3.5 w-3.5 text-rose-600" />
-            <span>Delete / Archive</span>
+            <span>{t.products.actions.delete}</span>
           </button>
         </div>
       )}

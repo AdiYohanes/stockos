@@ -35,19 +35,19 @@ export function UserMenu({ user }: UserMenuProps) {
     .slice(0, 2);
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#ede9fe] font-mono text-xs font-bold text-[#543afd] shadow-neo-sm">
-          {initials || <UserIcon className="h-4 w-4" />}
+    <div className="flex items-center gap-2.5 sm:gap-3">
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-slate-100 font-mono tabular-nums text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          {initials || <UserIcon className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />}
         </div>
         <div className="hidden flex-col text-left sm:flex">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-foreground">{displayName}</span>
-            <span className="rounded-sm border border-black bg-muted px-1.5 py-0.2 font-mono text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-medium text-foreground">{displayName}</span>
+            <span className="rounded-sm border border-slate-200 bg-slate-100 px-1 py-0.2 font-mono tabular-nums text-[9px] font-medium uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
               {displayRole}
             </span>
           </div>
-          <span className="text-[11px] text-muted-foreground">{displayEmail}</span>
+          <span className="text-[11px] font-mono tabular-nums text-muted-foreground">{displayEmail}</span>
         </div>
       </div>
 

@@ -19,7 +19,6 @@ export function SuppliersContainer() {
   const {
     suppliers,
     filterState,
-    hasActiveFilters,
     paginatedSuppliers,
     totalFilteredCount,
     totalPages,
@@ -33,63 +32,38 @@ export function SuppliersContainer() {
     setSupplierToEdit,
     setSupplierToDelete,
     setIsCreateModalOpen,
-    setSearchQuery,
-    setStatus,
-    setTier,
-    setCategory,
-    setSorting,
     setPage,
-    resetFilters,
     createSupplier,
     updateSupplier,
     deleteSupplier,
   } = useSuppliers();
 
-  const statusCounts = React.useMemo(() => {
-    return {
-      all: suppliers.length,
-      active: metrics.activeCount,
-      on_hold: metrics.onHoldCount,
-      inactive: metrics.inactiveCount,
-    };
-  }, [suppliers.length, metrics.activeCount, metrics.onHoldCount, metrics.inactiveCount]);
-
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full">
+    <div className="flex flex-col gap-0 pb-12">
       <SuppliersHeader
-        totalCount={suppliers.length}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
       />
 
       <SuppliersMetrics
         metrics={metrics}
-        selectedStatus={filterState.status}
-        onSelectStatus={setStatus}
       />
 
-      <SuppliersToolbar
-        filterState={filterState}
-        hasActiveFilters={hasActiveFilters}
-        totalFilteredCount={totalFilteredCount}
-        statusCounts={statusCounts}
-        onSearchChange={setSearchQuery}
-        onStatusChange={setStatus}
-        onTierChange={setTier}
-        onCategoryChange={setCategory}
-        onSortChange={setSorting}
-        onResetFilters={resetFilters}
-      />
+      <section className="bg-white border-[3px] border-ink shadow-hard-lg overflow-hidden">
+        <SuppliersToolbar
+          totalCount={suppliers.length}
+        />
 
-      <SuppliersTable
-        suppliers={paginatedSuppliers}
-        currentPage={filterState.page}
-        totalPages={totalPages}
-        totalFilteredCount={totalFilteredCount}
-        onPageChange={setPage}
-        onSelectSupplier={(id) => setSelectedSupplierId(id)}
-        onEditSupplier={(sup) => setSupplierToEdit(sup)}
-        onDeleteSupplier={(sup) => setSupplierToDelete(sup)}
-      />
+        <SuppliersTable
+          suppliers={paginatedSuppliers}
+          currentPage={filterState.page}
+          totalPages={totalPages}
+          totalFilteredCount={totalFilteredCount}
+          onPageChange={setPage}
+          onSelectSupplier={(id) => setSelectedSupplierId(id)}
+          onEditSupplier={(sup) => setSupplierToEdit(sup)}
+          onDeleteSupplier={(sup) => setSupplierToDelete(sup)}
+        />
+      </section>
 
       {selectedSupplierId && (
         <SupplierDetailSheet

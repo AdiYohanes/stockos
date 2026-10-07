@@ -8,6 +8,7 @@ import {
   PurchaseOrdersMetricCards,
   PurchaseOrdersToolbar,
   PurchaseOrdersTable,
+  PurchaseOrdersActivity,
   CreatePOModal,
   ReceiveGoodsModal,
 } from "@/features/purchase-orders";
@@ -24,19 +25,12 @@ export default function PurchaseOrdersPage() {
     metrics,
     activeTab,
     setActiveTab,
-    searchQuery,
-    setSearchQuery,
-    selectedSupplier,
-    setSelectedSupplier,
-    selectedWarehouse,
-    setSelectedWarehouse,
     selectedPoId,
     setSelectedPoId,
     isCreateModalOpen,
     setIsCreateModalOpen,
     receivingPoId,
     setReceivingPoId,
-    handleResetFilters,
     handleCreatePo,
     handleReceiveGoods,
   } = usePurchaseOrders();
@@ -50,39 +44,29 @@ export default function PurchaseOrdersPage() {
   }, [rawOrders, receivingPoId]);
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
-      {/* Header */}
+    <div className="flex flex-col gap-0 pb-12">
       <PurchaseOrdersHeader onOpenCreateModal={() => setIsCreateModalOpen(true)} />
 
-      {/* Metric Cards */}
       <PurchaseOrdersMetricCards
         metrics={metrics}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
 
-      {/* Toolbar */}
-      <PurchaseOrdersToolbar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedSupplier={selectedSupplier}
-        onSupplierChange={setSelectedSupplier}
-        selectedWarehouse={selectedWarehouse}
-        onWarehouseChange={setSelectedWarehouse}
-        onResetFilters={handleResetFilters}
-        orders={rawOrders}
-      />
+      <section className="bg-white border-[3px] border-ink shadow-hard-lg overflow-hidden">
+        <PurchaseOrdersToolbar
+          totalOrders={rawOrders.length}
+        />
 
-      {/* High-Density Data Table */}
-      <PurchaseOrdersTable
-        orders={orders}
-        onInspect={(poId) => setSelectedPoId(poId)}
-        onReceiveGoods={(poId) => setReceivingPoId(poId)}
-      />
+        <PurchaseOrdersTable
+          orders={orders}
+          onInspect={(poId) => setSelectedPoId(poId)}
+          onReceiveGoods={(poId) => setReceivingPoId(poId)}
+        />
+      </section>
 
-      {/* Modals & Inspection Sheet */}
+      <PurchaseOrdersActivity />
+
       <CreatePOModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

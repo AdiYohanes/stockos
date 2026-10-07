@@ -5,6 +5,7 @@ import { AlertCircle, AlertTriangle, XCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { AttentionItem, AttentionStatus } from "../types";
 import { MOCK_ATTENTION_ITEMS } from "../mock-data";
 
@@ -13,6 +14,7 @@ interface NeedAttentionTableProps {
 }
 
 export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttentionTableProps) {
+  const { t } = useI18n();
   const [filter, setFilter] = React.useState<"all" | AttentionStatus>("all");
 
   const filteredItems = React.useMemo(() => {
@@ -33,10 +35,10 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold truncate">
-                Perlu Perhatian
+                {t.dashboard.needAttention}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Item inventaris kritis dan menipis
+                {t.dashboard.needAttentionSubtitle}
               </p>
             </div>
           </div>
@@ -53,7 +55,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Semua ({items.length})
+              {t.common.all} ({items.length})
             </button>
             <button
               type="button"
@@ -65,7 +67,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Habis ({outOfStockCount})
+              {t.dashboard.outOfStock} ({outOfStockCount})
             </button>
             <button
               type="button"
@@ -77,7 +79,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Menipis ({lowStockCount})
+              {t.dashboard.lowStock} ({lowStockCount})
             </button>
           </div>
         </div>
@@ -89,13 +91,13 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
             <thead className="sticky top-0 z-10 border-y border-border bg-slate-50/90 backdrop-blur-xs font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               <tr>
                 <th scope="col" className="w-[48%] px-3 py-2.5">
-                  Item & SKU
+                  {t.dashboard.itemAndSku}
                 </th>
                 <th scope="col" className="w-[26%] px-2 py-2.5 text-center">
-                  Stok / Min
+                  {t.dashboard.stockMin}
                 </th>
                 <th scope="col" className="w-[26%] px-2 py-2.5 text-right">
-                  Status
+                  {t.common.status}
                 </th>
               </tr>
             </thead>
@@ -103,7 +105,7 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
               {filteredItems.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="py-8 text-center text-xs text-muted-foreground font-mono">
-                    Tidak ada item yang memerlukan perhatian
+                    {t.dashboard.noAttentionItems}
                   </td>
                 </tr>
               ) : (
@@ -157,12 +159,12 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                         {item.status === "out_of_stock" ? (
                           <Badge variant="destructive" className="max-w-full">
                             <XCircle className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Stok Habis</span>
+                            <span className="truncate">{t.dashboard.outOfStockBadge}</span>
                           </Badge>
                         ) : (
                           <Badge variant="warning" className="max-w-full">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
-                            <span className="truncate">Stok Menipis</span>
+                            <span className="truncate">{t.dashboard.lowStockBadge}</span>
                           </Badge>
                         )}
                       </td>

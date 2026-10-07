@@ -68,7 +68,7 @@ export function NewPasswordForm() {
   return (
     <div className="w-full max-w-[450px] mx-auto">
       {/* Clean SaaS Card with Neo Accent */}
-      <div className="relative rounded-xl border border-border bg-white p-7 sm:p-8 shadow-neo">
+      <div className="relative border-[3px] border-black bg-white p-7 sm:p-8 shadow-[8px_8px_0_#000] rounded-none">
         
         {/* Card Header */}
         <div className="mb-6 space-y-1">
@@ -84,7 +84,7 @@ export function NewPasswordForm() {
         {state.status === "error" && (
           <div
             role="alert"
-            className="mb-5 flex items-start gap-2.5 rounded-md border border-black bg-[#fee2e2] p-3 text-xs font-semibold text-[#b91c1c] shadow-neo-sm"
+            className="mb-5 flex items-start gap-2.5 border-[3px] border-black bg-[#ff1744] p-3 text-xs font-semibold text-white shadow-[4px_4px_0_#000] rounded-none"
           >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1 font-mono">{state.message}</div>
@@ -94,7 +94,7 @@ export function NewPasswordForm() {
         {state.status === "success" && (
           <div
             role="alert"
-            className="mb-5 flex items-start gap-2.5 rounded-md border border-black bg-[#dcfce7] p-3 text-xs font-semibold text-[#15803d] shadow-neo-sm"
+            className="mb-5 flex items-start gap-2.5 border-[3px] border-black bg-[#00e676] p-3 text-xs font-semibold text-black shadow-[4px_4px_0_#000] rounded-none"
           >
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1 font-mono">{state.message}</div>
@@ -129,8 +129,8 @@ export function NewPasswordForm() {
                 }}
                 placeholder="••••••••"
                 className={cn(
-                  "w-full rounded-md border border-input bg-white px-3 py-2 pr-10 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-black focus:shadow-[2px_2px_0px_#543afd]",
-                  errors.password && "border-destructive shadow-[2px_2px_0px_#ef4444]"
+                  "w-full rounded-none border-[3px] border-black bg-white px-3 py-2 pr-10 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:bg-[#fffef2] focus:shadow-[8px_8px_0_#543AFD,8px_8px_0_3px_#000]",
+                  errors.password && "border-[#ff1744] focus:shadow-[8px_8px_0_#ff1744,8px_8px_0_3px_#ff1744]"
                 )}
               />
               <button
@@ -171,8 +171,8 @@ export function NewPasswordForm() {
                 }}
                 placeholder="••••••••"
                 className={cn(
-                  "w-full rounded-md border border-input bg-white px-3 py-2 pr-10 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-black focus:shadow-[2px_2px_0px_#543afd]",
-                  errors.confirmPassword && "border-destructive shadow-[2px_2px_0px_#ef4444]"
+                  "w-full rounded-none border-[3px] border-black bg-white px-3 py-2 pr-10 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:bg-[#fffef2] focus:shadow-[8px_8px_0_#543AFD,8px_8px_0_3px_#000]",
+                  errors.confirmPassword && "border-[#ff1744] focus:shadow-[8px_8px_0_#ff1744,8px_8px_0_3px_#ff1744]"
                 )}
               />
               <button
@@ -192,7 +192,7 @@ export function NewPasswordForm() {
             type="submit"
             disabled={isLoading || isSuccess}
             className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-md border-[1.5px] border-black bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-neo-sm transition-all duration-100 hover:-translate-x-px hover:-translate-y-px hover:shadow-neo hover:bg-[#462ee0] active:translate-x-px active:translate-y-px active:shadow-none cursor-pointer mt-2",
+              "w-full flex items-center justify-center gap-2 border-[3px] border-black bg-[#543AFD] text-white px-4 py-2.5 text-sm font-black uppercase tracking-wider shadow-[8px_8px_0_#000] transition-all duration-100 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0_#000] hover:bg-[#402AD4] active:translate-x-[8px] active:translate-y-[8px] active:shadow-none cursor-pointer mt-2 rounded-none",
               (isLoading || isSuccess) && "opacity-80 cursor-not-allowed"
             )}
           >

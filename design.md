@@ -1,137 +1,84 @@
-# Design System: Hybrid Neo-SaaS (70% Clean SaaS + 30% Neobrutalism)
-
-## 1. Core Philosophy
-
-StockOS balances high-efficiency enterprise ERP usability with distinct modern branding by blending **70% Clean SaaS / Dashboard UI** and **30% Neobrutalism**.
-
-- **70% Clean SaaS Baseline**: Clean neutral backgrounds, subtle 1px structural container borders, balanced spacing, modern rounded corners (`rounded-lg` / `rounded-md`), high-density data presentation, clear visual hierarchy, and refined typography.
-- **30% Neobrutal Accents**: High-contrast electric purple (`#543AFD`) and pure ink black accents, crisp tactile micro-shadows (`2px 2px 0px #000000` / `3px 3px 0px #000000`) on CTAs and interactive elements, uppercase monospace tags for SKUs/status badges, and snappy micro-press interactions (`translate(1px, 1px)`).
-
+---
+name: StockOS
+description: Hard Neobrutalist operational inventory management and Mini ERP
 ---
 
-## 2. Color Palette
+<!-- SEED: established with the user before implementation; re-run /impeccable document once there's code to capture the actual tokens and components. -->
 
-| Role | Token / Hex | Description |
-|---|---|---|
-| **Background / Canvas** | `#f8f9fa` (`--background`) | Clean, neutral, glare-free light canvas |
-| **Surface / Card** | `#ffffff` (`--card`) | Pure flat white for cards, panels, and dropdowns |
-| **Border (SaaS Neutral)** | `#e2e8f0` (`--border`) | Subtle structural dividers and default container edges |
-| **Border (Neobrutal Accent)** | `#000000` | High-contrast borders on primary CTAs and active tags |
-| **Text Primary** | `#09090b` (`--foreground`) | Deep high-contrast ink for headlines and primary text |
-| **Text Secondary / Muted** | `#64748b` (`--muted-foreground`) | Refined slate for metadata, labels, and helper text |
-| **Primary Accent** | `#543afd` (`--primary`) | Electric purple for brand actions, links, and focus rings |
-| **Primary Accent Hover** | `#462ee0` | Deeper purple for button hover states |
-| **Input Focus Shadow** | `#543afd` | Crisp hard offset focus ring (`2px 2px 0px #543afd`) |
-| **Placeholder Text** | `rgba(0, 0, 0, 0.45)` | Subtle readable placeholder text |
+# Design System: StockOS
 
----
+## Overview
 
-## 3. Radii, Borders & Micro-Shadows
+**Creative North Star: "Hard Neobrutalism & Tactile Logistics"**
 
-### Border Radii
-- **Cards / Main Containers**: `8px` (`rounded-lg` / `--radius: 0.5rem`)
-- **Buttons / Inputs / Dialogs**: `6px` (`rounded-md`)
-- **Badges / Status Pills / SKU Tags**: `4px` (`rounded-sm`)
+StockOS is an operational inventory console engineered with a striking, unapologetic hard-neobrutalist visual system. The system rejects soft modern SaaS aesthetics—subtle drop shadows, rounded corners, and low-contrast greys—in favor of loud, high-contrast, tactile components that mimic physical printed forms and mechanical switches.
 
-### Micro-Shadows (30% Neobrutal Accent)
-- **Small (`shadow-neo-sm`)**: `box-shadow: 2px 2px 0px #000000;` (Badges, small action buttons)
-- **Default (`shadow-neo`)**: `box-shadow: 3px 3px 0px #000000;` (Primary action buttons, floating menus)
-- **Primary Accent (`shadow-neo-primary`)**: `box-shadow: 2px 2px 0px #543afd, 2px 2px 0px 1px #000000;` (Active card accents, focus states)
-- **Default Containers / Cards**: No heavy drop shadows. Clean `1px solid #e2e8f0` border for maximum data readability.
+The design relies on a strict "Paper, Ink, and Acid" palette: stark grid-dot backgrounds, aggressive heavy black borders, hard offset shadows, and vibrant purple highlights. 
 
----
+**Key Characteristics:**
+- **Paper & Grid Canvas**: The background utilizes rigid grid-dots or paper-like textures to anchor the interface as a physical workspace.
+- **Heavy Structural Framing**: 3px solid black borders define all containers, tables, and interactive elements.
+- **Hard Offset Shadows**: No soft blur. Depth is created using solid black offset shadows (e.g., `4px 4px 0px #000`).
+- **Tactile Press Effects**: Interactive elements feel physical, depressing physically when clicked (moving to replace their shadow).
+- **Square-Only Geometry**: Strict adherence to sharp 90-degree corners. Zero border radius.
 
-## 4. Typography & Operational Type Scale
+## Colors
 
-### Font Family Hierarchy
-1. **Inter** (Primary UI — 90% Interface):
-   - Weights: `400` (Regular), `500` (Medium), `600` (SemiBold), `700` (Bold)
-   - Primary sans-serif for main body, table cells, form inputs, buttons, sidebar navigation, labels, and secondary copy.
+The palette is aggressive, high-contrast, and strictly limited to maximize impact.
 
-2. **Space Grotesk** (Brand Headlines & Logo):
-   - Weights: `600`, `700`
-   - Used specifically for brand logos, authentication page headlines, and specific prominent headers.
+### Core Theme
+- **Paper Canvas** (`#f8f9fa` or clean white `#ffffff`): The base layer. Often overlaid with a dotted grid pattern.
+- **Heavy Ink** (`#000000`): Primary text, all borders, hard shadows, and high-contrast containers.
+- **Electric Purple Highlight** (`#543AFD`): Primary brand color, primary action buttons, active states, and critical highlights.
 
-3. **Space Mono** (SKU Codes, Badges & Structural Meta):
-   - Weights: `400`, `700`
-   - Styling: `UPPERCASE`, tracking `0.08em` to `0.14em` (`tracking-wider`) for SKU codes, status tags, and monospace data.
+### Functional Status (Semantic Only)
+- **Healthy / In-Stock** (Vibrant Green: `#00e676` or similar)
+- **Warning / Low Stock** (Bright Orange: `#ff9100`)
+- **Critical / Out of Stock** (Loud Red: `#ff1744`)
+- **Info / Transfer** (Electric Blue: `#2979ff`)
 
-### Operational Type Scale Tokens
+## Typography
 
-| Usage | Desktop | Mobile | Weight | Line-Height | Utility Class |
-| :--- | ---: | ---: | ---: | ---: | :--- |
-| **Page Title** | **30px** | 26px | 700 | 36px | `text-2xl sm:text-3xl font-bold tracking-tight` |
-| **Section Title / H2** | **22px** | 20px | 600–700 | 28px | `text-xl sm:text-[22px] font-semibold` |
-| **Card Title / H3** | **18px** | 18px | 600 | 24px | `text-lg font-semibold` |
-| **Main Body / Baseline** | **16px** | 16px | 400 | 24px | `text-base` |
-| **Table Content** | **15px** | 15px | 400–500 | 22px | `text-[15px]` |
-| **Input Text** | **16px** | 16px | 400 | 24px | `text-base` |
-| **Button Text** | **15–16px** | 16px | 500–600 | 20–24px | `text-[15px]` / `text-base` |
-| **Sidebar Navigation** | **15px** | 16px | 500 | 22px | `text-[15px]` |
-| **Label** | **14px** | 14px | 500–600 | 20px | `text-sm font-medium` |
-| **Helper / Secondary** | **14px** | 14px | 400 | 20px | `text-sm text-muted-foreground` |
-| **Badge / Status** | **13px** | 13px | 500–600 | 18px | `text-[13px] font-semibold` |
-| **Tiny Metadata** | **12px** | 12px | 500 | 16px | `text-xs` (Exception only) |
-| **KPI Numbers** | **28–32px** | 28px | 700 | 36px | `text-3xl font-bold` |
+Loud, technical, and mechanical.
 
----
+**Display / Header Font:** Archivo (Loud, wide, commanding).
+**Body / UI Font:** Space Grotesk (Quirky, technical sans).
+**Data / Tabular Font:** Space Mono (Strict monospace for all operational data).
 
-## 5. Component Dimensions & Spacing
+### Hierarchy
+- **Page Title** (Archivo, Bold/Black, uppercase styling common).
+- **Section Title** (Archivo, Bold).
+- **Body & Controls** (Space Grotesk, Medium/Bold).
+- **Tabular Figures & Badges** (Space Mono, Regular/Bold). All SKUs, counts, dates, and currency.
 
-- **Form Input Height**: `40px` (`h-10`) or `44px` (`h-11`) with `text-base` (16px) font size to avoid cramped controls.
-- **Button Height**: `40px` (`h-10`) standard size, `36px` (`h-9`) small size, `44px` (`h-11`) large size.
-- **Table Row Height**: Comfortable **~52px** height (`py-3.5 px-3` cell padding).
-- **Card Padding**: Standard `p-5` container padding for spacious readability.
+## Layout & Elevation
 
----
+The spatial model relies on distinct, physical-looking blocks placed on a raw canvas.
 
-## 6. Interaction Model
+- **Workspace Frame**: Grid-dot background, solid bordered sidebar, mobile bottom navigation.
+- **Neobrutalist Cards & Tables**: Elements exist as distinct blocks with heavy borders (`border-black border-[3px]`) and solid drop shadows.
+- **Table Density**: Tables maintain heavy internal borders separating columns and rows.
+- **Tactile Interactions**: Buttons and cards must have active states that translate the element `translate-x-[2px] translate-y-[2px]` and reduce the box shadow, mimicking a physical button press.
 
-### Tactile Button / Card 'Press'
-- **Resting State**: `border: 1.5px solid #000000; box-shadow: 2px 2px 0px #000000;`
-- **Hover State**: `transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000000;`
-- **Active / Press State**: `transform: translate(1px, 1px); box-shadow: 0px 0px 0px #000000;`
+## Shapes & Geometry
 
-### Input Focus
-- **Resting State**: `border: 1px solid #cbd5e1; background-color: #ffffff; border-radius: 0.375rem;`
-- **Focus State**: `border-color: #000000; outline: none; box-shadow: 2px 2px 0px #543afd;`
+- **Containers, Buttons, & Badges**: Strict `rounded-none` (0px radius). 
+- **Prohibitions**: No `rounded-md`, `rounded-full`, or soft borders anywhere.
 
----
+## Do's and Don'ts
 
-## 7. Page Header & Top Title Layout Standard
+### Do:
+- **Do** use heavy 3px black borders for all cards, inputs, and buttons.
+- **Do** apply hard, unblurred black offset shadows to elevated elements.
+- **Do** use Electric Purple as the primary highlight and action color.
+- **Do** implement tactile active press states on interactive elements.
+- **Do** stick to sharp, square corners (`rounded-none`).
+- **Do** use Archivo for headers and Space Mono for technical labels.
+- **Do** add a dotted grid texture to the main background.
 
-All application pages MUST follow the standard top header layout pattern:
-
-```tsx
-<header className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-  {/* Left: Title + Badge + Dot + Description */}
-  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-    <div className="flex items-center gap-2.5">
-      <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-        {pageTitle}
-      </h1>
-      <Badge className="border-black bg-emerald-100 font-mono text-[13px] uppercase tracking-wider text-emerald-900 shadow-neo-sm">
-        {statusOrTypeTag}
-      </Badge>
-    </div>
-    <span className="hidden sm:inline text-muted-foreground/30 text-base">•</span>
-    <p className="text-sm sm:text-base text-muted-foreground">
-      {pageDescription}
-    </p>
-  </div>
-
-  {/* Right: Action Buttons Toolbar */}
-  <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto max-w-full pb-0.5 sm:pb-0">
-    {/* Page Action Buttons */}
-  </div>
-</header>
-```
-
-### Layout Rules:
-1. **Title Typography**: Always `font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground` (30px).
-2. **Monospace Tag**: Adjacent to title, using `font-mono text-[13px] uppercase tracking-wider border-black shadow-neo-sm`.
-3. **Bullet Separator**: Hidden on mobile, visible on desktop (`hidden sm:inline text-muted-foreground/30 •`).
-4. **Description Subtitle**: `text-base text-muted-foreground` (16px).
-5. **Right Toolbar**: Horizontal scrollable container on mobile, right-aligned on desktop with action buttons (`border-black hover:bg-slate-50`).
-
-
+### Don't:
+- **Don't** use soft, blurry drop shadows.
+- **Don't** use rounded corners on any element.
+- **Don't** use subtle gray borders; borders must be stark and black.
+- **Don't** use generic system sans-serifs; stick to the Archivo/Space Grotesk/Space Mono stack.
+- **Don't** use subtle background gradients.

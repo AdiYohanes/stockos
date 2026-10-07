@@ -46,12 +46,12 @@ export function ProductsHeader({ totalCount, onProductAdded }: ProductsHeaderPro
         size="sm"
         onClick={handleExport}
         disabled={isExporting}
-        className="btn-neo gap-1.5 h-9 font-medium"
+        className="h-9 gap-1.5 px-3 text-xs font-medium text-foreground hover:bg-slate-50 hover:border-slate-400 dark:hover:bg-slate-800"
       >
         {showExportSuccess ? (
           <>
             <Check className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-emerald-700 font-semibold">
+            <span className="text-emerald-700 dark:text-emerald-400 font-medium">
               {language === "id" ? "Katalog Diekspor" : "Catalog Exported"}
             </span>
           </>
@@ -72,8 +72,8 @@ export function ProductsHeader({ totalCount, onProductAdded }: ProductsHeaderPro
       </Button>
 
       <ProductAddModal onProductAdded={onProductAdded}>
-        <Button size="sm" className="btn-neo-primary gap-1.5 h-9 font-semibold">
-          <Plus className="h-4 w-4" />
+        <Button size="sm" className="h-9 gap-1.5 px-3.5 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 shadow-none">
+          <Plus className="h-3.5 w-3.5" />
           <span>{t.products.addProduct}</span>
         </Button>
       </ProductAddModal>
