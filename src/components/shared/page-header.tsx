@@ -9,25 +9,29 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, badgeText, description, actions }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-border">
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-          {badgeText && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[11px] font-mono tabular-nums font-medium bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800">
-              {badgeText}
-            </span>
-          )}
-        </div>
+    <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-6">
+      <div>
         {description && (
-          <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>
+          <p className="font-mono text-[10px] uppercase tracking-[.18em] text-foreground/50 mb-2">
+            Platform / {description}
+          </p>
         )}
+        <div className="flex items-start gap-4">
+          <h2 className="font-heading font-[900] uppercase tracking-tighter text-4xl md:text-5xl leading-[.9]">
+            {title}
+            {badgeText && (
+              <span className="bg-primary px-2 mt-1 xl:mt-0 block w-fit">
+                {badgeText}
+              </span>
+            )}
+          </h2>
+        </div>
       </div>
       {actions && (
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-col sm:flex-row gap-3">
           {actions}
         </div>
       )}
-    </div>
+    </section>
   );
 }

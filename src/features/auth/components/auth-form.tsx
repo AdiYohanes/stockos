@@ -51,7 +51,7 @@ function AuthForm({
       {state.status === "error" && state.message && (
         <div
           role="alert"
-          className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive"
+          className="mb-4 flex items-center gap-2 rounded-none border-[3px] border-black bg-[#fee2e2] shadow-brutal-sm px-3 py-2.5 text-sm text-destructive"
         >
           <AlertCircle className="size-4 shrink-0" />
           {state.message}
@@ -61,7 +61,7 @@ function AuthForm({
       {isSuccess && state.message && (
         <div
           role="status"
-          className="mb-4 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-2.5 text-sm text-green-700 dark:text-green-400"
+          className="mb-4 flex items-center gap-2 rounded-none border-[3px] border-black bg-[#dcfce7] shadow-brutal-sm px-3 py-2.5 text-sm text-green-700 dark:text-green-400"
         >
           <CheckCircle2 className="size-4 shrink-0" />
           {state.message}

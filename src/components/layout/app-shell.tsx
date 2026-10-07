@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import type { MockUser } from "@/features/auth/types";
 
 interface AppShellProps {
@@ -11,51 +12,23 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, user }: AppShellProps) {
-  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
-
-  // Close mobile drawer on escape key
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsMobileOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
+  // Mobile drawer is removed in favor of MobileBottomNav
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Desktop Fixed Sidebar: 240px compact rail */}
-      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-60 md:flex-col">
-        <Sidebar />
-      </div>
-
-      {/* Mobile Drawer Backdrop and Drawer */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop: calm flat semi-transparent overlay */}
-          <div
-            className="fixed inset-0 bg-slate-900/40 transition-opacity"
-            onClick={() => setIsMobileOpen(false)}
-            aria-hidden="true"
-          />
-          {/* Drawer Content */}
-          <div className="fixed inset-y-0 left-0 w-64 max-w-[80vw] bg-sidebar shadow-lg animate-in slide-in-from-left duration-200">
-            <Sidebar
-              isMobile
-              onNavigate={() => setIsMobileOpen(false)}
-              onCloseMobile={() => setIsMobileOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+    <div className="relative min-h-screen bg-background text-foreground font-sans flex grid-dots">
+      {/* Desktop Fixed Sidebar */}
+      <Sidebar />
 
       {/* Main Container */}
-      <div className="flex flex-1 flex-col md:pl-60">
-        <Navbar user={user} onOpenMobileSidebar={() => setIsMobileOpen(true)} />
-        <main className="flex-1 p-3.5 sm:p-5 md:p-6">{children}</main>
+      <div className="flex-1 min-w-0 flex flex-col pb-16 md:pb-0">
+        <Navbar user={user} onOpenMobileSidebar={() => {}} />
+        <main className="flex-1 p-5 md:p-8 max-w-[1500px] w-full mx-auto">
+          {children}
+        </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }
+

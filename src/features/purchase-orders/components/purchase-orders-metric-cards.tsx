@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ShoppingBag, Clock, PackageCheck, CheckCircle2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 import type { POSummaryMetrics } from "../types";
 
@@ -17,74 +16,123 @@ export function PurchaseOrdersMetricCards({
   activeTab,
   onTabChange,
 }: PurchaseOrdersMetricCardsProps) {
-  const cards = [
-    {
-      id: "all",
-      label: "Total Procurement",
-      value: metrics.totalOrders,
-      subValue: `$${metrics.totalSpend.toLocaleString()}`,
-      icon: ShoppingBag,
-      color: "border-slate-300 bg-white text-slate-900",
-      activeBorder: "border-black shadow-neo-sm ring-2 ring-[#543afd]/30",
-    },
-    {
-      id: "pending",
-      label: "Pending / Issued",
-      value: metrics.pendingCount,
-      subValue: "Awaiting shipment",
-      icon: Clock,
-      color: "border-blue-200 bg-blue-50/50 text-blue-900",
-      activeBorder: "border-black shadow-neo-sm ring-2 ring-blue-500/30",
-    },
-    {
-      id: "partial",
-      label: "Partially Received",
-      value: metrics.partialCount,
-      subValue: "In-progress intake",
-      icon: PackageCheck,
-      color: "border-amber-200 bg-amber-50/50 text-amber-900",
-      activeBorder: "border-black shadow-neo-sm ring-2 ring-amber-500/30",
-    },
-    {
-      id: "received",
-      label: "Fully Received",
-      value: metrics.receivedCount,
-      subValue: "100% completed",
-      icon: CheckCircle2,
-      color: "border-emerald-200 bg-emerald-50/50 text-emerald-900",
-      activeBorder: "border-black shadow-neo-sm ring-2 ring-emerald-500/30",
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        const isActive = activeTab === card.id;
+    <>
+      <div className="flex overflow-x-auto border-[3px] border-ink bg-white shadow-hard-sm w-fit max-w-full mb-6">
+        <button
+          onClick={() => onTabChange("all")}
+          className={cn(
+            "shrink-0 px-5 py-3 border-r-[3px] border-ink font-mono text-[10px] font-bold uppercase hover:bg-paper",
+            activeTab === "all" ? "bg-acid" : ""
+          )}
+        >
+          All ({metrics.totalOrders})
+        </button>
+        <button
+          onClick={() => onTabChange("draft")}
+          className={cn(
+            "shrink-0 px-5 py-3 border-r-[2px] border-ink font-mono text-[10px] font-bold uppercase hover:bg-paper",
+            activeTab === "draft" ? "bg-acid" : ""
+          )}
+        >
+          Draft (12)
+        </button>
+        <button
+          onClick={() => onTabChange("pending")}
+          className={cn(
+            "shrink-0 px-5 py-3 border-r-[2px] border-ink font-mono text-[10px] font-bold uppercase hover:bg-paper",
+            activeTab === "pending" ? "bg-acid" : ""
+          )}
+        >
+          Pending ({metrics.pendingCount})
+        </button>
+        <button
+          onClick={() => onTabChange("partial")}
+          className={cn(
+            "shrink-0 px-5 py-3 border-r-[2px] border-ink font-mono text-[10px] font-bold uppercase hover:bg-paper",
+            activeTab === "partial" ? "bg-acid" : ""
+          )}
+        >
+          Partial ({metrics.partialCount})
+        </button>
+        <button
+          onClick={() => onTabChange("received")}
+          className={cn(
+            "shrink-0 px-5 py-3 font-mono text-[10px] font-bold uppercase hover:bg-paper",
+            activeTab === "received" ? "bg-acid" : ""
+          )}
+        >
+          Received ({metrics.receivedCount})
+        </button>
+      </div>
 
-        return (
-          <Card
-            key={card.id}
-            onClick={() => onTabChange(card.id)}
-            className={cn(
-              "cursor-pointer border p-5 transition-all hover:-translate-y-0.5",
-              card.color,
-              isActive ? card.activeBorder : "hover:border-slate-400"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">{card.label}</span>
-              <Icon className="h-5 w-5 opacity-70" />
-            </div>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-3xl font-bold tracking-tight">{card.value}</span>
-              <span className="font-mono text-xs font-semibold uppercase text-muted-foreground">
-                {card.subValue}
-              </span>
-            </div>
-          </Card>
-        );
-      })}
-    </div>
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+          <div className="flex justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+              Total POs
+            </span>
+            <span className="w-8 h-8 bg-paper border-2 border-ink flex items-center justify-center">
+              <Icon icon="ph:clipboard-text-bold" className="text-lg" />
+            </span>
+          </div>
+          <b className="font-display font-[900] text-4xl block mt-3">
+            {metrics.totalOrders}
+          </b>
+          <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+            <span className="font-bold">+12</span> this month
+          </div>
+        </div>
+
+        <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+          <div className="flex justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+              Total Amount
+            </span>
+            <span className="w-8 h-8 bg-acid border-2 border-ink flex items-center justify-center">
+              <Icon icon="ph:currency-dollar-bold" className="text-lg" />
+            </span>
+          </div>
+          <b className="font-display font-[900] text-4xl block mt-3">
+            ${(metrics.totalSpend / 1000).toFixed(1)}K
+          </b>
+          <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+            <span className="font-bold">+8.2%</span> vs last month
+          </div>
+        </div>
+
+        <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+          <div className="flex justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+              Pending Approval
+            </span>
+            <span className="w-8 h-8 bg-orange-400 border-2 border-ink flex items-center justify-center">
+              <Icon icon="ph:warning-bold" className="text-lg" />
+            </span>
+          </div>
+          <b className="font-display font-[900] text-4xl block mt-3">18</b>
+          <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
+            <span className="font-bold text-orange-700">2 urgent</span> need review
+          </div>
+        </div>
+
+        <div className="bg-ink text-paper border-[3px] border-ink shadow-hard p-5">
+          <div className="flex justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-paper/50">
+              Received This Month
+            </span>
+            <span className="w-8 h-8 bg-acid text-ink border-2 border-paper flex items-center justify-center">
+              <Icon icon="ph:check-bold" className="text-lg" />
+            </span>
+          </div>
+          <b className="font-display font-[900] text-4xl text-acid block mt-3">
+            {metrics.receivedCount}
+          </b>
+          <div className="mt-4 pt-3 border-t-2 border-paper/20 font-mono text-[9px] uppercase">
+            $89,230 received
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

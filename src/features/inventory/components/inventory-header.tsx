@@ -1,55 +1,60 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared";
 import { useI18n } from "@/lib/i18n/context";
+import { Icon } from "@iconify/react";
 
 interface InventoryHeaderProps {
-  totalItems: number;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
   onOpenMovementModal: () => void;
   onOpenAdjustmentModal: () => void;
 }
 
 export function InventoryHeader({
-  totalItems,
+  searchQuery,
+  onSearchChange,
   onOpenMovementModal,
   onOpenAdjustmentModal,
 }: InventoryHeaderProps) {
-  const { language, t } = useI18n();
-
-  const actionButtons = (
-    <>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onOpenAdjustmentModal}
-        className="h-9 gap-1.5 px-3 text-xs font-medium text-foreground hover:bg-slate-50 hover:border-slate-400 dark:hover:bg-slate-800"
-      >
-        <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>{t.inventory.adjustStock}</span>
-      </Button>
-
-      <Button
-        type="button"
-        size="sm"
-        onClick={onOpenMovementModal}
-        className="h-9 gap-1.5 px-3.5 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 shadow-none"
-      >
-        <ArrowUpDown className="h-3.5 w-3.5" />
-        <span>{language === "id" ? "Catat Pergerakan" : "Record Movement"}</span>
-      </Button>
-    </>
-  );
+  const { t } = useI18n();
 
   return (
-    <PageHeader
-      title={t.inventory.title}
-      badgeText={`${totalItems} ${t.common.items}`}
-      description={t.inventory.subtitle}
-      actions={actionButtons}
-    />
+    <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-8">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[.18em] opacity-50 mb-2">
+          Platform / inventory control
+        </p>
+        <h2 className="font-display font-[900] uppercase tracking-tighter text-4xl md:text-5xl leading-[.9]">
+          Inventory<br />
+          <span className="bg-acid px-2">overview.</span>
+        </h2>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center bg-white border-[3px] border-ink shadow-hard-sm">
+          <Icon icon="ph:magnifying-glass-bold" className="ml-3 text-ink text-lg" />
+          <input
+            className="input-focus w-full sm:w-64 px-3 py-3 bg-transparent font-body text-sm text-ink placeholder:text-ink/50"
+            placeholder="Search SKU or product"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={onOpenMovementModal}
+          className="press bg-white text-ink border-[3px] border-ink shadow-hard-sm px-4 py-3 font-display font-bold uppercase text-xs flex items-center gap-2"
+        >
+          <Icon icon="ph:arrows-down-up-bold" className="text-lg" />
+          Move
+        </button>
+        <button
+          onClick={onOpenAdjustmentModal}
+          className="press bg-acid text-ink border-[3px] border-ink shadow-hard px-5 py-3 font-display font-[900] uppercase text-xs flex items-center gap-2"
+        >
+          <Icon icon="ph:plus-bold" className="text-lg" />
+          Add Item
+        </button>
+      </div>
+    </section>
   );
 }

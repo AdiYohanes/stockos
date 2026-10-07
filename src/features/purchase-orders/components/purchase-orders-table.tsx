@@ -1,10 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Eye, PackageCheck, Truck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Icon } from "@iconify/react";
 import type { PurchaseOrder, POStatus } from "../types";
 
 interface PurchaseOrdersTableProps {
@@ -21,113 +18,169 @@ export function PurchaseOrdersTable({
   const getStatusBadge = (status: POStatus) => {
     switch (status) {
       case "DRAFT":
-        return <Badge className="border-slate-400 bg-slate-100 font-mono text-[11px] text-slate-800 shadow-neo-sm">DRAFT</Badge>;
+        return (
+          <span className="bg-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Draft
+          </span>
+        );
       case "ISSUED":
-        return <Badge className="border-blue-400 bg-blue-100 font-mono text-[11px] text-blue-900 shadow-neo-sm">ISSUED</Badge>;
+        return (
+          <span className="bg-acid border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Submitted
+          </span>
+        );
       case "PARTIALLY_RECEIVED":
-        return <Badge className="border-amber-400 bg-amber-100 font-mono text-[11px] text-amber-900 shadow-neo-sm">PARTIAL</Badge>;
+        return (
+          <span className="bg-orange-400 border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Partial
+          </span>
+        );
       case "RECEIVED":
-        return <Badge className="border-emerald-400 bg-emerald-100 font-mono text-[11px] text-emerald-900 shadow-neo-sm">RECEIVED</Badge>;
+        return (
+          <span className="bg-ink text-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Received
+          </span>
+        );
       case "CANCELLED":
-        return <Badge className="border-rose-400 bg-rose-100 font-mono text-[11px] text-rose-900 shadow-neo-sm">CANCELLED</Badge>;
+        return (
+          <span className="bg-red-500 text-white border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+            Cancelled
+          </span>
+        );
     }
   };
 
-  if (orders.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-12 text-center">
-        <Truck className="h-10 w-10 text-muted-foreground/60 mb-3" />
-        <h3 className="text-lg font-semibold text-foreground">No Purchase Orders Found</h3>
-        <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-          No orders match your current filter criteria. Try resetting filters or create a new Purchase Order.
-        </p>
-      </div>
-    );
-  }
+  const getSupplierInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
+  const getSupplierAvatarColor = (name: string) => {
+    const charCode = name.charCodeAt(0) || 0;
+    const colors = ["bg-acid", "bg-paper", "bg-ink text-acid"];
+    return colors[charCode % colors.length];
+  };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
-      <table className="w-full text-left text-[15px]">
-        <thead className="border-b border-border bg-slate-50 font-mono text-[12px] uppercase tracking-wider text-muted-foreground">
+    <div className="overflow-x-auto border-t-0">
+      <table className="w-full min-w-[900px] text-left">
+        <thead className="bg-paper border-b-[3px] border-ink font-mono text-[9px] uppercase tracking-widest">
           <tr>
-            <th className="px-4 py-3">PO Code</th>
-            <th className="px-4 py-3">Supplier</th>
-            <th className="px-4 py-3">Destination</th>
-            <th className="px-4 py-3">Fulfillment</th>
-            <th className="px-4 py-3">Expected Date</th>
-            <th className="px-4 py-3 text-right">Total Cost</th>
-            <th className="px-4 py-3 text-center">Status</th>
-            <th className="px-4 py-3 text-right">Actions</th>
+            <th className="px-5 py-4">
+              PO Number <Icon icon="ph:caret-up-down-bold" className="inline ml-1" />
+            </th>
+            <th className="px-5 py-4">Supplier</th>
+            <th className="px-5 py-4">Date</th>
+            <th className="px-5 py-4 text-center">Items</th>
+            <th className="px-5 py-4">Total Value</th>
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
-          {orders.map((po) => {
-            const totalOrdered = po.lineItems.reduce((sum, item) => sum + item.orderedQuantity, 0);
-            const totalReceived = po.lineItems.reduce((sum, item) => sum + item.receivedQuantity, 0);
-            const percent = totalOrdered > 0 ? Math.round((totalReceived / totalOrdered) * 100) : 0;
+        <tbody className="divide-y-[2px] divide-black/10">
+          {orders.length === 0 ? (
+            <tr>
+              <td colSpan={7} className="py-12 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <p className="font-display font-bold uppercase text-ink text-lg mt-4">
+                    No matching orders
+                  </p>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 max-w-sm">
+                    Try adjusting your search or filters
+                  </p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            orders.map((po) => {
+              const totalItems = po.lineItems.length;
 
-            const canReceive = po.status === "ISSUED" || po.status === "PARTIALLY_RECEIVED";
-
-            return (
-              <tr key={po.id} className="transition-colors hover:bg-slate-50/80">
-                <td className="px-4 py-3.5 font-mono font-bold text-foreground">{po.poNumber}</td>
-                <td className="px-4 py-3.5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-foreground">{po.supplierName}</span>
-                    <span className="text-xs text-muted-foreground">{po.supplierTier}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{po.destinationWarehouseName}</td>
-                <td className="px-4 py-3.5">
-                  <div className="flex w-36 flex-col gap-1">
-                    <div className="flex justify-between text-xs font-mono font-medium">
-                      <span>{totalReceived}/{totalOrdered}</span>
-                      <span>{percent}%</span>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className={cn(
-                          "h-full transition-all",
-                          percent === 100 ? "bg-emerald-500" : percent > 0 ? "bg-amber-500" : "bg-slate-300"
-                        )}
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3.5 font-mono text-sm text-slate-700">{po.expectedDeliveryDate}</td>
-                <td className="px-4 py-3.5 text-right font-mono font-bold text-foreground">
-                  ${po.totalCost.toLocaleString()}
-                </td>
-                <td className="px-4 py-3.5 text-center">{getStatusBadge(po.status)}</td>
-                <td className="px-4 py-3.5 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    {canReceive && (
-                      <Button
-                        size="sm"
-                        onClick={() => onReceiveGoods(po.id)}
-                        className="h-8 border border-black bg-emerald-600 font-medium text-white shadow-neo-sm hover:bg-emerald-700"
+              return (
+                <tr key={po.id} className="hover:bg-acid/10 cursor-pointer" onClick={() => onInspect(po.id)}>
+                  <td className="px-5 py-4 font-display font-bold text-sm">
+                    {po.poNumber}
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`w-8 h-8 ${getSupplierAvatarColor(
+                          po.supplierName
+                        )} border-2 border-ink flex items-center justify-center font-display font-bold text-xs`}
                       >
-                        <PackageCheck className="mr-1 h-3.5 w-3.5" />
-                        Receive
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onInspect(po.id)}
-                      className="h-8 border-border px-2.5 hover:bg-slate-100"
-                    >
-                      <Eye className="mr-1 h-3.5 w-3.5" />
-                      Inspect
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+                        {getSupplierInitials(po.supplierName)}
+                      </span>
+                      <span className="font-display font-bold text-sm uppercase">
+                        {po.supplierName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 font-mono text-[10px] uppercase">
+                    {new Date(po.orderDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="px-5 py-4 text-center font-bold">
+                    {totalItems}
+                  </td>
+                  <td className="px-5 py-4 font-display font-bold">
+                    ${po.totalCost.toLocaleString()}
+                  </td>
+                  <td className="px-5 py-4">{getStatusBadge(po.status)}</td>
+                  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onInspect(po.id)}
+                        title="View Details"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center"
+                      >
+                        <Icon icon="ph:eye-bold" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => onReceiveGoods(po.id)}
+                        disabled={
+                          po.status !== "ISSUED" &&
+                          po.status !== "PARTIALLY_RECEIVED"
+                        }
+                        title="Receive Goods"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center disabled:opacity-30 disabled:press-none"
+                      >
+                        <Icon icon="ph:package-bold" className="text-lg" />
+                      </button>
+                      <button
+                        title="Delete"
+                        className="press w-8 h-8 border-2 border-ink bg-white flex items-center justify-center"
+                      >
+                        <Icon icon="ph:trash-bold" className="text-lg" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
+      {orders.length > 0 && (
+        <div className="p-4 border-t-[3px] border-ink flex items-center justify-between">
+          <span className="font-mono text-[9px] uppercase tracking-widest opacity-50 text-ink">
+            Showing 1-{orders.length} of {orders.length} orders
+          </span>
+          <div className="flex gap-2">
+            <button className="press border-2 border-ink bg-white w-8 h-8 flex items-center justify-center text-ink">
+              <Icon icon="ph:caret-left-bold" className="text-lg" />
+            </button>
+            <button className="press border-2 border-ink bg-acid w-8 h-8 flex items-center justify-center text-ink">
+              <Icon icon="ph:caret-right-bold" className="text-lg" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

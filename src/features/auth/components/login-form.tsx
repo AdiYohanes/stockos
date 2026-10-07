@@ -12,6 +12,8 @@ import {
   EyeOff,
   Sparkles,
   ArrowRight,
+  Warehouse,
+  Package,
 } from "lucide-react";
 import { MOCK_CREDENTIALS, loginMockUser } from "@/features/auth/mock-auth";
 import type { AuthFormState } from "@/features/auth/types";
@@ -83,99 +85,83 @@ export function LoginForm() {
 
   const isLoading = state.status === "loading";
   const isSuccess = state.status === "success";
+  const isDisabled = isLoading || isSuccess;
 
   return (
-    <div className="w-full max-w-[450px] mx-auto">
-      {/* Clean SaaS Card with Neo Accent */}
-      <div className="relative rounded-xl border border-border bg-white p-7 sm:p-8 shadow-neo">
-        
-        {/* Card Header */}
-        <div className="mb-6 space-y-1">
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+    <div className="w-full border-[3px] border-border bg-card text-card-foreground shadow-hard-lg selection:bg-primary selection:text-primary-foreground">
+      {/* Card Header */}
+      <div className="space-y-4 p-4 sm:p-6 [@media(max-height:700px)]:space-y-2 [@media(max-height:700px)]:p-2.5">
+        <div className="space-y-2">
+          <h1 className="font-heading text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
             Sign in to StockOS
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-sm leading-relaxed [@media(max-height:700px)]:hidden">
             Enter your workspace credentials to access inventory.
           </p>
         </div>
 
         {/* Demo Fast Fill Banner */}
-        <div className="mb-5 rounded-md border border-black bg-[#ede9fe] p-3 text-foreground shadow-neo-sm">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-sm bg-[#543afd] text-white">
-                <Sparkles className="h-3 w-3" />
+        <div className="border-[3px] border-border bg-background p-2.5 sm:p-3 [@media(max-height:700px)]:border-0 [@media(max-height:700px)]:bg-transparent [@media(max-height:700px)]:p-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 [@media(max-height:700px)]:hidden">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-border bg-primary text-primary-foreground">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
-              <span className="font-mono text-xs font-bold text-[#543afd]">
-                Demo Sandbox
-              </span>
+              <span className="text-sm font-bold">Demo Sandbox</span>
             </div>
             <button
               type="button"
               onClick={handleAutoFillDemo}
+              disabled={isDisabled}
               className={cn(
-                "rounded-sm border border-black px-2 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer",
+                "min-h-11 border-2 border-border px-3 text-xs font-bold [@media(max-height:700px)]:w-full outline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60",
                 demoFilled
-                  ? "bg-[#dcfce7] text-[#15803d]"
-                  : "bg-white text-foreground hover:bg-slate-100 active:translate-y-px"
+                  ? "bg-[#dcfce7] text-[#166534]"
+                  : "bg-card text-card-foreground hover:bg-background"
               )}
             >
               {demoFilled ? (
-                <span className="flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Filled
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" /> Filled
                 </span>
               ) : (
                 "Auto Fill Demo"
               )}
             </button>
           </div>
-          <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-            demo@stockos.com / demo123
+          <p className="mt-2 break-words font-mono text-xs leading-relaxed [@media(max-height:700px)]:hidden">
+            {MOCK_CREDENTIALS.email} / {MOCK_CREDENTIALS.password}
           </p>
         </div>
 
         {/* Status Alerts */}
         {state.status === "error" && (
-          <div
-            role="alert"
-            className="mb-5 flex items-start gap-2.5 rounded-md border border-black bg-[#fee2e2] p-3 text-xs font-semibold text-[#b91c1c] shadow-neo-sm"
-          >
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <div className="flex-1 font-mono">{state.message}</div>
+          <div role="alert" className="flex items-start gap-3 border-[3px] border-black bg-[#fff1f2] p-4 text-sm font-medium text-[#9f1239]">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <p>{state.message}</p>
           </div>
         )}
-
         {state.status === "success" && (
-          <div
-            role="alert"
-            className="mb-5 flex items-start gap-2.5 rounded-md border border-black bg-[#dcfce7] p-3 text-xs font-semibold text-[#15803d] shadow-neo-sm"
-          >
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <div className="flex-1 font-mono">{state.message}</div>
+          <div role="status" className="flex items-start gap-3 border-[3px] border-black bg-[#dcfce7] p-4 text-sm font-medium text-[#166534]">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <p>{state.message}</p>
           </div>
         )}
 
         {/* Form Fields */}
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Email Field */}
+        <form onSubmit={handleSubmit} noValidate aria-busy={isLoading} className="space-y-3 [@media(max-height:700px)]:space-y-2">
           <div className="space-y-1.5">
-            <label
-              htmlFor="email"
-              className="font-heading text-xs font-semibold text-foreground flex items-center justify-between"
-            >
-              <span>Email Address</span>
-              {errors.email && (
-                <span className="font-mono text-[11px] text-destructive">
-                  {errors.email}
-                </span>
-              )}
+            <label htmlFor="email" className="block text-sm font-semibold">
+              Email Address
             </label>
             <input
               id="email"
               name="email"
               type="email"
               autoComplete="email"
-              disabled={isLoading || isSuccess}
+              disabled={isDisabled}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "email-error" : undefined}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -185,25 +171,19 @@ export function LoginForm() {
               }}
               placeholder="demo@stockos.com"
               className={cn(
-                "w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-black focus:shadow-[2px_2px_0px_#543afd]",
-                errors.email && "border-destructive shadow-[2px_2px_0px_#ef4444]"
+                "min-h-11 w-full border-[3px] border-border bg-card px-3 py-2 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
+                errors.email && "border-[#be123c]"
               )}
             />
+            {errors.email && (
+              <p id="email-error" role="alert" className="text-xs font-medium text-[#9f1239] dark:text-[#fda4af]">{errors.email}</p>
+            )}
           </div>
 
-          {/* Password Field */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="font-heading text-xs font-semibold text-foreground"
-              >
-                Password
-              </label>
-              <Link
-                href="/reset"
-                className="text-xs text-muted-foreground hover:text-foreground hover:underline"
-              >
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <label htmlFor="password" className="text-sm font-semibold">Password</label>
+              <Link href="/reset" className="inline-flex min-h-8 items-center text-xs underline underline-offset-4 outline-offset-2 hover:decoration-2 focus-visible:outline-2 focus-visible:outline-primary">
                 Forgot password?
               </Link>
             </div>
@@ -213,7 +193,9 @@ export function LoginForm() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                disabled={isLoading || isSuccess}
+                disabled={isDisabled}
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={errors.password ? "password-error" : undefined}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -223,83 +205,90 @@ export function LoginForm() {
                 }}
                 placeholder="••••••••"
                 className={cn(
-                  "w-full rounded-md border border-input bg-white px-3 py-2 pr-10 text-sm text-foreground transition-all outline-none placeholder:text-muted-foreground focus:border-black focus:shadow-[2px_2px_0px_#543afd]",
-                  errors.password && "border-destructive shadow-[2px_2px_0px_#ef4444]"
+                  "min-h-11 w-full border-[3px] border-border bg-card px-3 py-2 pr-14 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
+                  errors.password && "border-[#be123c]"
                 )}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                disabled={isDisabled}
+                className="absolute inset-y-[3px] right-[3px] flex w-11 items-center justify-center outline-offset-[-4px] hover:bg-background focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
             {errors.password && (
-              <p className="font-mono text-[11px] text-destructive">
-                {errors.password}
-              </p>
+              <p id="password-error" role="alert" className="text-xs font-medium text-[#9f1239] dark:text-[#fda4af]">{errors.password}</p>
             )}
           </div>
 
           {/* Remember Me */}
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-muted-foreground select-none">
+          <label className="flex min-h-11 w-fit cursor-pointer select-none items-center gap-3 text-sm">
+            <span className="relative h-6 w-6 shrink-0">
               <input
                 type="checkbox"
+                className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                 checked={rememberMe}
+                disabled={isDisabled}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded-xs border border-black text-primary focus:ring-primary"
               />
-              <span>Remember this browser</span>
-            </label>
-          </div>
+              <span className={cn(
+                "flex h-6 w-6 items-center justify-center border-2 border-border shadow-hard-sm outline-offset-4 peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-disabled:opacity-60",
+                rememberMe ? "bg-primary text-primary-foreground" : "bg-card"
+              )}>
+                {rememberMe && <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />}
+              </span>
+            </span>
+            Keep me signed in
+          </label>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || isSuccess}
-            className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-md border-[1.5px] border-black bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-neo-sm transition-all duration-100 hover:-translate-x-px hover:-translate-y-px hover:shadow-neo hover:bg-[#462ee0] active:translate-x-px active:translate-y-px active:shadow-none cursor-pointer mt-2",
-              (isLoading || isSuccess) && "opacity-80 cursor-not-allowed"
-            )}
+            disabled={isDisabled}
+            className="flex min-h-12 w-full items-center justify-center gap-3 border-[3px] border-border bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-hard outline-offset-4 transition-[transform,box-shadow,background-color] hover:bg-[var(--primary-hover)] focus-visible:outline-2 focus-visible:outline-primary active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-70 disabled:active:translate-x-0 disabled:active:translate-y-0 sm:text-base"
           >
             {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="font-mono">Verifying...</span>
-              </>
+              <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /><span>Verifying...</span></>
             ) : isSuccess ? (
-              <>
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="font-mono">Success</span>
-              </>
+              <><CheckCircle2 className="h-4 w-4" aria-hidden="true" /><span>Success</span></>
             ) : (
-              <>
-                <span>Sign in to Dashboard</span>
-                <ArrowRight className="h-4 w-4" />
-              </>
+              <><span>Sign in to Dashboard</span><ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" /></>
             )}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="mt-6 text-center text-xs text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
-          >
-            Create account
-          </Link>
+        {/* Footer Links */}
+        <div className="space-y-3 [@media(max-height:700px)]:space-y-2">
+          <div className="flex items-center gap-4 [@media(max-height:700px)]:hidden">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {["Google", "GitHub"].map((provider) => (
+              <button key={provider} type="button" disabled={isDisabled} className="min-h-11 border-2 border-border bg-card px-3 py-2 text-sm font-bold shadow-hard-sm outline-offset-4 hover:bg-background focus-visible:outline-2 focus-visible:outline-primary active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-60">
+                {provider}
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-sm leading-relaxed">
+            No account yet?{" "}<Link href="/signup" className="inline-flex min-h-8 items-center font-bold underline underline-offset-4 outline-offset-2 hover:decoration-2 focus-visible:outline-2 focus-visible:outline-primary">Create one</Link>
+          </p>
         </div>
+      </div>
 
+      {/* Warehouse and stock decoration */}
+      <div className="flex items-center justify-between gap-4 border-t-[3px] border-border bg-background px-4 py-2 sm:px-6 [@media(max-height:700px)]:hidden">
+        <div aria-hidden="true" className="pointer-events-none flex items-end gap-2">
+          <Warehouse className="h-8 w-8" strokeWidth={1.5} />
+          <Package className="h-5 w-5" strokeWidth={1.5} />
+          <Package className="h-4 w-4" strokeWidth={1.5} />
+        </div>
+        <span className="bg-black px-3 py-1.5 font-mono text-xs font-bold tracking-widest text-white">/ LOGIN</span>
       </div>
     </div>
   );

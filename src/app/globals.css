@@ -4,15 +4,20 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-inter: var(--font-inter);
   --font-archivo: var(--font-archivo);
   --font-space-grotesk: var(--font-space-grotesk);
   --font-space-mono: var(--font-space-mono);
+
+  --color-paper: #f4f1ea;
+  --color-ink: #000000;
+  --color-acid: #543AFD;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-space-grotesk), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
+  --font-heading: var(--font-archivo), sans-serif;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -21,11 +26,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -43,125 +44,122 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
   --color-status-healthy: var(--status-healthy);
   --color-status-warning: var(--status-warning);
   --color-status-critical: var(--status-critical);
   --color-status-transit: var(--status-transit);
   --color-status-neutral: var(--status-neutral);
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: var(--radius);
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 2rem;
+
+  /* Square geometry everywhere */
+  --radius-xs: 0rem;
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: 0rem;
+  --radius-xl: 0rem;
+  --radius-2xl: 0rem;
+  --radius-3xl: 0rem;
+  --radius-4xl: 0rem;
+
+  --shadow-hard-sm: 5px 5px 0 #000;
+  --shadow-hard: 8px 8px 0 #000;
+  --shadow-hard-lg: 12px 12px 0 #000;
 }
 
 :root {
   /* Canvas & Surfaces */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f4f1ea;
+  --foreground: #000000;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #000000;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #000000;
 
-  /* Primary Action: Deep Slate Ink (#0f172a) & Deep Slate Hover (#1e293b) */
-  --primary: #0f172a;
-  --primary-hover: #1e293b;
+  /* Primary Action */
+  --primary: #543AFD;
+  --primary-hover: #402AD4;
   --primary-foreground: #ffffff;
 
   /* Secondary & Neutral Surfaces */
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #e5e5e5;
+  --muted-foreground: #000000;
+  --accent: #543AFD;
+  --accent-foreground: #ffffff;
 
-  /* Semantic Destructive: Critical / Out of Stock (#dc2626) */
-  --destructive: #dc2626;
+  /* Semantic Destructive: Critical / Out of Stock */
+  --destructive: #ff1744;
   --destructive-foreground: #ffffff;
 
   /* Borders & Focus Rings */
-  --border: #e2e8f0;
-  --input: #cbd5e1;
-  --ring: #0f172a;
-
-  /* Charts */
-  --chart-1: #0f172a;
-  --chart-2: #2563eb;
-  --chart-3: #059669;
-  --chart-4: #d97706;
-  --chart-5: #64748b;
+  --border: #000000;
+  --input: #000000;
+  --ring: #000000;
 
   /* Functional Status (Semantic Only) */
-  --status-healthy: #059669;
-  --status-warning: #d97706;
-  --status-critical: #dc2626;
-  --status-transit: #2563eb;
-  --status-neutral: #64748b;
+  --status-healthy: #00e676;
+  --status-warning: #ff9100;
+  --status-critical: #ff1744;
+  --status-transit: #2979ff;
+  --status-neutral: #000000;
 
-  /* Geometry: 6px standard radius */
-  --radius: 0.375rem;
+  /* Geometry: Square */
+  --radius: 0rem;
 
   /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0f172a;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #543AFD;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0f172a;
+  --sidebar-accent: #543AFD;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #000000;
+  --sidebar-ring: #000000;
 }
 
 .dark {
-  --background: #090d16;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-hover: #e2e8f0;
-  --primary-foreground: #0f172a;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #ef4444;
+  /* Inverted Hard Neobrutalism (if needed) */
+  --background: #000000;
+  --foreground: #f4f1ea;
+  --card: #111111;
+  --card-foreground: #f4f1ea;
+  --popover: #111111;
+  --popover-foreground: #f4f1ea;
+  --primary: #543AFD;
+  --primary-hover: #604BFF;
+  --primary-foreground: #ffffff;
+  --secondary: #222222;
+  --secondary-foreground: #f4f1ea;
+  --muted: #333333;
+  --muted-foreground: #aaaaaa;
+  --accent: #543AFD;
+  --accent-foreground: #ffffff;
+  --destructive: #ff1744;
   --destructive-foreground: #ffffff;
-  --border: #1e293b;
-  --input: #334155;
-  --ring: #94a3b8;
-  --chart-1: #f8fafc;
-  --chart-2: #3b82f6;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #94a3b8;
-  --status-healthy: #10b981;
-  --status-warning: #f59e0b;
-  --status-critical: #ef4444;
-  --status-transit: #3b82f6;
-  --status-neutral: #94a3b8;
-  --radius: 0.375rem;
-  --sidebar: #0f172a;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #f8fafc;
-  --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #94a3b8;
+  --border: #f4f1ea;
+  --input: #f4f1ea;
+  --ring: #543AFD;
+  --status-healthy: #00e676;
+  --status-warning: #ff9100;
+  --status-critical: #ff1744;
+  --status-transit: #2979ff;
+  --status-neutral: #aaaaaa;
+  --radius: 0rem;
+  --sidebar: #000000;
+  --sidebar-foreground: #f4f1ea;
+  --sidebar-primary: #543AFD;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #543AFD;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #f4f1ea;
+  --sidebar-ring: #543AFD;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    border-radius: 0 !important;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
@@ -175,20 +173,38 @@
 }
 
 /* ==========================================================================
-   The Precision Ledger Foundations
+   Hard Neobrutalism Utilities
    ========================================================================== */
 
-.font-inter {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+.grid-dots {
+  background-image: radial-gradient(circle, var(--color-ink) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.dark .grid-dots {
+  background-image: radial-gradient(circle, #f4f1ea 1px, transparent 1px);
 }
 
-.font-space-grotesk {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+.press {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.press:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+.press:active {
+  transform: translate(8px, 8px);
+  box-shadow: none;
 }
 
-.font-space-mono {
-  font-family: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
+.input-focus:focus {
+  outline: none;
+  background: #fffef2;
+  box-shadow: 8px 8px 0 var(--color-acid), 8px 8px 0 3px var(--border);
 }
+
+/* ==========================================================================
+   Transitional Utilities (Mapped to Hard Neobrutalism)
+   ========================================================================== */
 
 /* Tabular figures & data styling */
 .font-tabular,
@@ -197,220 +213,119 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Single-Surface Precision Ledger Container */
+/* Single-Surface Precision Ledger Container (Now Neobrutalist Block) */
 .ledger-container {
-  border: 1px solid var(--border);
+  border: 3px solid var(--border);
   background-color: var(--card);
-  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard-lg);
   overflow: hidden;
 }
 
-/* Operational Status Indicator Dots */
+/* Operational Status Indicator Dots (Replaced with square blocks) */
 .status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
+  width: 10px;
+  height: 10px;
   display: inline-block;
   flex-shrink: 0;
+  border: 2px solid var(--border);
 }
-.status-dot-healthy {
-  background-color: var(--status-healthy);
-}
-.status-dot-warning {
-  background-color: var(--status-warning);
-}
-.status-dot-critical {
-  background-color: var(--status-critical);
-}
-.status-dot-transit {
-  background-color: var(--status-transit);
-}
-.status-dot-neutral {
-  background-color: var(--status-neutral);
-}
-
-/* ==========================================================================
-   Transitional Legacy Neo-SaaS Bridge Utilities
-   (Retained as flat ledger shims so unmigrated feature pages remain coherent)
-   ========================================================================== */
+.status-dot-healthy { background-color: var(--status-healthy); }
+.status-dot-warning { background-color: var(--status-warning); }
+.status-dot-critical { background-color: var(--status-critical); }
+.status-dot-transit { background-color: var(--status-transit); }
+.status-dot-neutral { background-color: var(--status-neutral); }
 
 .text-md {
   font-size: 14px;
   line-height: 20px;
 }
 
-/* Flattened Shadows */
-.shadow-neo-sm,
-.shadow-brutal-sm {
-  box-shadow: none;
-}
+/* Neobrutalist Shadows for Legacy Classes */
+.shadow-neo-sm, .shadow-brutal-sm { box-shadow: var(--shadow-hard-sm); }
+.shadow-neo, .shadow-brutal { box-shadow: var(--shadow-hard); }
+.shadow-neo-lg, .shadow-brutal-lg { box-shadow: var(--shadow-hard-lg); }
 
-.shadow-neo,
-.shadow-brutal {
-  box-shadow: none;
-}
+.shadow-neo-primary, .shadow-brutal-primary { box-shadow: var(--shadow-hard); }
+.shadow-neo-primary-sm, .shadow-brutal-primary-sm { box-shadow: var(--shadow-hard-sm); }
 
-.shadow-neo-lg,
-.shadow-brutal-lg {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+/* Flattened Action Buttons -> Neobrutalist Buttons */
+.btn-neo, .btn-brutal {
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard-sm);
+  background-color: var(--card);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
 }
-
-.shadow-neo-primary,
-.shadow-brutal-primary {
-  box-shadow: none;
-}
-
-.shadow-neo-primary-sm,
-.shadow-brutal-primary-sm {
-  box-shadow: none;
-}
-
-/* Flattened Action Buttons */
-.btn-neo,
-.btn-brutal {
-  border: 1px solid var(--border);
-  box-shadow: none;
-  border-radius: var(--radius-md);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-.btn-neo:hover,
-.btn-brutal:hover {
-  transform: none;
-  box-shadow: none;
+.btn-neo:hover, .btn-brutal:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
   background-color: var(--muted);
-  border-color: var(--input);
 }
-.btn-neo:active,
-.btn-brutal:active {
-  transform: none;
+.btn-neo:active, .btn-brutal:active {
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 
-.btn-neo-primary,
-.btn-brutal-primary {
+.btn-neo-primary, .btn-brutal-primary {
   background-color: var(--primary);
   color: var(--primary-foreground);
-  border: 1px solid transparent;
-  box-shadow: none;
-  border-radius: var(--radius-md);
-  transition: background-color 0.15s ease;
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard);
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-.btn-neo-primary:hover,
-.btn-brutal-primary:hover {
-  transform: none;
-  box-shadow: none;
+.btn-neo-primary:hover, .btn-brutal-primary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
   background-color: var(--primary-hover);
 }
-.btn-neo-primary:active,
-.btn-brutal-primary:active {
-  transform: none;
+.btn-neo-primary:active, .btn-brutal-primary:active {
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 
-.btn-neo-black,
-.btn-brutal-black {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid transparent;
-  box-shadow: none;
-  border-radius: var(--radius-md);
-  transition: background-color 0.15s ease;
+.btn-neo-black, .btn-brutal-black {
+  background-color: var(--foreground);
+  color: var(--background);
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-hard);
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-.btn-neo-black:hover,
-.btn-brutal-black:hover {
-  transform: none;
-  box-shadow: none;
-  background-color: var(--primary-hover);
+.btn-neo-black:hover, .btn-brutal-black:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--border);
+  background-color: var(--foreground);
 }
-.btn-neo-black:active,
-.btn-brutal-black:active {
-  transform: none;
+.btn-neo-black:active, .btn-brutal-black:active {
+  transform: translate(8px, 8px);
   box-shadow: none;
 }
 
-/* Flattened Inputs */
-.input-neo,
-.input-brutal {
-  border: 1px solid var(--input) !important;
+/* Inputs -> Neobrutalist Inputs */
+.input-neo, .input-brutal {
+  border: 3px solid var(--border) !important;
   background-color: var(--card);
   color: var(--foreground);
-  border-radius: var(--radius-md) !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
 }
-.input-neo:focus,
-.input-brutal:focus {
-  border-color: var(--ring) !important;
+.input-neo:focus, .input-brutal:focus {
   outline: none !important;
-  box-shadow: 0 0 0 1px var(--ring) !important;
+  background-color: #fffef2;
+  box-shadow: 8px 8px 0 var(--primary), 8px 8px 0 3px var(--border) !important;
 }
-.input-neo::placeholder,
-.input-brutal::placeholder {
+.input-neo::placeholder, .input-brutal::placeholder {
   color: var(--muted-foreground);
 }
 
-/* ==========================================================================
-   Animated Checkmark Keyframes & Utilities
-   ========================================================================== */
+/* Checkmarks (keep for UI) */
+@keyframes checkmark-draw-circle { 0% { stroke-dashoffset: 160; } 100% { stroke-dashoffset: 0; } }
+@keyframes checkmark-draw-check { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }
+@keyframes checkmark-pop { 0% { transform: scale(0.6); opacity: 0; } 50% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes checkmark-ring-expand { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
 
-@keyframes checkmark-draw-circle {
-  0% {
-    stroke-dashoffset: 160;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes checkmark-draw-check {
-  0% {
-    stroke-dashoffset: 50;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes checkmark-pop {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.08);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes checkmark-ring-expand {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.4);
-    opacity: 0;
-  }
-}
-
-.animate-check-circle {
-  stroke-dasharray: 160;
-  stroke-dashoffset: 160;
-  animation: checkmark-draw-circle 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-}
-
-.animate-check-path {
-  stroke-dasharray: 50;
-  stroke-dashoffset: 50;
-  animation: checkmark-draw-check 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.35s forwards;
-}
-
-.animate-check-pop {
-  animation: checkmark-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-ring-pulse {
-  animation: checkmark-ring-expand 1.2s ease-out infinite;
-}
+.animate-check-circle { stroke-dasharray: 160; stroke-dashoffset: 160; animation: checkmark-draw-circle 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.animate-check-path { stroke-dasharray: 50; stroke-dashoffset: 50; animation: checkmark-draw-check 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.35s forwards; }
+.animate-check-pop { animation: checkmark-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-ring-pulse { animation: checkmark-ring-expand 1.2s ease-out infinite; }

@@ -4,33 +4,33 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center cursor-pointer rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center cursor-pointer rounded-none border-[3px] bg-clip-padding font-bold uppercase whitespace-nowrap outline-none select-none disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive press transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-slate-800 dark:hover:bg-slate-200",
+        default: "bg-primary text-primary-foreground border-border shadow-hard-sm hover:bg-primary-hover",
         outline:
-          "border-border bg-card text-foreground hover:bg-muted hover:border-slate-300 dark:hover:border-slate-700 aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-border bg-card text-foreground shadow-hard-sm hover:bg-acid aria-expanded:bg-acid",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-slate-200 dark:hover:bg-slate-700 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-foreground text-background border-border shadow-hard-sm hover:bg-foreground aria-expanded:bg-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-transparent hover:bg-acid hover:border-border hover:shadow-hard-sm aria-expanded:bg-acid aria-expanded:border-border",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:border-destructive focus-visible:ring-destructive",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-destructive text-destructive-foreground border-border shadow-hard-sm hover:bg-destructive/90",
+        link: "text-primary underline-offset-4 hover:underline border-transparent shadow-none press-none",
       },
       size: {
         default:
-          "h-9 gap-1.5 px-3.5 text-sm has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5",
-        xs: "h-7 gap-1 rounded-sm px-2 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 gap-1.5 rounded-md px-2.5 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-10 gap-2 rounded-md px-4 text-sm font-medium in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        icon: "size-9",
+          "h-10 gap-2 px-4 text-xs has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        xs: "h-8 gap-1 px-2.5 text-[10px] has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-9 gap-1.5 px-3 text-xs has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-12 gap-2.5 px-6 text-sm has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+        icon: "size-10",
         "icon-xs":
-          "size-7 rounded-sm in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",
+          "size-8 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
-          "size-8 rounded-md in-data-[slot=button-group]:rounded-md",
-        "icon-lg": "size-10",
+          "size-9",
+        "icon-lg": "size-12",
       },
     },
     defaultVariants: {

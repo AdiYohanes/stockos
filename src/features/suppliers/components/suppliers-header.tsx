@@ -1,39 +1,49 @@
 "use client";
 
 import * as React from "react";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared";
-import { useI18n } from "@/lib/i18n/context";
+import { Icon } from "@iconify/react";
 
 interface SuppliersHeaderProps {
-  totalCount: number;
   onOpenCreateModal: () => void;
 }
 
 export function SuppliersHeader({
-  totalCount,
   onOpenCreateModal,
 }: SuppliersHeaderProps) {
-  const { language, t } = useI18n();
-
-  const actionButtons = (
-    <Button
-      type="button"
-      onClick={onOpenCreateModal}
-      className="h-9 gap-2 bg-[#543afd] hover:bg-[#462ee0] text-white border-[1.5px] border-black font-semibold text-xs shadow-neo-sm active:translate-x-0.5 active:translate-y-0.5 transition-all"
-    >
-      <Plus className="h-3.5 w-3.5" />
-      <span>{t.suppliers.addSupplier}</span>
-    </Button>
-  );
-
   return (
-    <PageHeader
-      title={t.suppliers.title}
-      badgeText={`${totalCount} ${language === "id" ? "PEMASOK" : "SUPPLIERS"}`}
-      description={t.suppliers.subtitle}
-      actions={actionButtons}
-    />
+    <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8">
+      <div>
+        <div className="inline-flex items-center gap-2 bg-white border-2 border-ink px-3 py-1 mb-4">
+          <span className="w-2 h-2 bg-acid border border-ink"></span>
+          <span className="font-mono text-[10px] uppercase tracking-[.18em]">
+            Vendor directory
+          </span>
+        </div>
+        <h1 className="font-display font-[900] uppercase leading-[.9] tracking-tighter text-[clamp(2.4rem,6vw,4.6rem)]">
+          SUPPLIER<br />
+          <span className="bg-acid px-2">NETWORK.</span>
+        </h1>
+        <p className="mt-4 font-mono text-[10px] uppercase tracking-[.16em] opacity-60">
+          Manage partnerships and evaluate performance
+        </p>
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={onOpenCreateModal}
+          className="press bg-acid border-[3px] border-ink shadow-hard px-5 py-3 font-display font-[900] uppercase text-xs flex items-center gap-2"
+        >
+          <Icon icon="ph:plus-bold" className="text-lg" />
+          Add Supplier
+        </button>
+        <button className="press bg-white border-[2px] border-ink shadow-hard-sm px-4 py-3 font-display font-bold uppercase text-xs flex items-center gap-2">
+          <Icon icon="ph:funnel-bold" className="text-lg" />
+          Filter
+        </button>
+        <button className="press bg-white border-[2px] border-ink shadow-hard-sm px-4 py-3 font-display font-bold uppercase text-xs flex items-center gap-2">
+          <Icon icon="ph:export-bold" className="text-lg" />
+          Export
+        </button>
+      </div>
+    </section>
   );
 }
