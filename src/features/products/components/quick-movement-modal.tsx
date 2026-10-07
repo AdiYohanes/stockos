@@ -63,18 +63,22 @@ function QuickMovementForm({
     isIn ? "Received inbound restock shipment." : "Outbound order dispatch."
   );
 
+  const [error, setError] = React.useState<string | null>(null);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const qty = parseInt(quantity, 10) || 0;
-    if (qty > 0) {
-      onRecordMovement(product.id, type, qty, reference, note);
+    setError(null);
+    try {
+      onRecordMovement(product.id, type, Number(quantity), reference, note);
       onClose();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to record movement.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <DialogBody className="space-y-3">
+        {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         {/* Product Info Card */}
         <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 flex items-center justify-between">
           <div className="min-w-0 pr-2 space-y-1">

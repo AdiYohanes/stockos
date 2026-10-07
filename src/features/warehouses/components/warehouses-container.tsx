@@ -127,6 +127,7 @@ export function WarehousesContainer() {
       />
 
       <DeleteWarehouseDialog
+        key={warehouseToDelete?.id ?? "closed"}
         warehouse={warehouseToDelete}
         open={!!warehouseToDelete}
         onClose={() => setWarehouseToDelete(null)}

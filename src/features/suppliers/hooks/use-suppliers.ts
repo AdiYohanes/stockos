@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useSuppliersStore } from "@/components/providers/feature-stores-provider";
 import type {
   SupplierFilterState,
   SupplierItem,
@@ -9,9 +11,10 @@ import type {
   SupplierSortOrder,
   SupplierStatus,
   SupplierTier,
-  PaymentTerms,
 } from "../types";
-import { MOCK_SUPPLIERS } from "../mock-data";
+import type { SupplierFormData } from "../store";
+
+export type { SupplierFormData };
 
 export interface UseSuppliersReturn {
   // Master state
@@ -52,28 +55,9 @@ export interface UseSuppliersReturn {
   resetFilters: () => void;
 
   // Mutations
-  createSupplier: (data: SupplierFormData) => void;
-  updateSupplier: (id: string, data: SupplierFormData) => void;
-  deleteSupplier: (id: string) => void;
-}
-
-export interface SupplierFormData {
-  name: string;
-  code: string;
-  status: SupplierStatus;
-  tier: SupplierTier;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  street: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  website?: string;
-  paymentTerms: PaymentTerms;
-  leadTimeDays: number;
-  categories: string[];
-  notes?: string;
+  createSupplier: (data: SupplierFormData) => SupplierItem;
+  updateSupplier: (id: string, data: SupplierFormData) => SupplierItem;
+  deleteSupplier: (id: string) => SupplierItem;
 }
 
 const INITIAL_FILTER_STATE: SupplierFilterState = {
@@ -88,16 +72,28 @@ const INITIAL_FILTER_STATE: SupplierFilterState = {
 };
 
 export function useSuppliers(): UseSuppliersReturn {
-  const [suppliers, setSuppliers] = React.useState<SupplierItem[]>(MOCK_SUPPLIERS);
+  const suppliers = useSuppliersStore((s) => s.suppliers);
+  const {
+    createSupplier: storeCreateSupplier,
+    updateSupplier: storeUpdateSupplier,
+    deleteSupplier: storeDeleteSupplier,
+  } = useSuppliersStore(
+    useShallow((s) => ({
+      createSupplier: s.createSupplier,
+      updateSupplier: s.updateSupplier,
+      deleteSupplier: s.deleteSupplier,
+    }))
+  );
+
   const [filterState, setFilterState] =
     React.useState<SupplierFilterState>(INITIAL_FILTER_STATE);
 
   // Selected supplier for slide-over sheet (Derived selection pattern)
   const [selectedSupplierId, setSelectedSupplierId] = React.useState<string | null>(null);
 
-  // Modal states
-  const [supplierToEdit, setSupplierToEdit] = React.useState<SupplierItem | null>(null);
-  const [supplierToDelete, setSupplierToDelete] = React.useState<SupplierItem | null>(null);
+  // Modal target IDs (Derived from store data instead of storing snapshot objects)
+  const [editSupplierId, setEditSupplierId] = React.useState<string | null>(null);
+  const [deleteSupplierId, setDeleteSupplierId] = React.useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState<boolean>(false);
 
   // Derived selected supplier
@@ -105,6 +101,25 @@ export function useSuppliers(): UseSuppliersReturn {
     if (!selectedSupplierId) return null;
     return suppliers.find((s) => s.id === selectedSupplierId) || null;
   }, [suppliers, selectedSupplierId]);
+
+  // Derived supplier to edit & delete
+  const supplierToEdit = React.useMemo(() => {
+    if (!editSupplierId) return null;
+    return suppliers.find((s) => s.id === editSupplierId) || null;
+  }, [suppliers, editSupplierId]);
+
+  const supplierToDelete = React.useMemo(() => {
+    if (!deleteSupplierId) return null;
+    return suppliers.find((s) => s.id === deleteSupplierId) || null;
+  }, [suppliers, deleteSupplierId]);
+
+  const setSupplierToEdit = React.useCallback((item: SupplierItem | null) => {
+    setEditSupplierId(item ? item.id : null);
+  }, []);
+
+  const setSupplierToDelete = React.useCallback((item: SupplierItem | null) => {
+    setDeleteSupplierId(item ? item.id : null);
+  }, []);
 
   // Derived metrics
   const metrics = React.useMemo<SupplierMetrics>(() => {
@@ -213,12 +228,14 @@ export function useSuppliers(): UseSuppliersReturn {
   }, [suppliers, filterState]);
 
   const totalFilteredCount = filteredSuppliers.length;
-  const totalPages = Math.ceil(totalFilteredCount / filterState.pageSize) || 1;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / filterState.pageSize));
+  // Derived page clamp without useEffect syncing
+  const currentPage = Math.min(Math.max(1, filterState.page), totalPages);
 
   const paginatedSuppliers = React.useMemo(() => {
-    const start = (filterState.page - 1) * filterState.pageSize;
+    const start = (currentPage - 1) * filterState.pageSize;
     return filteredSuppliers.slice(start, start + filterState.pageSize);
-  }, [filteredSuppliers, filterState.page, filterState.pageSize]);
+  }, [filteredSuppliers, currentPage, filterState.pageSize]);
 
   // Setters
   const setSearchQuery = React.useCallback((searchQuery: string) => {
@@ -261,94 +278,39 @@ export function useSuppliers(): UseSuppliersReturn {
   }, []);
 
   // Mutations
-  const createSupplier = React.useCallback((data: SupplierFormData) => {
-    const now = new Date();
-    const dateStr = now.toISOString().split("T")[0];
-    const newId = `sup-${Date.now()}`;
-
-    const newSupplier: SupplierItem = {
-      id: newId,
-      code: data.code.toUpperCase().trim(),
-      name: data.name.trim(),
-      status: data.status,
-      tier: data.tier,
-      contactName: data.contactName.trim(),
-      contactEmail: data.contactEmail.trim(),
-      contactPhone: data.contactPhone.trim(),
-      address: {
-        street: data.street.trim(),
-        city: data.city.trim(),
-        province: data.province.trim(),
-        postalCode: data.postalCode.trim(),
-      },
-      website: data.website?.trim() || undefined,
-      paymentTerms: data.paymentTerms,
-      leadTimeDays: data.leadTimeDays,
-      totalOrders: 0,
-      totalSpend: 0,
-      onTimeDeliveryRate: 0,
-      defectRate: 0,
-      categories: data.categories,
-      notes: data.notes?.trim() || undefined,
-      orderHistory: [],
-      createdAt: dateStr,
-    };
-
-    setSuppliers((prev) => [newSupplier, ...prev]);
-    setIsCreateModalOpen(false);
-  }, []);
+  const createSupplier = React.useCallback(
+    (data: SupplierFormData) => {
+      const created = storeCreateSupplier(data);
+      setIsCreateModalOpen(false);
+      return created;
+    },
+    [storeCreateSupplier]
+  );
 
   const updateSupplier = React.useCallback(
     (id: string, data: SupplierFormData) => {
-      const dateStr = new Date().toISOString().split("T")[0];
-
-      setSuppliers((prev) =>
-        prev.map((item) => {
-          if (item.id !== id) return item;
-          return {
-            ...item,
-            code: data.code.toUpperCase().trim(),
-            name: data.name.trim(),
-            status: data.status,
-            tier: data.tier,
-            contactName: data.contactName.trim(),
-            contactEmail: data.contactEmail.trim(),
-            contactPhone: data.contactPhone.trim(),
-            address: {
-              street: data.street.trim(),
-              city: data.city.trim(),
-              province: data.province.trim(),
-              postalCode: data.postalCode.trim(),
-            },
-            website: data.website?.trim() || undefined,
-            paymentTerms: data.paymentTerms,
-            leadTimeDays: data.leadTimeDays,
-            categories: data.categories,
-            notes: data.notes?.trim() || undefined,
-            updatedAt: dateStr,
-          };
-        })
-      );
-
-      setSupplierToEdit(null);
+      const updated = storeUpdateSupplier(id, data);
+      setEditSupplierId(null);
+      return updated;
     },
-    []
+    [storeUpdateSupplier]
   );
 
   const deleteSupplier = React.useCallback(
     (id: string) => {
-      setSuppliers((prev) => prev.filter((item) => item.id !== id));
+      const deleted = storeDeleteSupplier(id);
       if (selectedSupplierId === id) {
         setSelectedSupplierId(null);
       }
-      setSupplierToDelete(null);
+      setDeleteSupplierId(null);
+      return deleted;
     },
-    [selectedSupplierId]
+    [storeDeleteSupplier, selectedSupplierId]
   );
 
   return {
     suppliers,
-    filterState,
+    filterState: { ...filterState, page: currentPage },
     hasActiveFilters,
     filteredSuppliers,
     paginatedSuppliers,

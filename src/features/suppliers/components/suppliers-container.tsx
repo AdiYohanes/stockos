@@ -94,6 +94,7 @@ export function SuppliersContainer() {
       />
 
       <DeleteSupplierDialog
+        key={supplierToDelete?.id ?? "closed"}
         supplier={supplierToDelete}
         open={!!supplierToDelete}
         onClose={() => setSupplierToDelete(null)}

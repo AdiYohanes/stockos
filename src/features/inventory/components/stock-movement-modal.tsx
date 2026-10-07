@@ -74,8 +74,8 @@ function StockMovementForm({
     e.preventDefault();
     setError(null);
 
-    const qty = parseInt(quantity, 10);
-    if (isNaN(qty) || qty <= 0) {
+    const qty = Number(quantity);
+    if (!Number.isSafeInteger(qty) || qty <= 0) {
       setError("Please enter a valid quantity greater than 0.");
       return;
     }
@@ -85,9 +85,9 @@ function StockMovementForm({
       return;
     }
 
-    if (type === "out" && qty > activeItem.currentStock) {
+    if (type === "out" && qty > activeItem.availableStock) {
       setError(
-        `Cannot dispatch ${qty} ${activeItem.unit}. Available on hand: ${activeItem.currentStock} ${activeItem.unit}.`
+        `Cannot dispatch ${qty} ${activeItem.unit}. Available stock: ${activeItem.availableStock} ${activeItem.unit}.`
       );
       return;
     }
@@ -97,7 +97,11 @@ function StockMovementForm({
       return;
     }
 
-    onSubmit(activeItem.id, type, qty, reference.trim().toUpperCase(), note.trim() || undefined);
+    try {
+      onSubmit(activeItem.id, type, qty, reference.trim().toUpperCase(), note.trim() || undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to record movement");
+    }
   };
 
   return (
@@ -235,7 +239,10 @@ function StockMovementForm({
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans">
+          <div
+            role="alert"
+            className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans"
+          >
             {error}
           </div>
         )}

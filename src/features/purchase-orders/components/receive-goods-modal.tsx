@@ -44,18 +44,25 @@ export function ReceiveGoodsModal({
     return initialMap;
   });
   const [notes, setNotes] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
 
   if (!po) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     const receivedItems = po.lineItems.map((item) => ({
       lineItemId: item.id,
-      quantityReceived: receivedQtyMap[item.id] || 0,
+      quantityReceived: receivedQtyMap[item.id] ?? 0,
     }));
 
-    onConfirmReceive(po.id, receivedItems, po.destinationWarehouseId, notes);
+    try {
+      onConfirmReceive(po.id, receivedItems, po.destinationWarehouseId, notes);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to receive goods");
+    }
   };
 
   return (
@@ -74,10 +81,18 @@ export function ReceiveGoodsModal({
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-sans"
+              >
+                {error}
+              </div>
+            )}
             <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900">
               <span className="font-semibold">Target Warehouse:</span> {po.destinationWarehouseName}
               <br />
-              Submitting this form will automatically inject <strong>Stock In</strong> records into your warehouse inventory.
+              Records received quantities and receipt history for this purchase order. Inventory balances are not updated in this mock flow.
             </div>
 
             {/* Line Items Receive Inputs */}

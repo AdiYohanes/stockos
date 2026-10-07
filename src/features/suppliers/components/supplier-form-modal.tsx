@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,6 +96,7 @@ function SupplierFormContent({ supplier, onClose, onSave }: SupplierFormContentP
   const [notes, setNotes] = React.useState(supplier?.notes ?? "");
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const toggleCategory = (cat: string) => {
     setCategories((prev) =>
@@ -127,24 +129,29 @@ function SupplierFormContent({ supplier, onClose, onSave }: SupplierFormContentP
     e.preventDefault();
     if (!validate()) return;
 
-    onSave({
-      code,
-      name,
-      status,
-      tier,
-      contactName,
-      contactEmail,
-      contactPhone,
-      street,
-      city,
-      province,
-      postalCode,
-      website: website || undefined,
-      paymentTerms,
-      leadTimeDays: parseInt(leadTimeDays, 10),
-      categories,
-      notes: notes || undefined,
-    });
+    try {
+      onSave({
+        code,
+        name,
+        status,
+        tier,
+        contactName,
+        contactEmail,
+        contactPhone,
+        street,
+        city,
+        province,
+        postalCode,
+        website: website || undefined,
+        paymentTerms,
+        leadTimeDays: parseInt(leadTimeDays, 10),
+        categories,
+        notes: notes || undefined,
+      });
+      setSubmitError(null);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to save supplier");
+    }
   };
 
   return (
@@ -152,6 +159,16 @@ function SupplierFormContent({ supplier, onClose, onSave }: SupplierFormContentP
       <DialogBody>
         <ScrollArea className="max-h-[55vh]">
           <div className="space-y-5 pr-3">
+            {submitError && (
+              <div
+                role="alert"
+                className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-700" />
+                <span>{submitError}</span>
+              </div>
+            )}
+
             {/* Basic Info */}
             <div className="space-y-3">
               <h3 className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

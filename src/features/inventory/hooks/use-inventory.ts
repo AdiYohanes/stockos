@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useInventoryStore } from "@/components/providers/feature-stores-provider";
 import type {
   AdjustmentReason,
   InventoryFilterState,
@@ -12,7 +14,6 @@ import type {
   StockMovement,
   StockStatus,
 } from "../types";
-import { MOCK_INVENTORY_ITEMS, MOCK_STOCK_MOVEMENTS } from "../mock-data";
 
 export interface UseInventoryReturn {
   // Master lists
@@ -88,42 +89,61 @@ const INITIAL_FILTER_STATE: InventoryFilterState = {
   pageSize: 10,
 };
 
-function calculateStockStatus(currentStock: number, minStock: number, maxStock: number): StockStatus {
-  if (currentStock <= 0) return "out_of_stock";
-  if (currentStock <= minStock) return "low_stock";
-  if (currentStock > maxStock) return "overstocked";
-  return "in_stock";
-}
-
 export function useInventory(): UseInventoryReturn {
-  const [items, setItems] = React.useState<InventoryItem[]>(MOCK_INVENTORY_ITEMS);
-  const [movements, setMovements] = React.useState<StockMovement[]>(MOCK_STOCK_MOVEMENTS);
+  const items = useInventoryStore((state) => state.items);
+  const movements = useInventoryStore((state) => state.movements);
+  const { recordMovement, adjustStock } = useInventoryStore(
+    useShallow((state) => ({
+      recordMovement: state.recordMovement,
+      adjustStock: state.adjustStock,
+    }))
+  );
+
   const [filterState, setFilterState] = React.useState<InventoryFilterState>(INITIAL_FILTER_STATE);
 
-  // Selected item IDs
+  // Selected item references stored as IDs; entities derived from latest collection
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(null);
-  const [itemToAdjust, setItemToAdjust] = React.useState<InventoryItem | null>(null);
-  const [itemToMove, setItemToMove] = React.useState<{
-    item: InventoryItem | null;
-    type: "in" | "out" | null;
-  }>({
-    item: null,
+  const [adjustItemId, setAdjustItemId] = React.useState<string | null>(null);
+  const [moveTarget, setMoveTarget] = React.useState<{ id: string | null; type: "in" | "out" | null }>({
+    id: null,
     type: null,
   });
 
-  // Derived selected item (React 19 safe selection pattern)
+  // Derived selected item
   const selectedItem = React.useMemo(() => {
     if (!selectedItemId) return null;
     const found = items.find((i) => i.id === selectedItemId);
     if (!found) return null;
 
-    // Attach matching movement logs for this item
     const itemLogs = movements.filter((m) => m.itemId === found.id || m.sku === found.sku);
     return {
       ...found,
       movementLogs: itemLogs,
     };
   }, [items, movements, selectedItemId]);
+
+  const itemToAdjust = React.useMemo(() => {
+    if (!adjustItemId) return null;
+    return items.find((i) => i.id === adjustItemId) || null;
+  }, [items, adjustItemId]);
+
+  const itemToMove = React.useMemo(() => {
+    return {
+      item: moveTarget.id ? items.find((i) => i.id === moveTarget.id) || null : null,
+      type: moveTarget.type,
+    };
+  }, [items, moveTarget]);
+
+  const setItemToAdjust = React.useCallback((item: InventoryItem | null) => {
+    setAdjustItemId(item ? item.id : null);
+  }, []);
+
+  const setItemToMove = React.useCallback(
+    (payload: { item: InventoryItem | null; type: "in" | "out" | null }) => {
+      setMoveTarget({ id: payload.item ? payload.item.id : null, type: payload.type });
+    },
+    []
+  );
 
   // Derived Metrics
   const metrics: InventoryMetrics = React.useMemo(() => {
@@ -146,9 +166,10 @@ export function useInventory(): UseInventoryReturn {
       }
     }
 
-    // Movements today (comparing YYYY-MM-DD)
     const todayStr = new Date().toISOString().split("T")[0];
-    const todayMovements = movements.filter((m) => m.timestamp.startsWith(todayStr) || m.timestamp.startsWith("2026-08-12"));
+    const todayMovements = movements.filter(
+      (m) => m.timestamp.startsWith(todayStr) || m.timestamp.startsWith("2026-08-12")
+    );
 
     return {
       totalItems: items.length,
@@ -166,7 +187,6 @@ export function useInventory(): UseInventoryReturn {
     const query = filterState.searchQuery.trim().toLowerCase();
 
     return items.filter((item) => {
-      // Search query (SKU, Name, Category, Location Bin)
       if (query) {
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesSku = item.sku.toLowerCase().includes(query);
@@ -177,17 +197,14 @@ export function useInventory(): UseInventoryReturn {
         }
       }
 
-      // Warehouse filter
       if (filterState.warehouse !== "all" && item.warehouse !== filterState.warehouse) {
         return false;
       }
 
-      // Status filter
       if (filterState.status !== "all" && item.status !== filterState.status) {
         return false;
       }
 
-      // Category filter
       if (filterState.category !== "all" && item.category !== filterState.category) {
         return false;
       }
@@ -231,20 +248,20 @@ export function useInventory(): UseInventoryReturn {
     return sorted;
   }, [filteredItems, filterState]);
 
-  // Paginated Items
+  // Clamped pagination for items
   const totalFilteredItemsCount = sortedItems.length;
   const totalItemPages = Math.max(1, Math.ceil(totalFilteredItemsCount / filterState.pageSize));
+  const effectiveItemPage = Math.min(filterState.page, totalItemPages);
   const paginatedItems = React.useMemo(() => {
-    const start = (filterState.page - 1) * filterState.pageSize;
+    const start = (effectiveItemPage - 1) * filterState.pageSize;
     return sortedItems.slice(start, start + filterState.pageSize);
-  }, [sortedItems, filterState]);
+  }, [sortedItems, effectiveItemPage, filterState.pageSize]);
 
   // 2. Filtered Movements (Audit Logs Tab)
   const filteredMovements = React.useMemo(() => {
     const query = filterState.searchQuery.trim().toLowerCase();
 
     return movements.filter((mov) => {
-      // Search query (Reference, SKU, Product Name, Performed By)
       if (query) {
         const matchesRef = mov.reference.toLowerCase().includes(query);
         const matchesSku = mov.sku.toLowerCase().includes(query);
@@ -255,12 +272,10 @@ export function useInventory(): UseInventoryReturn {
         }
       }
 
-      // Warehouse filter
       if (filterState.warehouse !== "all" && mov.warehouse !== filterState.warehouse) {
         return false;
       }
 
-      // Movement Type filter
       if (filterState.movementType !== "all" && mov.type !== filterState.movementType) {
         return false;
       }
@@ -269,15 +284,15 @@ export function useInventory(): UseInventoryReturn {
     });
   }, [movements, filterState]);
 
-  // Paginated Movements
+  // Clamped pagination for movements
   const totalFilteredMovementsCount = filteredMovements.length;
   const totalMovementPages = Math.max(1, Math.ceil(totalFilteredMovementsCount / filterState.pageSize));
+  const effectiveMovementPage = Math.min(filterState.page, totalMovementPages);
   const paginatedMovements = React.useMemo(() => {
-    const start = (filterState.page - 1) * filterState.pageSize;
+    const start = (effectiveMovementPage - 1) * filterState.pageSize;
     return filteredMovements.slice(start, start + filterState.pageSize);
-  }, [filteredMovements, filterState]);
+  }, [filteredMovements, effectiveMovementPage, filterState.pageSize]);
 
-  // Check active filters
   const hasActiveFilters =
     filterState.searchQuery !== "" ||
     filterState.warehouse !== "all" ||
@@ -291,7 +306,6 @@ export function useInventory(): UseInventoryReturn {
       ...prev,
       tab,
       page: 1,
-      // Reset incompatible tab-specific filters
       status: "all",
       movementType: "all",
     }));
@@ -343,114 +357,14 @@ export function useInventory(): UseInventoryReturn {
     }));
   };
 
-  // Mutations
-  const recordMovement = (
-    itemId: string,
-    type: "in" | "out",
-    quantity: number,
-    reference: string,
-    note?: string
-  ) => {
-    const targetItem = items.find((i) => i.id === itemId);
-    if (!targetItem) return;
-
-    const previousStock = targetItem.currentStock;
-    const delta = type === "in" ? quantity : -quantity;
-    const newStock = Math.max(0, previousStock + delta);
-    const newAvailable = Math.max(0, newStock - targetItem.reservedStock);
-    const newStatus = calculateStockStatus(newStock, targetItem.minStock, targetItem.maxStock);
-    const timestamp = new Date().toISOString().replace("T", " ").substring(0, 16);
-
-    const newMovement: StockMovement = {
-      id: `mov-${Date.now()}`,
-      itemId: targetItem.id,
-      sku: targetItem.sku,
-      itemName: targetItem.name,
-      type,
-      quantity: delta,
-      previousStock,
-      newStock,
-      warehouse: targetItem.warehouse,
-      reference,
-      note,
-      performedBy: "Alex Morgan",
-      timestamp,
-    };
-
-    // Update items state
-    setItems((prev) =>
-      prev.map((i) => {
-        if (i.id !== itemId) return i;
-        return {
-          ...i,
-          currentStock: newStock,
-          availableStock: newAvailable,
-          status: newStatus,
-          lastMovementAt: timestamp,
-        };
-      })
-    );
-
-    // Prepend to movements
-    setMovements((prev) => [newMovement, ...prev]);
-  };
-
-  const adjustStock = (
-    itemId: string,
-    newStock: number,
-    reason: AdjustmentReason,
-    reference: string,
-    note?: string
-  ) => {
-    const targetItem = items.find((i) => i.id === itemId);
-    if (!targetItem) return;
-
-    const previousStock = targetItem.currentStock;
-    const delta = newStock - previousStock;
-    const newAvailable = Math.max(0, newStock - targetItem.reservedStock);
-    const newStatus = calculateStockStatus(newStock, targetItem.minStock, targetItem.maxStock);
-    const timestamp = new Date().toISOString().replace("T", " ").substring(0, 16);
-
-    const newMovement: StockMovement = {
-      id: `mov-${Date.now()}`,
-      itemId: targetItem.id,
-      sku: targetItem.sku,
-      itemName: targetItem.name,
-      type: "adjustment",
-      quantity: delta,
-      previousStock,
-      newStock,
-      warehouse: targetItem.warehouse,
-      reference: reference || `ADJ-${Date.now().toString().slice(-4)}`,
-      reason,
-      note,
-      performedBy: "Alex Morgan",
-      timestamp,
-    };
-
-    // Update items state
-    setItems((prev) =>
-      prev.map((i) => {
-        if (i.id !== itemId) return i;
-        return {
-          ...i,
-          currentStock: newStock,
-          availableStock: newAvailable,
-          status: newStatus,
-          lastMovementAt: timestamp,
-        };
-      })
-    );
-
-    // Prepend to movements
-    setMovements((prev) => [newMovement, ...prev]);
-  };
-
   return {
     items,
     movements,
     tab: filterState.tab,
-    filterState,
+    filterState: {
+      ...filterState,
+      page: filterState.tab === "stock_levels" ? effectiveItemPage : effectiveMovementPage,
+    },
     hasActiveFilters,
 
     filteredItems,

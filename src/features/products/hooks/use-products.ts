@@ -8,7 +8,7 @@ import type {
   ProductSortField,
   ProductStatus,
 } from "../types";
-import { MOCK_PRODUCTS } from "../mock-data";
+import { useProductsStore } from "@/components/providers/feature-stores-provider";
 
 export interface UseProductsReturn {
   products: Product[];
@@ -70,20 +70,22 @@ const INITIAL_FILTER_STATE: ProductFilterState = {
   pageSize: 10,
 };
 
-function calculateStatus(currentStock: number, minStock: number): ProductStatus {
-  if (currentStock <= 0) return "out_of_stock";
-  if (currentStock <= minStock) return "low_stock";
-  return "in_stock";
-}
-
 export function useProducts(): UseProductsReturn {
-  const [products, setProducts] = React.useState<Product[]>(MOCK_PRODUCTS);
+  const products = useProductsStore((state) => state.products);
+  const addProduct = useProductsStore((state) => state.addProduct);
+  const updateProduct = useProductsStore((state) => state.updateProduct);
+  const deleteProduct = useProductsStore((state) => state.deleteProduct);
+  const recordMovement = useProductsStore((state) => state.recordMovement);
   const [filterState, setFilterState] = React.useState<ProductFilterState>(INITIAL_FILTER_STATE);
 
   // Selected IDs for modals / drawers
   const [selectedProductId, setSelectedProductId] = React.useState<string | null>(null);
-  const [productToEdit, setProductToEdit] = React.useState<Product | null>(null);
-  const [productToDelete, setProductToDelete] = React.useState<Product | null>(null);
+  const [productToEditId, setProductToEditId] = React.useState<string | null>(null);
+  const [productToDeleteId, setProductToDeleteId] = React.useState<string | null>(null);
+  const productToEdit = products.find((product) => product.id === productToEditId) ?? null;
+  const productToDelete = products.find((product) => product.id === productToDeleteId) ?? null;
+  const setProductToEdit = (product: Product | null) => setProductToEditId(product?.id ?? null);
+  const setProductToDelete = (product: Product | null) => setProductToDeleteId(product?.id ?? null);
 
   // Derive selected product from current products state
   const selectedProduct = React.useMemo(() => {
@@ -196,10 +198,11 @@ export function useProducts(): UseProductsReturn {
   const totalFilteredCount = sortedProducts.length;
   const totalPages = Math.max(1, Math.ceil(totalFilteredCount / filterState.pageSize));
 
+  const effectivePage = Math.min(filterState.page, totalPages);
   const paginatedProducts = React.useMemo(() => {
-    const startIndex = (filterState.page - 1) * filterState.pageSize;
+    const startIndex = (effectivePage - 1) * filterState.pageSize;
     return sortedProducts.slice(startIndex, startIndex + filterState.pageSize);
-  }, [sortedProducts, filterState]);
+  }, [sortedProducts, effectivePage, filterState.pageSize]);
 
   const hasActiveFilters =
     filterState.searchQuery !== "" ||
@@ -230,12 +233,14 @@ export function useProducts(): UseProductsReturn {
         return {
           ...prev,
           sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
+          page: 1,
         };
       }
       return {
         ...prev,
         sortField: field,
         sortOrder: "asc",
+        page: 1,
       };
     });
   };
@@ -255,118 +260,12 @@ export function useProducts(): UseProductsReturn {
     }));
   };
 
-  // CRUD actions
-  const addProduct = (productData: {
-    name: string;
-    sku: string;
-    category: string;
-    unit: string;
-    unitPrice?: number;
-    initialStock?: number;
-    minStock: number;
-    warehouse?: string;
-    description?: string;
-    supplier?: string;
-  }): Product => {
-    const stock = Number(productData.initialStock || 0);
-    const minStock = Number(productData.minStock || 0);
-    const status = calculateStatus(stock, minStock);
-
-    const newProduct: Product = {
-      id: `prod-${Date.now()}`,
-      sku: productData.sku.toUpperCase(),
-      name: productData.name,
-      category: productData.category,
-      unit: productData.unit,
-      unitPrice: productData.unitPrice || 0,
-      currentStock: stock,
-      minStock,
-      warehouse: productData.warehouse || "Main Hub (WH-1)",
-      status,
-      description: productData.description || "",
-      supplier: productData.supplier || "Internal Supplier",
-      lastRestocked: "Just now",
-      createdAt: new Date().toISOString().split("T")[0],
-      movementLogs:
-        stock > 0
-          ? [
-              {
-                id: `log-${Date.now()}`,
-                type: "in",
-                quantity: stock,
-                reference: "INIT-STOCK",
-                timestamp: new Date().toISOString().replace("T", " ").substring(0, 16),
-                performedBy: "Alex Morgan",
-                note: "Initial registered inventory.",
-              },
-            ]
-          : [],
-    };
-
-    setProducts((prev) => [newProduct, ...prev]);
-    return newProduct;
-  };
-
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        const updated = { ...item, ...updates };
-        updated.status = calculateStatus(updated.currentStock, updated.minStock);
-        return updated;
-      })
-    );
-  };
-
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((item) => item.id !== id));
-    if (selectedProductId === id) {
-      setSelectedProductId(null);
-    }
-  };
-
-  const recordMovement = (
-    productId: string,
-    type: "in" | "out",
-    quantity: number,
-    reference: string,
-    note?: string
-  ) => {
-    setProducts((prev) =>
-      prev.map((item) => {
-        if (item.id !== productId) return item;
-
-        const delta = type === "in" ? quantity : -quantity;
-        const newStock = Math.max(0, item.currentStock + delta);
-        const newStatus = calculateStatus(newStock, item.minStock);
-
-        const newLog = {
-          id: `log-${Date.now()}`,
-          type,
-          quantity,
-          reference,
-          timestamp: new Date().toISOString().replace("T", " ").substring(0, 16),
-          performedBy: "Alex Morgan",
-          note,
-        };
-
-        return {
-          ...item,
-          currentStock: newStock,
-          status: newStatus,
-          lastRestocked: type === "in" ? "Just now" : item.lastRestocked,
-          movementLogs: [newLog, ...(item.movementLogs || [])],
-        };
-      })
-    );
-  };
-
   return {
     products,
     filteredProducts,
     paginatedProducts,
     metrics,
-    filterState,
+    filterState: { ...filterState, page: effectivePage },
     totalPages,
     totalFilteredCount,
     selectedProduct,

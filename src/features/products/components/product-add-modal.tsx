@@ -77,6 +77,7 @@ export function ProductAddModal({
   const isOpen = isControlled ? controlledOpen : internalOpen;
 
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [createdProduct, setCreatedProduct] = React.useState<Product | null>(null);
 
   const {
@@ -97,6 +98,7 @@ export function ProductAddModal({
     }
 
     if (!nextOpen) {
+      setError(null);
       setTimeout(() => {
         setIsSuccess(false);
         reset(DEFAULT_FORM_VALUES);
@@ -106,22 +108,14 @@ export function ProductAddModal({
   };
 
   const onSubmit = (data: CreateProductInput) => {
-    if (onProductAdded) {
-      const added = onProductAdded({
-        name: data.name,
-        sku: data.sku,
-        category: data.category,
-        unit: data.unit,
-        unitPrice: data.unitPrice,
-        initialStock: data.initialStock,
-        minStock: data.minStock,
-        warehouse: data.warehouse,
-        supplier: data.supplier,
-        description: data.description,
-      });
-      setCreatedProduct(added);
+    setError(null);
+    try {
+      if (!onProductAdded) throw new Error("Product creation is unavailable.");
+      setCreatedProduct(onProductAdded(data));
+      setIsSuccess(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to create product.");
     }
-    setIsSuccess(true);
   };
 
   const handleAddAnother = () => {
@@ -157,6 +151,7 @@ export function ProductAddModal({
 
               <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogBody className="max-h-[70vh] overflow-y-auto pr-2">
+                  {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1 sm:col-span-2">
                       <Label htmlFor="prod-name">Product Name *</Label>
