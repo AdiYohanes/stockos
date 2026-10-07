@@ -117,13 +117,6 @@ export function SupplierDetailSheet({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
-  // Reset tab on supplier change
-  React.useEffect(() => {
-    if (supplier) {
-      setActiveTab("overview");
-    }
-  }, [supplier?.id]);
-
   if (!open || !supplier) return null;
 
   const statusConfig = STATUS_CONFIG[supplier.status];

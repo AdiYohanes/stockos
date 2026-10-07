@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { StockOSLogo } from "@/components/stockos-logo";
 
 export const metadata: Metadata = {
@@ -69,14 +68,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               </div>
 
               {/* Graphic Frame */}
-              <div className="relative mt-6 h-[260px] xl:h-[290px] w-full rounded-lg border border-border overflow-hidden bg-slate-900 shadow-neo-sm">
-                <Image
-                  src="/assets/login-background.png"
-                  alt="StockOS warehouse illustration"
-                  fill
-                  priority
-                  className="object-cover object-center contrast-105 opacity-90 hover:opacity-100 transition-opacity duration-300"
-                />
+              <div className="relative mt-6 h-[260px] xl:h-[290px] w-full rounded-lg border border-border overflow-hidden bg-slate-900 shadow-neo-sm bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
                 <div className="absolute top-3 left-3 rounded-sm border border-black bg-[#543afd] text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider shadow-neo-sm">
                   Live Telemetry
                 </div>

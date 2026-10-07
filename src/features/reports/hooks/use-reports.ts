@@ -90,7 +90,7 @@ export function useReports() {
   const exportToCSV = React.useCallback((type: ReportTab) => {
     let headers: string[] = [];
     let rows: string[][] = [];
-    let filename = `stockos-report-${type}-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `stockos-report-${type}-${new Date().toISOString().slice(0, 10)}.csv`;
 
     if (type === "valuation") {
       headers = ["Category", "Item Count", "Stock Quantity", "Total Cost ($)", "Retail Value ($)", "Margin (%)"];

@@ -26,22 +26,22 @@ export function AppShell({ children, user }: AppShellProps) {
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Desktop Fixed Sidebar */}
-      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col">
+      {/* Desktop Fixed Sidebar: 240px compact rail */}
+      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-60 md:flex-col">
         <Sidebar />
       </div>
 
       {/* Mobile Drawer Backdrop and Drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
+          {/* Backdrop: calm flat semi-transparent overlay */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-900/40 transition-opacity"
             onClick={() => setIsMobileOpen(false)}
             aria-hidden="true"
           />
           {/* Drawer Content */}
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-sidebar shadow-2xl animate-in slide-in-from-left duration-200">
+          <div className="fixed inset-y-0 left-0 w-64 max-w-[80vw] bg-sidebar shadow-lg animate-in slide-in-from-left duration-200">
             <Sidebar
               isMobile
               onNavigate={() => setIsMobileOpen(false)}
@@ -52,9 +52,9 @@ export function AppShell({ children, user }: AppShellProps) {
       )}
 
       {/* Main Container */}
-      <div className="flex flex-1 flex-col md:pl-64">
+      <div className="flex flex-1 flex-col md:pl-60">
         <Navbar user={user} onOpenMobileSidebar={() => setIsMobileOpen(true)} />
-        <main className="flex-1 p-3 sm:p-4 md:p-5">{children}</main>
+        <main className="flex-1 p-3.5 sm:p-5 md:p-6">{children}</main>
       </div>
     </div>
   );

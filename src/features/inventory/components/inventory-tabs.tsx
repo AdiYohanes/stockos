@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Boxes, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { InventoryTab } from "../types";
 
 interface InventoryTabsProps {
@@ -18,27 +19,29 @@ export function InventoryTabs({
   stockCount,
   movementsCount,
 }: InventoryTabsProps) {
+  const { t } = useI18n();
+
   return (
-    <div className="flex items-center gap-2 border-b border-border pb-1">
+    <div className="flex items-center gap-1 border-b border-border bg-slate-50/60 dark:bg-slate-900/40 px-3 pt-2">
       {/* Tab 1: Stock Levels */}
       <button
         type="button"
         onClick={() => onTabChange("stock_levels")}
         className={cn(
-          "flex items-center gap-2.5 px-4 py-2 text-xs font-semibold rounded-md border transition-all",
+          "relative flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors cursor-pointer -mb-px border-b-2",
           activeTab === "stock_levels"
-            ? "bg-[#543afd] text-white border-black shadow-neo-sm"
-            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-foreground"
+            ? "border-slate-900 text-foreground font-semibold dark:border-slate-100"
+            : "border-transparent text-muted-foreground hover:text-foreground"
         )}
       >
-        <Boxes className="h-4 w-4" />
-        <span>Stock Levels & Warehouse Health</span>
+        <Boxes className="h-3.5 w-3.5" />
+        <span>{t.inventory.stockLevelsTab}</span>
         <span
           className={cn(
-            "font-mono text-[10px] px-1.5 py-0.5 rounded-sm border",
+            "font-mono tabular-nums text-[10px] px-1.5 py-0.2 rounded-sm border",
             activeTab === "stock_levels"
-              ? "bg-white text-black border-black font-bold"
-              : "bg-slate-100 text-slate-600 border-slate-300"
+              ? "bg-slate-900 text-white border-transparent dark:bg-slate-100 dark:text-slate-900 font-semibold"
+              : "bg-slate-100 text-muted-foreground border-border dark:bg-slate-800"
           )}
         >
           {stockCount}
@@ -50,20 +53,20 @@ export function InventoryTabs({
         type="button"
         onClick={() => onTabChange("movements")}
         className={cn(
-          "flex items-center gap-2.5 px-4 py-2 text-xs font-semibold rounded-md border transition-all",
+          "relative flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors cursor-pointer -mb-px border-b-2",
           activeTab === "movements"
-            ? "bg-[#543afd] text-white border-black shadow-neo-sm"
-            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-foreground"
+            ? "border-slate-900 text-foreground font-semibold dark:border-slate-100"
+            : "border-transparent text-muted-foreground hover:text-foreground"
         )}
       >
-        <History className="h-4 w-4" />
-        <span>Stock Movement Audit Logs</span>
+        <History className="h-3.5 w-3.5" />
+        <span>{t.inventory.movementAuditTab}</span>
         <span
           className={cn(
-            "font-mono text-[10px] px-1.5 py-0.5 rounded-sm border",
+            "font-mono tabular-nums text-[10px] px-1.5 py-0.2 rounded-sm border",
             activeTab === "movements"
-              ? "bg-white text-black border-black font-bold"
-              : "bg-slate-100 text-slate-600 border-slate-300"
+              ? "bg-slate-900 text-white border-transparent dark:bg-slate-100 dark:text-slate-900 font-semibold"
+              : "bg-slate-100 text-muted-foreground border-border dark:bg-slate-800"
           )}
         >
           {movementsCount}

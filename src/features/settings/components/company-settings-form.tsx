@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Globe, CreditCard, Mail, Phone, MapPin, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n/context";
 
 interface CompanySettingsFormProps {
   initialValues: CompanySettings;
@@ -15,6 +16,7 @@ interface CompanySettingsFormProps {
 }
 
 export function CompanySettingsForm({ initialValues, onChange }: CompanySettingsFormProps) {
+  const { language, t } = useI18n();
   const [formData, setFormData] = React.useState<CompanySettings>(initialValues);
 
   const handleChange = (field: keyof CompanySettings, value: string) => {
@@ -42,29 +44,29 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
       <Card className="border-border shadow-none">
         <CardHeader className="border-b border-slate-100 pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Building2 className="h-5 w-5 text-[#543afd]" /> Identitas Usaha & Kontak
+            <Building2 className="h-5 w-5 text-[#543afd]" /> {language === "id" ? "Identitas Usaha & Kontak" : "Business Identity & Contact"}
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Informasi umum nama usaha, nomor registrasi pajak, dan kontak operasional utama.
+            {language === "id" ? "Informasi umum nama usaha, nomor registrasi pajak, dan kontak operasional utama." : "General company info, tax registration number, and primary operational contact."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
             <Label htmlFor="companyName" className="text-xs font-semibold text-slate-700">
-              Nama Usaha / Perusahaan
+              {t.settings.storeName}
             </Label>
             <Input
               id="companyName"
               value={formData.companyName}
               onChange={(e) => handleChange("companyName", e.target.value)}
-              placeholder="Contoh: PT Logistik Nusantara"
+              placeholder={language === "id" ? "Contoh: PT Logistik Nusantara" : "e.g. Acme Logistics Corp"}
               className="h-9 text-xs focus-visible:ring-[#543afd]"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="taxId" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <CreditCard className="h-3.5 w-3.5 text-slate-400" /> NPWP / Registration ID
+              <CreditCard className="h-3.5 w-3.5 text-slate-400" /> NPWP / Tax Registration ID
             </Label>
             <Input
               id="taxId"
@@ -78,21 +80,21 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="officialEmail" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-                <Mail className="h-3.5 w-3.5 text-slate-400" /> Email Resmi
+                <Mail className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Email Resmi" : "Official Email"}
               </Label>
               <Input
                 id="officialEmail"
                 type="email"
                 value={formData.officialEmail}
                 onChange={(e) => handleChange("officialEmail", e.target.value)}
-                placeholder="ops@perusahaan.com"
+                placeholder="ops@company.com"
                 className="h-9 text-xs focus-visible:ring-[#543afd]"
               />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="phone" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-                <Phone className="h-3.5 w-3.5 text-slate-400" /> No. Telepon
+                <Phone className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "No. Telepon" : "Phone Number"}
               </Label>
               <Input
                 id="phone"
@@ -106,14 +108,14 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
 
           <div className="space-y-1.5">
             <Label htmlFor="address" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <MapPin className="h-3.5 w-3.5 text-slate-400" /> Alamat Lengkap Operasional
+              <MapPin className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Alamat Lengkap Operasional" : "Full Operational Address"}
             </Label>
             <Textarea
               id="address"
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
               rows={3}
-              placeholder="Jl. Industri Utama No. 1..."
+              placeholder={language === "id" ? "Jl. Industri Utama No. 1..." : "123 Industrial Way..."}
               className="text-xs resize-none focus-visible:ring-[#543afd]"
             />
           </div>
@@ -124,20 +126,20 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
       <Card className="border-border shadow-none">
         <CardHeader className="border-b border-slate-100 pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Globe className="h-5 w-5 text-[#543afd]" /> Lokalisasi & Standar Keuangan
+            <Globe className="h-5 w-5 text-[#543afd]" /> {language === "id" ? "Lokalisasi & Standar Keuangan" : "Localization & Financial Standards"}
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Mata uang default laporan, zona waktu gudang, dan format penanggalan transaksi.
+            {language === "id" ? "Mata uang default laporan, zona waktu gudang, dan format penanggalan transaksi." : "Report default currency, warehouse timezone, and date format preferences."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700">
-              Mata Uang Utama Sistem
+              {t.settings.currency}
             </Label>
             <Select value={formData.currency} onValueChange={handleCurrencyChange}>
               <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder="Pilih Mata Uang" />
+                <SelectValue placeholder={language === "id" ? "Pilih Mata Uang" : "Select Currency"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="IDR">IDR - Rupiah Indonesia (Rp)</SelectItem>
@@ -147,17 +149,17 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
               </SelectContent>
             </Select>
             <p className="text-[11px] text-slate-500">
-              Mata uang yang digunakan untuk laporan valuasi persediaan dan harga pokok.
+              {language === "id" ? "Mata uang yang digunakan untuk laporan valuasi persediaan dan harga pokok." : "Primary currency used for inventory valuation and cost reporting."}
             </p>
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700">
-              Zona Waktu Gudang Utama
+              {t.settings.timezone}
             </Label>
             <Select value={formData.timezone} onValueChange={(v) => handleChange("timezone", (v as string) || "Asia/Jakarta (WIB)")}>
               <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder="Pilih Zona Waktu" />
+                <SelectValue placeholder={language === "id" ? "Pilih Zona Waktu" : "Select Timezone"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Asia/Jakarta (WIB)">WIB - Asia/Jakarta (UTC+7)</SelectItem>
@@ -169,23 +171,23 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700">
-              Format Tanggal Laporan
+              {language === "id" ? "Format Tanggal Laporan" : "Report Date Format"}
             </Label>
             <Select value={formData.dateFormat} onValueChange={(v) => handleChange("dateFormat", (v as string) || "DD/MM/YYYY")}>
               <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder="Pilih Format Tanggal" />
+                <SelectValue placeholder={language === "id" ? "Pilih Format Tanggal" : "Select Date Format"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (Contoh: 31/12/2026)</SelectItem>
-                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (Contoh: 2026-12-31)</SelectItem>
-                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (Contoh: 12/31/2026)</SelectItem>
+                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY ({language === "id" ? "Contoh" : "e.g. "}: 31/12/2026)</SelectItem>
+                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD ({language === "id" ? "Contoh" : "e.g. "}: 2026-12-31)</SelectItem>
+                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY ({language === "id" ? "Contoh" : "e.g. "}: 12/31/2026)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="operatingHours" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <Clock className="h-3.5 w-3.5 text-slate-400" /> Jam Operasional Gudang
+              <Clock className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Jam Operasional Gudang" : "Warehouse Operating Hours"}
             </Label>
             <Input
               id="operatingHours"

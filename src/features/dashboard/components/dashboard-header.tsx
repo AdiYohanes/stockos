@@ -22,7 +22,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const { language, t } = useI18n();
+  const { t } = useI18n();
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -32,9 +32,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
   };
 
   const welcomeText = userName
-    ? language === "id"
-      ? `Selamat datang kembali, ${userName}. `
-      : `Welcome back, ${userName}. `
+    ? `${t.dashboard.welcomeBack}, ${userName}. `
     : "";
 
   return (
@@ -80,7 +78,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600" />
-            <span>{language === "id" ? "Stok Masuk" : "Stock In"}</span>
+            <span>{t.dashboard.stockIn}</span>
           </Button>
         </StockInModal>
 
@@ -91,7 +89,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowUpFromLine className="h-3.5 w-3.5 text-amber-600" />
-            <span>{language === "id" ? "Stok Keluar" : "Stock Out"}</span>
+            <span>{t.dashboard.stockOut}</span>
           </Button>
         </StockOutModal>
 
@@ -102,7 +100,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap hover:border-black"
           >
             <ArrowLeftRight className="h-3.5 w-3.5 text-blue-600" />
-            <span>{language === "id" ? "Transfer Stok" : "Stock Transfer"}</span>
+            <span>{t.dashboard.stockTransfer}</span>
           </Button>
         </TransferModal>
 
@@ -119,7 +117,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")}
           />
           <span className="hidden lg:inline font-medium">
-            {language === "id" ? "Perbarui" : "Refresh"}
+            {t.dashboard.refresh}
           </span>
         </Button>
       </div>

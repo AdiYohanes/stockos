@@ -15,6 +15,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { SkuBadge } from "@/components/shared/sku-badge";
+import { useI18n } from "@/lib/i18n/context";
 import type { Product } from "../types";
 
 interface DeleteProductDialogProps {
@@ -30,6 +32,8 @@ export function DeleteProductDialog({
   onOpenChange,
   onConfirmDelete,
 }: DeleteProductDialogProps) {
+  const { t } = useI18n();
+
   if (!product) return null;
 
   const handleDelete = () => {
@@ -41,56 +45,54 @@ export function DeleteProductDialog({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden border-2 border-black shadow-neo">
+        <DialogPopup className="max-w-md overflow-hidden">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black bg-rose-100 text-rose-600 shadow-neo-sm shrink-0">
-                <AlertTriangle className="h-5 w-5" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-md border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 shrink-0">
+                <AlertTriangle className="h-4.5 w-4.5" />
               </div>
               <div>
-                <DialogTitle className="text-base font-bold text-foreground font-heading">
-                  Delete Product Item
+                <DialogTitle className="text-base font-semibold text-foreground font-sans">
+                  {t.products.deleteDialog.title}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
-                  Are you sure you want to remove this product from inventory?
+                  {t.products.deleteDialog.description}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           <DialogBody>
-            <div className="rounded-lg border border-border bg-slate-50 p-3.5 space-y-1">
+            <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm border border-black">
-                  {product.sku}
-                </span>
-                <span className="font-heading font-semibold text-sm text-foreground truncate">
+                <SkuBadge code={product.sku} />
+                <span className="font-sans font-medium text-sm text-foreground truncate">
                   {product.name}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground font-mono">
-                Current stock: <strong>{product.currentStock} {product.unit}</strong> • Location: <strong>{product.warehouse}</strong>
+              <p className="text-xs text-muted-foreground font-mono tabular-nums">
+                {t.products.deleteDialog.currentStock}: <strong>{product.currentStock} {product.unit}</strong> • {t.products.deleteDialog.location}: <strong>{product.warehouse}</strong>
               </p>
             </div>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-              This action will remove the product and its associated records from your local catalog view.
+              {t.products.deleteDialog.warningText}
             </p>
           </DialogBody>
 
           <DialogFooter className="mt-4 pt-3 border-t border-border">
             <DialogClose
-              render={<Button variant="outline" size="sm" type="button" className="btn-neo" />}
+              render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
             >
-              Cancel
+              {t.common.cancel}
             </DialogClose>
             <Button
               type="button"
               size="sm"
               onClick={handleDelete}
-              className="btn-neo bg-rose-600 text-white hover:bg-rose-700 gap-1.5"
+              className="h-9 text-xs font-medium bg-rose-600 text-white hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 gap-1.5"
             >
-              <Trash2 className="h-4 w-4" />
-              Delete Product
+              <Trash2 className="h-3.5 w-3.5" />
+              {t.products.deleteDialog.confirmDelete}
             </Button>
           </DialogFooter>
         </DialogPopup>

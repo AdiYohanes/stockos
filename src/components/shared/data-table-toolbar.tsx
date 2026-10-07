@@ -42,7 +42,7 @@ export function DataTableToolbar({
             placeholder={searchPlaceholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-9 text-sm focus-neo"
+            className="pl-9 h-9 text-sm"
           />
           {searchValue && (
             <button
@@ -63,15 +63,15 @@ export function DataTableToolbar({
                   key={opt.value}
                   onClick={() => onStatusChange(opt.value)}
                   className={cn(
-                    'px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap',
+                    'px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap border',
                     isSelected
-                      ? 'bg-black text-white shadow-neo-sm'
-                      : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground border-transparent'
+                      : 'bg-slate-50 text-muted-foreground border-border hover:bg-muted hover:text-foreground dark:bg-slate-900'
                   )}
                 >
                   {opt.label}
                   {opt.count !== undefined && (
-                    <span className={cn('ml-1.5 text-[11px]', isSelected ? 'text-white/80' : 'text-muted-foreground')}>
+                    <span className={cn('ml-1.5 text-[11px] font-mono tabular-nums', isSelected ? 'text-white/80' : 'text-muted-foreground')}>
                       ({opt.count})
                     </span>
                   )}

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SkuBadge } from "@/components/shared/sku-badge";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InventoryItem } from "../types";
@@ -117,10 +118,10 @@ function StockMovementForm({
                 }
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-semibold border transition-all",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer",
                 type === "in"
-                  ? "bg-emerald-600 text-white border-black shadow-neo-sm font-bold"
-                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white border-transparent hover:bg-emerald-700"
+                  : "bg-background text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-800"
               )}
             >
               <ArrowDownRight className="h-4 w-4" />
@@ -136,10 +137,10 @@ function StockMovementForm({
                 }
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-semibold border transition-all",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer",
                 type === "out"
-                  ? "bg-rose-600 text-white border-black shadow-neo-sm font-bold"
-                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                  ? "bg-rose-600 text-white border-transparent hover:bg-rose-700"
+                  : "bg-background text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-800"
               )}
             >
               <ArrowUpRight className="h-4 w-4" />
@@ -154,15 +155,17 @@ function StockMovementForm({
             Inventory Item
           </Label>
           {initialItem ? (
-            <div className="p-2.5 rounded-md border border-slate-300 bg-slate-50 text-xs flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="font-heading font-semibold text-foreground">{initialItem.name}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  SKU: {initialItem.sku} • {initialItem.warehouse}
+            <div className="p-3 rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+              <div className="flex flex-col gap-1 min-w-0 pr-2">
+                <SkuBadge code={initialItem.sku} />
+                <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
+                <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
+                  Location: {initialItem.warehouse} • Bin {initialItem.locationBin}
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-foreground">
-                {initialItem.currentStock} {initialItem.unit} on hand
+              <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
+                {initialItem.currentStock} {initialItem.unit}
+                <span className="block text-[10px] font-sans text-muted-foreground font-normal">on hand</span>
               </span>
             </div>
           ) : (
@@ -170,7 +173,7 @@ function StockMovementForm({
               id="itemSelect"
               value={selectedItemId}
               onChange={(e) => setSelectedItemId(e.target.value)}
-              className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-foreground focus:border-black focus:outline-none"
+              className="w-full h-9 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -185,7 +188,7 @@ function StockMovementForm({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="quantity" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Quantity ({activeItem?.unit || "units"})
+              Quantity ({activeItem?.unit || "units"}) *
             </Label>
             <Input
               id="quantity"
@@ -194,13 +197,14 @@ function StockMovementForm({
               placeholder="e.g. 25"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="h-9 text-xs font-mono border-slate-300 focus:border-black"
+              required
+              className="h-9 text-xs font-mono tabular-nums border-border focus:border-slate-900"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="reference" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Reference Code
+              Reference Code *
             </Label>
             <Input
               id="reference"
@@ -208,7 +212,8 @@ function StockMovementForm({
               placeholder="PO-XXXX / SO-XXXX"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="h-9 text-xs font-mono uppercase border-slate-300 focus:border-black"
+              required
+              className="h-9 text-xs font-mono tabular-nums uppercase border-border focus:border-slate-900"
             />
           </div>
         </div>
@@ -224,32 +229,36 @@ function StockMovementForm({
             placeholder="e.g. Received from Supplier X / Order fulfillment"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-slate-300 focus:border-black"
+            className="h-9 text-xs border-border focus:border-slate-900"
           />
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-sans">
+          <div className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans">
             {error}
           </div>
         )}
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="gap-2 pt-2">
+      <DialogFooter className="mt-4 pt-3 border-t border-border">
         <DialogClose
-          render={<Button type="button" variant="outline" onClick={onCancel} className="text-xs border-slate-300" />}
+          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-border hover:border-slate-400" />}
         >
           Cancel
         </DialogClose>
         <Button
           type="submit"
+          size="sm"
           className={cn(
-            "text-xs font-semibold border-[1.5px] border-black text-white shadow-neo-sm active:translate-x-0.5 active:translate-y-0.5",
-            type === "in" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+            "h-9 text-xs font-medium text-white",
+            type === "in"
+              ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+              : "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700"
           )}
         >
+          {type === "in" ? <ArrowDownRight className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
           Confirm {type === "in" ? "Stock In" : "Stock Out"}
         </Button>
       </DialogFooter>
@@ -272,12 +281,12 @@ export function StockMovementModal({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md border-[1.5px] border-black p-0 shadow-neo">
+        <DialogPopup className="max-w-md overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="font-heading text-lg font-bold">
+            <DialogTitle className="font-sans text-base sm:text-lg font-semibold tracking-tight text-foreground">
               Record Stock Movement
             </DialogTitle>
-            <DialogDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            <DialogDescription className="font-mono tabular-nums text-xs uppercase tracking-wider text-muted-foreground">
               Log physical receiving (IN) or dispatch (OUT) with reference auditing
             </DialogDescription>
           </DialogHeader>

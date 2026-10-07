@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   PackagePlus,
   Barcode,
@@ -27,7 +29,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PRODUCT_CATEGORIES, PRODUCT_UNITS, WAREHOUSES } from "../mock-data";
-import type { Product } from "../types";
+import {
+  CreateProductInputSchema,
+  type CreateProductInput,
+  type Product,
+} from "../schemas/product.schema";
 
 interface ProductAddModalProps {
   children?: React.ReactNode;
@@ -47,27 +53,14 @@ interface ProductAddModalProps {
   }) => Product;
 }
 
-interface ProductFormData {
-  name: string;
-  sku: string;
-  category: string;
-  unit: string;
-  unitPrice: string;
-  initialStock: string;
-  minStock: string;
-  warehouse: string;
-  supplier: string;
-  description: string;
-}
-
-const INITIAL_FORM_DATA: ProductFormData = {
+const DEFAULT_FORM_VALUES: CreateProductInput = {
   name: "",
   sku: "",
   category: "Electronics",
   unit: "pcs",
-  unitPrice: "",
-  initialStock: "",
-  minStock: "20",
+  unitPrice: 0,
+  initialStock: 0,
+  minStock: 20,
   warehouse: "Main Hub (WH-1)",
   supplier: "",
   description: "",
@@ -84,8 +77,17 @@ export function ProductAddModal({
   const isOpen = isControlled ? controlledOpen : internalOpen;
 
   const [isSuccess, setIsSuccess] = React.useState(false);
-  const [formData, setFormData] = React.useState<ProductFormData>(INITIAL_FORM_DATA);
   const [createdProduct, setCreatedProduct] = React.useState<Product | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreateProductInput>({
+    resolver: zodResolver(CreateProductInputSchema),
+    defaultValues: DEFAULT_FORM_VALUES,
+  });
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (isControlled && setControlledOpen) {
@@ -97,31 +99,25 @@ export function ProductAddModal({
     if (!nextOpen) {
       setTimeout(() => {
         setIsSuccess(false);
-        setFormData(INITIAL_FORM_DATA);
+        reset(DEFAULT_FORM_VALUES);
         setCreatedProduct(null);
       }, 200);
     }
   };
 
-  const handleInputChange = (field: keyof ProductFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const onSubmit = (data: CreateProductInput) => {
     if (onProductAdded) {
       const added = onProductAdded({
-        name: formData.name,
-        sku: formData.sku,
-        category: formData.category,
-        unit: formData.unit,
-        unitPrice: formData.unitPrice ? parseFloat(formData.unitPrice) : 0,
-        initialStock: formData.initialStock ? parseInt(formData.initialStock, 10) : 0,
-        minStock: formData.minStock ? parseInt(formData.minStock, 10) : 0,
-        warehouse: formData.warehouse,
-        supplier: formData.supplier,
-        description: formData.description,
+        name: data.name,
+        sku: data.sku,
+        category: data.category,
+        unit: data.unit,
+        unitPrice: data.unitPrice,
+        initialStock: data.initialStock,
+        minStock: data.minStock,
+        warehouse: data.warehouse,
+        supplier: data.supplier,
+        description: data.description,
       });
       setCreatedProduct(added);
     }
@@ -130,7 +126,7 @@ export function ProductAddModal({
 
   const handleAddAnother = () => {
     setIsSuccess(false);
-    setFormData(INITIAL_FORM_DATA);
+    reset(DEFAULT_FORM_VALUES);
     setCreatedProduct(null);
   };
 
@@ -145,11 +141,11 @@ export function ProductAddModal({
             <>
               <DialogHeader>
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-primary/10 shadow-neo-sm">
-                    <PackagePlus className="h-4 w-4 text-primary" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-slate-100 dark:bg-slate-800 text-foreground">
+                    <PackagePlus className="h-4 w-4" />
                   </div>
                   <div>
-                    <DialogTitle className="text-base font-bold text-foreground font-heading">
+                    <DialogTitle className="text-base font-semibold text-foreground font-sans">
                       Add New Product
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
@@ -159,7 +155,7 @@ export function ProductAddModal({
                 </div>
               </DialogHeader>
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogBody className="max-h-[70vh] overflow-y-auto pr-2">
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1 sm:col-span-2">
@@ -167,11 +163,14 @@ export function ProductAddModal({
                       <Input
                         id="prod-name"
                         placeholder="e.g. ESP32-WROOM-32D Microcontroller Module"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
-                        required
-                        className="input-neo"
+                        {...register("name")}
+                        className="h-9 text-xs sm:text-sm"
                       />
+                      {errors.name && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.name.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -180,23 +179,24 @@ export function ProductAddModal({
                         <Input
                           id="prod-sku"
                           placeholder="e.g. ELEC-ESP-32"
-                          className="input-neo pr-8 font-mono uppercase"
-                          value={formData.sku}
-                          onChange={(e) => handleInputChange("sku", e.target.value.toUpperCase())}
-                          required
+                          className="h-9 pr-8 font-mono tabular-nums uppercase text-xs sm:text-sm"
+                          {...register("sku")}
                         />
                         <Barcode className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                       </div>
+                      {errors.sku && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.sku.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
                       <Label htmlFor="prod-category">Category *</Label>
                       <select
                         id="prod-category"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
-                        value={formData.category}
-                        onChange={(e) => handleInputChange("category", e.target.value)}
-                        required
+                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                        {...register("category")}
                       >
                         {PRODUCT_CATEGORIES.map((cat) => (
                           <option key={cat} value={cat}>
@@ -204,16 +204,19 @@ export function ProductAddModal({
                           </option>
                         ))}
                       </select>
+                      {errors.category && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.category.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
                       <Label htmlFor="prod-unit">Unit of Measure *</Label>
                       <select
                         id="prod-unit"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer font-mono"
-                        value={formData.unit}
-                        onChange={(e) => handleInputChange("unit", e.target.value)}
-                        required
+                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer font-mono"
+                        {...register("unit")}
                       >
                         {PRODUCT_UNITS.map((u) => (
                           <option key={u} value={u}>
@@ -221,16 +224,19 @@ export function ProductAddModal({
                           </option>
                         ))}
                       </select>
+                      {errors.unit && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.unit.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
                       <Label htmlFor="prod-warehouse">Warehouse Location *</Label>
                       <select
                         id="prod-warehouse"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
-                        value={formData.warehouse}
-                        onChange={(e) => handleInputChange("warehouse", e.target.value)}
-                        required
+                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                        {...register("warehouse")}
                       >
                         {WAREHOUSES.map((wh) => (
                           <option key={wh} value={wh}>
@@ -238,6 +244,11 @@ export function ProductAddModal({
                           </option>
                         ))}
                       </select>
+                      {errors.warehouse && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.warehouse.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -249,12 +260,16 @@ export function ProductAddModal({
                           step="0.01"
                           min="0"
                           placeholder="0.00"
-                          className="input-neo pl-7 font-mono"
-                          value={formData.unitPrice}
-                          onChange={(e) => handleInputChange("unitPrice", e.target.value)}
+                          className="h-9 pl-7 font-mono tabular-nums text-xs sm:text-sm"
+                          {...register("unitPrice", { valueAsNumber: true })}
                         />
                         <DollarSign className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                       </div>
+                      {errors.unitPrice && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.unitPrice.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -264,10 +279,14 @@ export function ProductAddModal({
                         type="number"
                         min="0"
                         placeholder="0"
-                        className="input-neo font-mono"
-                        value={formData.initialStock}
-                        onChange={(e) => handleInputChange("initialStock", e.target.value)}
+                        className="h-9 font-mono tabular-nums text-xs sm:text-sm"
+                        {...register("initialStock", { valueAsNumber: true })}
                       />
+                      {errors.initialStock && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.initialStock.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -277,11 +296,14 @@ export function ProductAddModal({
                         type="number"
                         min="0"
                         placeholder="20"
-                        className="input-neo font-mono"
-                        value={formData.minStock}
-                        onChange={(e) => handleInputChange("minStock", e.target.value)}
-                        required
+                        className="h-9 font-mono tabular-nums text-xs sm:text-sm"
+                        {...register("minStock", { valueAsNumber: true })}
                       />
+                      {errors.minStock && (
+                        <p className="text-[11px] font-medium text-destructive">
+                          {errors.minStock.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -289,9 +311,8 @@ export function ProductAddModal({
                       <Input
                         id="prod-supplier"
                         placeholder="e.g. Espressif Systems Ltd."
-                        className="input-neo"
-                        value={formData.supplier}
-                        onChange={(e) => handleInputChange("supplier", e.target.value)}
+                        className="h-9 text-xs sm:text-sm"
+                        {...register("supplier")}
                       />
                     </div>
 
@@ -300,9 +321,8 @@ export function ProductAddModal({
                       <Input
                         id="prod-desc"
                         placeholder="Short notes about specifications or application..."
-                        className="input-neo"
-                        value={formData.description}
-                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        className="h-9 text-xs sm:text-sm"
+                        {...register("description")}
                       />
                     </div>
                   </div>
@@ -310,12 +330,12 @@ export function ProductAddModal({
 
                 <DialogFooter className="mt-4 pt-3 border-t border-border">
                   <DialogClose
-                    render={<Button variant="outline" size="sm" type="button" className="btn-neo" />}
+                    render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
                   >
                     Cancel
                   </DialogClose>
-                  <Button type="submit" size="sm" className="btn-neo-primary gap-1.5">
-                    <Plus className="h-4 w-4" />
+                  <Button type="submit" size="sm" className="h-9 text-xs font-medium gap-1.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                    <Plus className="h-3.5 w-3.5" />
                     Save Product
                   </Button>
                 </DialogFooter>
@@ -323,119 +343,95 @@ export function ProductAddModal({
             </>
           ) : (
             /* ================= SUCCESS VIEW ================= */
-            <div className="p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
-              <div className="flex flex-col items-center text-center">
-                {/* Checkmark Animation */}
-                <div className="relative mb-5 flex items-center justify-center">
-                  <div className="absolute h-24 w-24 rounded-full bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
-                  <div className="absolute -top-1.5 -right-2 text-emerald-500 animate-in fade-in zoom-in duration-500 delay-300">
-                    <Sparkles className="h-4 w-4 fill-emerald-500/30" />
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                    <Sparkles className="h-4 w-4" />
                   </div>
-                  <div className="absolute -bottom-1 -left-2 text-primary animate-in fade-in zoom-in duration-500 delay-500">
-                    <Sparkles className="h-3 w-3 fill-primary/30" />
-                  </div>
-
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-black bg-emerald-50 shadow-neo animate-check-pop">
-                    <svg
-                      className="h-12 w-12 text-emerald-600"
-                      viewBox="0 0 52 52"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        className="stroke-emerald-200/80"
-                        cx="26"
-                        cy="26"
-                        r="23"
-                        strokeWidth="2.5"
-                      />
-                      <circle
-                        className="stroke-emerald-600 animate-check-circle"
-                        cx="26"
-                        cy="26"
-                        r="23"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        className="stroke-emerald-600 animate-check-path"
-                        d="M15 26.5L22.5 34L37 18.5"
-                        strokeWidth="3.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                  <div>
+                    <DialogTitle className="text-base font-semibold text-foreground font-sans">
+                      Product Registered Successfully!
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground">
+                      The product has been added to inventory with an initial status.
+                    </DialogDescription>
                   </div>
                 </div>
+              </DialogHeader>
 
-                <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Product Successfully Created!
-                </DialogTitle>
-                <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  The product is registered and immediately available in your inventory catalog.
-                </DialogDescription>
-
-                {/* Summary Card */}
+              <DialogBody className="space-y-4 py-2">
                 {createdProduct && (
-                  <div className="mt-5 w-full rounded-lg border border-border bg-muted/40 p-4 text-left shadow-neo-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center rounded-sm border border-black bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary tracking-wider uppercase shadow-neo-sm">
-                            {createdProduct.sku}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
-                            <Layers className="h-3 w-3" />
-                            {createdProduct.category}
-                          </span>
-                        </div>
-                        <p className="font-heading font-semibold text-foreground text-sm truncate pt-1">
+                  <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="font-mono tabular-nums text-xs font-semibold text-foreground">
+                          {createdProduct.sku}
+                        </span>
+                        <h4 className="text-sm font-semibold text-foreground font-sans">
                           {createdProduct.name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                          <WarehouseIcon className="h-3 w-3" />
-                          {createdProduct.warehouse}
-                        </p>
+                        </h4>
                       </div>
+                      <span className="inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium bg-card text-foreground font-sans">
+                        {createdProduct.category}
+                      </span>
+                    </div>
 
-                      <div className="text-right shrink-0">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono block">
-                          Stock Level
+                    <div className="grid grid-cols-3 gap-2 border-t border-border/60 pt-3 text-xs">
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
+                          Stock
                         </span>
-                        <span className="font-mono text-base font-bold text-foreground">
-                          {createdProduct.currentStock}{" "}
-                          <span className="text-xs font-normal text-muted-foreground">
-                            {createdProduct.unit}
-                          </span>
+                        <span className="font-mono tabular-nums font-semibold text-foreground">
+                          {createdProduct.currentStock} {createdProduct.unit}
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-mono block">
-                          ${createdProduct.unitPrice.toFixed(2)}/ea
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
+                          Min Level
+                        </span>
+                        <span className="font-mono tabular-nums font-semibold text-foreground">
+                          {createdProduct.minStock} {createdProduct.unit}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
+                          Unit Price
+                        </span>
+                        <span className="font-mono tabular-nums font-semibold text-foreground">
+                          ${createdProduct.unitPrice.toFixed(2)}
                         </span>
                       </div>
                     </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground border-t border-border/60 pt-2 font-sans">
+                      <WarehouseIcon className="h-3.5 w-3.5" />
+                      <span>{createdProduct.warehouse}</span>
+                    </div>
                   </div>
                 )}
+              </DialogBody>
 
-                <div className="mt-6 flex w-full flex-col-reverse gap-2.5 sm:flex-row sm:justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="btn-neo flex-1 sm:flex-initial sm:px-6"
-                    onClick={() => handleOpenChange(false)}
-                  >
-                    Done
-                  </Button>
-                  <Button
-                    type="button"
-                    className="btn-neo-primary flex-1 sm:flex-initial sm:px-6 gap-1.5"
-                    onClick={handleAddAnother}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Another
-                  </Button>
-                </div>
-              </div>
-            </div>
+              <DialogFooter className="mt-2 pt-3 border-t border-border gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddAnother}
+                  className="h-9 text-xs gap-1.5 hover:border-slate-400"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Another
+                </Button>
+                <DialogClose
+                  render={
+                    <Button size="sm" className="h-9 text-xs font-medium gap-1.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                      <Layers className="h-3.5 w-3.5" />
+                      Done
+                    </Button>
+                  }
+                />
+              </DialogFooter>
+            </>
           )}
         </DialogPopup>
       </DialogPortal>

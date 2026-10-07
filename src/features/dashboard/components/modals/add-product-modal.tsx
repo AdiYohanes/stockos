@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n/context";
 
 interface AddProductModalProps {
   children: React.ReactNode;
@@ -64,6 +65,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
 };
 
 export function AddProductModal({ children }: AddProductModalProps) {
+  const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [formData, setFormData] = React.useState<ProductFormData>(INITIAL_FORM_DATA);
@@ -113,10 +115,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      Tambah Produk Baru
+                      {t.modals.addProduct.title}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      Daftarkan produk baru dengan SKU & detail
+                      {t.modals.addProduct.subtitle}
                     </DialogDescription>
                   </div>
                 </div>
@@ -126,10 +128,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-name">Nama Produk</Label>
+                      <Label htmlFor="product-name">{t.modals.addProduct.nameLabel}</Label>
                       <Input
                         id="product-name"
-                        placeholder="contoh: ESP32-WROOM-32D Module"
+                        placeholder={t.modals.addProduct.namePlaceholder}
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
                         required
@@ -137,11 +139,11 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-sku">Kode SKU</Label>
+                      <Label htmlFor="product-sku">{t.modals.addProduct.skuLabel}</Label>
                       <div className="relative">
                         <Input
                           id="product-sku"
-                          placeholder="contoh: ELEC-ESP-32"
+                          placeholder={t.modals.addProduct.skuPlaceholder}
                           className="pr-8 font-mono"
                           value={formData.sku}
                           onChange={(e) => handleInputChange("sku", e.target.value.toUpperCase())}
@@ -152,7 +154,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-category">Kategori</Label>
+                      <Label htmlFor="product-category">{t.modals.addProduct.categoryLabel}</Label>
                       <select
                         id="product-category"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -160,7 +162,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                         onChange={(e) => handleInputChange("category", e.target.value)}
                         required
                       >
-                        <option value="">Pilih kategori</option>
+                        <option value="">{t.modals.addProduct.selectCategory}</option>
                         {CATEGORIES.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
@@ -170,7 +172,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-unit">Satuan</Label>
+                      <Label htmlFor="product-unit">{t.modals.addProduct.unitLabel}</Label>
                       <select
                         id="product-unit"
                         className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
@@ -187,7 +189,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="product-initial-stock">Stok Awal</Label>
+                      <Label htmlFor="product-initial-stock">{t.modals.addProduct.initialStockLabel}</Label>
                       <Input
                         id="product-initial-stock"
                         type="number"
@@ -199,18 +201,18 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-min-stock">Batas Stok Minimum</Label>
+                      <Label htmlFor="product-min-stock">{t.modals.addProduct.minStockLabel}</Label>
                       <Input
                         id="product-min-stock"
                         type="number"
                         min="0"
-                        placeholder="contoh: 50"
+                        placeholder={t.modals.addProduct.minStockPlaceholder}
                         value={formData.minStock}
                         onChange={(e) => handleInputChange("minStock", e.target.value)}
                         required
                       />
                       <p className="text-[10px] text-muted-foreground">
-                        Peringatan muncul saat stok di bawah batas ini
+                        {t.modals.addProduct.minStockHelp}
                       </p>
                     </div>
                   </div>
@@ -220,10 +222,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    Batal
+                    {t.common.cancel}
                   </DialogClose>
                   <Button type="submit" size="sm">
-                    Tambah Produk
+                    {t.modals.addProduct.submit}
                   </Button>
                 </DialogFooter>
               </form>
@@ -283,10 +285,10 @@ export function AddProductModal({ children }: AddProductModalProps) {
 
                 {/* Text Announcement */}
                 <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  Produk Berhasil Ditambahkan!
+                  {t.modals.addProduct.successTitle}
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  Produk kini terdaftar dalam inventaris StockOS dan siap untuk transaksi pergerakan stok.
+                  {t.modals.addProduct.successSubtitle}
                 </DialogDescription>
 
                 {/* Product Summary Preview Card */}
@@ -300,17 +302,17 @@ export function AddProductModal({ children }: AddProductModalProps) {
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
                             <Layers className="h-3 w-3" />
-                            {submittedProduct.category || "Umum"}
+                            {submittedProduct.category || t.modals.addProduct.generalCategory}
                           </span>
                         </div>
                         <p className="font-heading font-semibold text-foreground text-sm truncate pt-1">
-                          {submittedProduct.name || "Produk Tanpa Judul"}
+                          {submittedProduct.name || t.modals.addProduct.untitled}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono block">
-                          Stok Awal
+                          {t.modals.addProduct.initialStockLabel}
                         </span>
                         <span className="font-mono text-base font-bold text-foreground">
                           {submittedProduct.initialStock || "0"}{" "}
@@ -331,7 +333,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     className="btn-neo flex-1 sm:flex-initial sm:px-6"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Selesai
+                    {t.modals.finish}
                   </Button>
                   <Button
                     type="button"
@@ -339,7 +341,7 @@ export function AddProductModal({ children }: AddProductModalProps) {
                     onClick={handleAddAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    Tambah Produk Lain
+                    {t.modals.addProduct.addAnother}
                   </Button>
                 </div>
               </div>

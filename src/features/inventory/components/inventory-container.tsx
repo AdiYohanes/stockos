@@ -107,49 +107,52 @@ export function InventoryContainer() {
         onSelectTab={setTab}
       />
 
-      <InventoryTabs
-        activeTab={tab}
-        onTabChange={setTab}
-        stockCount={totalFilteredItemsCount}
-        movementsCount={totalFilteredMovementsCount}
-      />
+      {/* Unified Tabs, Search, Filter, and Table Ledger Surface */}
+      <div className="rounded-md border border-border bg-card overflow-hidden">
+        <InventoryTabs
+          activeTab={tab}
+          onTabChange={setTab}
+          stockCount={totalFilteredItemsCount}
+          movementsCount={totalFilteredMovementsCount}
+        />
 
-      <InventoryToolbar
-        filterState={filterState}
-        hasActiveFilters={hasActiveFilters}
-        warehouses={warehouses}
-        categories={categories}
-        onSearchChange={setSearchQuery}
-        onWarehouseChange={setWarehouse}
-        onStatusChange={setStatus}
-        onMovementTypeChange={setMovementType}
-        onCategoryChange={setCategory}
-        onSortChange={setSorting}
-        onResetFilters={resetFilters}
-      />
-
-      {tab === "stock_levels" ? (
-        <InventoryStockTable
-          items={paginatedItems}
-          totalCount={totalFilteredItemsCount}
+        <InventoryToolbar
           filterState={filterState}
           hasActiveFilters={hasActiveFilters}
-          onPageChange={setPage}
-          onResetFilters={resetFilters}
-          onSelectItem={(item) => setSelectedItemId(item.id)}
-          onAdjustItem={(item) => handleOpenAdjustmentModal(item)}
-          onQuickMove={(item, moveType) => handleOpenMovementModal(item, moveType)}
-        />
-      ) : (
-        <InventoryMovementsTable
-          movements={paginatedMovements}
-          totalCount={totalFilteredMovementsCount}
-          filterState={filterState}
-          hasActiveFilters={hasActiveFilters}
-          onPageChange={setPage}
+          warehouses={warehouses}
+          categories={categories}
+          onSearchChange={setSearchQuery}
+          onWarehouseChange={setWarehouse}
+          onStatusChange={setStatus}
+          onMovementTypeChange={setMovementType}
+          onCategoryChange={setCategory}
+          onSortChange={setSorting}
           onResetFilters={resetFilters}
         />
-      )}
+
+        {tab === "stock_levels" ? (
+          <InventoryStockTable
+            items={paginatedItems}
+            totalCount={totalFilteredItemsCount}
+            filterState={filterState}
+            hasActiveFilters={hasActiveFilters}
+            onPageChange={setPage}
+            onResetFilters={resetFilters}
+            onSelectItem={(item) => setSelectedItemId(item.id)}
+            onAdjustItem={(item) => handleOpenAdjustmentModal(item)}
+            onQuickMove={(item, moveType) => handleOpenMovementModal(item, moveType)}
+          />
+        ) : (
+          <InventoryMovementsTable
+            movements={paginatedMovements}
+            totalCount={totalFilteredMovementsCount}
+            filterState={filterState}
+            hasActiveFilters={hasActiveFilters}
+            onPageChange={setPage}
+            onResetFilters={resetFilters}
+          />
+        )}
+      </div>
 
       {selectedItemId && (
         <InventoryDetailSheet

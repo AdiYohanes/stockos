@@ -1,6 +1,6 @@
-import type { PurchaseOrder } from "./types";
+import { PurchaseOrderSchema, type PurchaseOrder } from "./schemas/po.schema";
 
-export const MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
+const RAW_MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
   {
     id: "po-101",
     poNumber: "PO-2026-001",
@@ -149,3 +149,7 @@ export const MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
     notes: "Draft order for Q3 gaming monitor restock.",
   },
 ];
+
+export const MOCK_PURCHASE_ORDERS: PurchaseOrder[] =
+  PurchaseOrderSchema.array().parse(RAW_MOCK_PURCHASE_ORDERS);
+

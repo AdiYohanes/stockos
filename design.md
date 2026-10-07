@@ -1,137 +1,132 @@
-# Design System: Hybrid Neo-SaaS (70% Clean SaaS + 30% Neobrutalism)
-
-## 1. Core Philosophy
-
-StockOS balances high-efficiency enterprise ERP usability with distinct modern branding by blending **70% Clean SaaS / Dashboard UI** and **30% Neobrutalism**.
-
-- **70% Clean SaaS Baseline**: Clean neutral backgrounds, subtle 1px structural container borders, balanced spacing, modern rounded corners (`rounded-lg` / `rounded-md`), high-density data presentation, clear visual hierarchy, and refined typography.
-- **30% Neobrutal Accents**: High-contrast electric purple (`#543AFD`) and pure ink black accents, crisp tactile micro-shadows (`2px 2px 0px #000000` / `3px 3px 0px #000000`) on CTAs and interactive elements, uppercase monospace tags for SKUs/status badges, and snappy micro-press interactions (`translate(1px, 1px)`).
-
+---
+name: StockOS
+description: Lightweight operational inventory management and Mini ERP
 ---
 
-## 2. Color Palette
+<!-- SEED: established with the user before implementation; re-run /impeccable document once there's code to capture the actual tokens and components. -->
 
-| Role | Token / Hex | Description |
-|---|---|---|
-| **Background / Canvas** | `#f8f9fa` (`--background`) | Clean, neutral, glare-free light canvas |
-| **Surface / Card** | `#ffffff` (`--card`) | Pure flat white for cards, panels, and dropdowns |
-| **Border (SaaS Neutral)** | `#e2e8f0` (`--border`) | Subtle structural dividers and default container edges |
-| **Border (Neobrutal Accent)** | `#000000` | High-contrast borders on primary CTAs and active tags |
-| **Text Primary** | `#09090b` (`--foreground`) | Deep high-contrast ink for headlines and primary text |
-| **Text Secondary / Muted** | `#64748b` (`--muted-foreground`) | Refined slate for metadata, labels, and helper text |
-| **Primary Accent** | `#543afd` (`--primary`) | Electric purple for brand actions, links, and focus rings |
-| **Primary Accent Hover** | `#462ee0` | Deeper purple for button hover states |
-| **Input Focus Shadow** | `#543afd` | Crisp hard offset focus ring (`2px 2px 0px #543afd`) |
-| **Placeholder Text** | `rgba(0, 0, 0, 0.45)` | Subtle readable placeholder text |
+# Design System: StockOS
 
----
+## Overview
 
-## 3. Radii, Borders & Micro-Shadows
+**Creative North Star: "The Precision Ledger"**
 
-### Border Radii
-- **Cards / Main Containers**: `8px` (`rounded-lg` / `--radius: 0.5rem`)
-- **Buttons / Inputs / Dialogs**: `6px` (`rounded-md`)
-- **Badges / Status Pills / SKU Tags**: `4px` (`rounded-sm`)
+StockOS is an operational inventory console engineered for high-velocity scanning, immediate status comprehension, and frictionless stock movements. The system rejects generic AI SaaS aesthetics—oversized typography, decorative card mosaics, gradient fills, thick neobrutalist borders, and glassmorphic blurs—in favor of an unpretentious, quiet, and disciplined operational interface.
 
-### Micro-Shadows (30% Neobrutal Accent)
-- **Small (`shadow-neo-sm`)**: `box-shadow: 2px 2px 0px #000000;` (Badges, small action buttons)
-- **Default (`shadow-neo`)**: `box-shadow: 3px 3px 0px #000000;` (Primary action buttons, floating menus)
-- **Primary Accent (`shadow-neo-primary`)**: `box-shadow: 2px 2px 0px #543afd, 2px 2px 0px 1px #000000;` (Active card accents, focus states)
-- **Default Containers / Cards**: No heavy drop shadows. Clean `1px solid #e2e8f0` border for maximum data readability.
+The design behaves like a modern digital ledger: dense yet breathable, utilitarian, and predictable. Workspaces favor unified full-bleed tabular containers over fragmented cards-inside-cards. Hierarchy is established through typographic weight, subtle 1px hairline dividers, and disciplined semantic indicators rather than decorative elevation. The interface recedes into the background so operational data—SKUs, stock thresholds, bin locations, and supplier receipts—commands absolute focus.
 
----
+**Key Characteristics:**
+- **Single-Surface Containment**: Tables, toolbars, and filters live inside unified, crisp containers (`border border-slate-200 bg-white rounded-md`) rather than scattered floating card tiles.
+- **Utilitarian Calm Neutrality**: A cool slate-zinc foundation provides high contrast with zero visual fatigue during prolonged daily operations.
+- **Monospace Precision for Logistics**: Clear sans-serif typography for navigation and labeling, paired strictly with tabular monospace figures for SKUs, counts, dates, and currency.
+- **Hairline Structural Framing**: 1px subtle divider lines provide architectural discipline without visual heaviness.
+- **Disciplined Status Signaling**: Micro-dots and restrained status indicators replace bulky, loud pill badges to maximize table row scanability.
 
-## 4. Typography & Operational Type Scale
+## Colors
 
-### Font Family Hierarchy
-1. **Inter** (Primary UI — 90% Interface):
-   - Weights: `400` (Regular), `500` (Medium), `600` (SemiBold), `700` (Bold)
-   - Primary sans-serif for main body, table cells, form inputs, buttons, sidebar navigation, labels, and secondary copy.
+The palette is restrained, calm, and functional: 90% neutral slate-zinc foundations with 10% purposeful semantic state indicators.
 
-2. **Space Grotesk** (Brand Headlines & Logo):
-   - Weights: `600`, `700`
-   - Used specifically for brand logos, authentication page headlines, and specific prominent headers.
+### Primary
+- **Deep Slate Ink** (`#0f172a` / `slate-900`): Primary actions, high-contrast headings, active navigation states, and authoritative table text.
+- **Deep Slate Hover** (`#1e293b` / `slate-800`): Hover and focus states for primary action triggers.
 
-3. **Space Mono** (SKU Codes, Badges & Structural Meta):
-   - Weights: `400`, `700`
-   - Styling: `UPPERCASE`, tracking `0.08em` to `0.14em` (`tracking-wider`) for SKU codes, status tags, and monospace data.
+### Neutral
+- **Canvas Ground** (`#f8fafc` / `slate-50`): Neutral, glare-free light canvas for whole-app background.
+- **Surface Panel** (`#ffffff`): Pure flat white for data tables, form panels, and slide-over drawers.
+- **Hairline Border** (`#e2e8f0` / `slate-200`): Subtle 1px structural container edges and table row dividers.
+- **Muted Border** (`#cbd5e1` / `slate-300`): Input borders, active tab dividers, and interactive container outlines.
+- **Text Primary** (`#0f172a` / `slate-900`): High-contrast ink for table values, titles, and data metrics.
+- **Text Secondary / Muted** (`#64748b` / `slate-500`): Column headers, secondary metadata, unit labels, and timestamps.
+- **Subtle Surface** (`#f1f5f9` / `slate-100`): Table header rows, zebra hover states, and inactive tag backgrounds.
 
-### Operational Type Scale Tokens
+### Functional Status (Semantic Only)
+- **Healthy Stock / Completed** (`#059669` / `emerald-600`): In-stock status, successful transfers, received POs.
+- **Low Stock / Reorder Trigger** (`#d97706` / `amber-600`): Low-stock warnings, draft orders, pending inspections.
+- **Critical / Out of Stock** (`#dc2626` / `red-600`): Depleted inventory, overdue orders, destructive actions.
+- **In Transit / Active Movement** (`#2563eb` / `blue-600`): Inter-warehouse transfers, active shipments.
 
-| Usage | Desktop | Mobile | Weight | Line-Height | Utility Class |
-| :--- | ---: | ---: | ---: | ---: | :--- |
-| **Page Title** | **30px** | 26px | 700 | 36px | `text-2xl sm:text-3xl font-bold tracking-tight` |
-| **Section Title / H2** | **22px** | 20px | 600–700 | 28px | `text-xl sm:text-[22px] font-semibold` |
-| **Card Title / H3** | **18px** | 18px | 600 | 24px | `text-lg font-semibold` |
-| **Main Body / Baseline** | **16px** | 16px | 400 | 24px | `text-base` |
-| **Table Content** | **15px** | 15px | 400–500 | 22px | `text-[15px]` |
-| **Input Text** | **16px** | 16px | 400 | 24px | `text-base` |
-| **Button Text** | **15–16px** | 16px | 500–600 | 20–24px | `text-[15px]` / `text-base` |
-| **Sidebar Navigation** | **15px** | 16px | 500 | 22px | `text-[15px]` |
-| **Label** | **14px** | 14px | 500–600 | 20px | `text-sm font-medium` |
-| **Helper / Secondary** | **14px** | 14px | 400 | 20px | `text-sm text-muted-foreground` |
-| **Badge / Status** | **13px** | 13px | 500–600 | 18px | `text-[13px] font-semibold` |
-| **Tiny Metadata** | **12px** | 12px | 500 | 16px | `text-xs` (Exception only) |
-| **KPI Numbers** | **28–32px** | 28px | 700 | 36px | `text-3xl font-bold` |
+### Named Rules
+**The Signal Rarity Rule.** Semantic colors (emerald, amber, red, blue) are strictly reserved for operational state indicators (status dots, threshold warnings, active alerts). They must never appear as decorative accents, illustrations, or background fills.
 
----
+**The Zero-Gradient Rule.** Surfaces, borders, buttons, and status chips are strictly solid flat colors. No linear, radial, or mesh gradients are permitted anywhere in the system.
 
-## 5. Component Dimensions & Spacing
+## Typography
 
-- **Form Input Height**: `40px` (`h-10`) or `44px` (`h-11`) with `text-base` (16px) font size to avoid cramped controls.
-- **Button Height**: `40px` (`h-10`) standard size, `36px` (`h-9`) small size, `44px` (`h-11`) large size.
-- **Table Row Height**: Comfortable **~52px** height (`py-3.5 px-3` cell padding).
-- **Card Padding**: Standard `p-5` container padding for spacious readability.
+**Display / Interface Font:** Inter (or modern system UI sans-serif stack: `system-ui, -apple-system, sans-serif`)
+**Data / Tabular Font:** Monospace with tabular numerals (Geist Mono, Space Mono, or `ui-monospace, monospace`)
 
----
+**Character:** Calm, structured, unpretentious. Clear contrast between medium (500) structural labels and regular (400) data rows.
 
-## 6. Interaction Model
+### Hierarchy
+- **Page Title** (Semi-bold 600, 24px–26px, line-height 32px): Clear, compact screen title; never oversized hero typography.
+- **Section Title / H2** (Semi-bold 600, 18px–20px, line-height 26px): Form section and sheet header markers.
+- **Table Data / Cell Text** (Regular 400, 14px, line-height 20px): Baseline readability for product names, descriptions, and categories.
+- **Column Header / Meta Label** (Medium 500, 12px–13px, tracking-wide): Subtle uppercase or sentence-case table column anchors.
+- **Tabular Figures** (Regular 400 / Medium 500, 13px–14px, monospace tabular numerals): SKUs, quantities, batch codes, monetary totals, and timestamps.
+- **KPI Summary Metric** (Semi-bold 600, 24px–28px, line-height 32px): Compact, readable metric cards; strictly no oversized display sizes.
 
-### Tactile Button / Card 'Press'
-- **Resting State**: `border: 1.5px solid #000000; box-shadow: 2px 2px 0px #000000;`
-- **Hover State**: `transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000000;`
-- **Active / Press State**: `transform: translate(1px, 1px); box-shadow: 0px 0px 0px #000000;`
+### Named Rules
+**The Compact Scale Rule.** Operational desktop screens must never use font sizes exceeding 28px. Screen real estate belongs to data rows and operational controls, not oversized headers.
 
-### Input Focus
-- **Resting State**: `border: 1px solid #cbd5e1; background-color: #ffffff; border-radius: 0.375rem;`
-- **Focus State**: `border-color: #000000; outline: none; box-shadow: 2px 2px 0px #543afd;`
+**The Tabular Number Rule.** All quantities, stock counts, monetary values, dates, and SKU identifiers must be rendered in monospace with tabular figures (`font-mono tabular-nums`) to maintain strict vertical column alignment during rapid scanning.
 
----
+## Layout
 
-## 7. Page Header & Top Title Layout Standard
+The spatial model is organized around a unified operational workspace rather than a grid of disconnected tiles.
 
-All application pages MUST follow the standard top header layout pattern:
+- **Workspace Frame**: Persistent compact left navigation rail (~240px wide, collapsible to 64px icon rail), unified top utility header (search, warehouse selector, user profile), and a clean main operational viewport.
+- **Unified Table Containers**: Data tables, instant search inputs, filter selectors, and pagination controls are unified into a single bounded box (`border border-slate-200 bg-white rounded-md overflow-hidden`).
+- **Table Density & Row Rhythm**:
+  - Row height: ~44px–48px compact operational density (`py-2.5 px-3.5`).
+  - Header row: ~38px–40px with distinct muted background (`bg-slate-50 border-b border-slate-200`).
+  - Column alignment: Text and names align left; statuses, dates, and SKUs align left/center; quantities, prices, and totals align right.
+- **Metric Ribbons**: Overview metrics (Total Products, Inventory Value, Low Stock Alerts) sit in a connected horizontal ribbon with subtle vertical dividers (`divide-x divide-slate-200`) rather than isolated floating cards.
+- **Slide-Over Detail Drawers**: Inspection sheets (Product details, Warehouse zone breakdown, PO line items) slide in from the right over the active table, preserving table scroll position and operational context.
 
-```tsx
-<header className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-  {/* Left: Title + Badge + Dot + Description */}
-  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-    <div className="flex items-center gap-2.5">
-      <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-        {pageTitle}
-      </h1>
-      <Badge className="border-black bg-emerald-100 font-mono text-[13px] uppercase tracking-wider text-emerald-900 shadow-neo-sm">
-        {statusOrTypeTag}
-      </Badge>
-    </div>
-    <span className="hidden sm:inline text-muted-foreground/30 text-base">•</span>
-    <p className="text-sm sm:text-base text-muted-foreground">
-      {pageDescription}
-    </p>
-  </div>
+### Named Rules
+**The Single-Container Rule.** Never nest cards inside cards. A table, its toolbar, and its pagination must live inside one continuous container boundary.
 
-  {/* Right: Action Buttons Toolbar */}
-  <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto max-w-full pb-0.5 sm:pb-0">
-    {/* Page Action Buttons */}
-  </div>
-</header>
-```
+**The Right-Aligned Number Rule.** Numerical quantities, inventory units, and financial sums must always align right in tables to enable instant vertical visual comparison.
 
-### Layout Rules:
-1. **Title Typography**: Always `font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground` (30px).
-2. **Monospace Tag**: Adjacent to title, using `font-mono text-[13px] uppercase tracking-wider border-black shadow-neo-sm`.
-3. **Bullet Separator**: Hidden on mobile, visible on desktop (`hidden sm:inline text-muted-foreground/30 •`).
-4. **Description Subtitle**: `text-base text-muted-foreground` (16px).
-5. **Right Toolbar**: Horizontal scrollable container on mobile, right-aligned on desktop with action buttons (`border-black hover:bg-slate-50`).
+## Elevation & Depth
 
+StockOS uses a flat, planar surface architecture. Depth is communicated through 1px border contrast and intentional background tones rather than fuzzy ambient shadows.
 
+### Surface Vocabulary
+- **Resting Canvas**: Flat `#f8fafc` background.
+- **Resting Panels & Tables**: Flat `#ffffff` surface bounded by `1px solid #e2e8f0` (`border border-slate-200`). No drop shadow.
+- **Interactive Controls (Inputs, Buttons)**: Flat resting state with 1px border. Hover introduces a subtle border darkening (`border-slate-400`); focus uses a crisp 1px–2px focus ring (`ring-1 ring-slate-900`).
+- **Modals & Slide-Over Sheets**: Clean structural elevation (`shadow-lg` / `box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08)`) with a calm semi-transparent backdrop (`bg-slate-900/30`).
+
+### Named Rules
+**The Border-Over-Shadow Rule.** Component and section boundaries must be defined by 1px hairline borders (`border-slate-200`), never by box shadows.
+
+**The Flat-By-Default Rule.** All resting containers, tables, and cards have `box-shadow: none`. Shadows appear only on floating overlays (dialogs, dropdown menus, slide-over sheets).
+
+## Shapes
+
+Form geometry is restrained, clean, and modern.
+
+- **Containers & Tables**: `rounded-md` (6px radius) — subtle, professional, structured.
+- **Inputs & Action Buttons**: `rounded-md` (6px radius) — ergonomic shadcn/ui standard.
+- **Badges & Tags**: `rounded-sm` (4px radius) or `rounded-md` (6px radius). Never full circular pill capsules (`rounded-full`) for operational tags.
+- **Prohibitions**: No playful `rounded-2xl` or `rounded-3xl` bubbly silhouettes. No neobrutalist heavy black borders.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** prioritize table scanning speed: keep rows compact (~44px), pad cells comfortably (`py-2.5 px-3.5`), and align numbers right.
+- **Do** use subtle status indicator dots (6px colored dot + neutral text) instead of high-saturation pill badges.
+- **Do** group search, filter dropdowns, and active count badges into a single unified toolbar docked directly to the table header.
+- **Do** format SKUs, batch codes, and quantities with `font-mono tabular-nums`.
+- **Do** present KPI metrics in a unified single-row ribbon with subtle vertical hairlines rather than scattered cards.
+- **Do** use responsive slide-over sheets for entity details so users never lose their place in the table.
+
+### Don't:
+- **Don't** nest cards inside cards.
+- **Don't** use purple/blue gradients, colored shadows, or glassmorphic blur effects.
+- **Don't** use heavy Neobrutalist borders (`3px 3px 0px #000000`) or springy button translate press effects.
+- **Don't** use oversized typography (titles over 28px, giant 48px KPI numbers).
+- **Don't** clutter table rows with brightly colored background badge pills.
+- **Don't** use decorative illustrations, empty-state mascots, or gratuitous entrance animations.
+- **Don't** hide critical inventory counts or action buttons behind multi-level nested menus.

@@ -90,15 +90,6 @@ function StockTransferInner({
     sourceItems[0]?.sku || ""
   );
 
-  // When source warehouse changes, pick first available SKU
-  React.useEffect(() => {
-    if (sourceItems.length > 0) {
-      setSelectedSku(sourceItems[0].sku);
-    } else {
-      setSelectedSku("");
-    }
-  }, [sourceWarehouseId, sourceItems]);
-
   const selectedItem: StoredInventorySummary | null = React.useMemo(() => {
     return sourceItems.find((i) => i.sku === selectedSku) || null;
   }, [sourceItems, selectedSku]);
@@ -214,7 +205,13 @@ function StockTransferInner({
                 </Label>
                 <select
                   value={sourceWarehouseId}
-                  onChange={(e) => setSourceWarehouseId(e.target.value)}
+                  onChange={(e) => {
+                    const newId = e.target.value;
+                    setSourceWarehouseId(newId);
+                    const newWarehouse = warehouses.find((w) => w.id === newId);
+                    const newItems = (newWarehouse?.storedInventory || []).filter((i) => i.available > 0);
+                    setSelectedSku(newItems[0]?.sku || "");
+                  }}
                   className="mt-1 h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-foreground focus:border-black focus:shadow-neo-primary focus:outline-none"
                 >
                   {warehouses.map((w) => (

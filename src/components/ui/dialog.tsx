@@ -19,9 +19,9 @@ function DialogBackdrop({
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]",
+        "fixed inset-0 z-50 bg-slate-900/30",
         "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-        "transition-opacity duration-200",
+        "transition-opacity duration-150",
         className
       )}
       {...props}
@@ -39,10 +39,10 @@ function DialogPopup({
       className={cn(
         "fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
         "w-[calc(100vw-2rem)] max-w-lg",
-        "rounded-lg border border-border bg-card p-0 shadow-xl",
+        "rounded-md border border-border bg-card p-0 shadow-lg",
         "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
         "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
-        "transition-all duration-200",
+        "transition-all duration-150",
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ function DialogHeader({
     >
       <div className="flex-1 space-y-1">{children}</div>
       <DialogPrimitive.Close
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground transition-all hover:border-black hover:bg-foreground hover:text-background active:translate-y-px cursor-pointer"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-ring"
         aria-label="Close dialog"
       >
         <X className="h-3.5 w-3.5" />

@@ -22,18 +22,23 @@ const I18nContext = React.createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = React.useState<Language>("id");
-  const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setIsMounted(true);
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
-      if (saved && (saved === "id" || saved === "en")) {
-        setLanguageState(saved);
+    let mounted = true;
+    Promise.resolve().then(() => {
+      if (!mounted) return;
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
+        if (saved && (saved === "id" || saved === "en")) {
+          setLanguageState(saved);
+        }
+      } catch {
+        // Ignore storage errors
       }
-    } catch {
-      // Ignore storage errors
-    }
+    });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const setLanguage = React.useCallback((lang: Language) => {

@@ -29,34 +29,34 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
   const currentPageTitle = currentNav ? t.nav[currentNav.titleKey] : t.nav.dashboard;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:px-6">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:px-6">
+      <div className="flex items-center gap-2.5 sm:gap-3">
         <Button
           variant="ghost"
           size="sm"
           onClick={onOpenMobileSidebar}
-          className="h-9 w-9 p-0 md:hidden"
+          className="h-8 w-8 p-0 md:hidden text-muted-foreground hover:text-foreground"
           aria-label="Open navigation menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </Button>
 
         {/* Breadcrumbs */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm">
           <Link
             href="/"
-            className="font-heading font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="font-sans font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             StockOS
           </Link>
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-          <span className="font-heading font-semibold text-foreground truncate">
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600 shrink-0" />
+          <span className="font-sans font-semibold text-foreground truncate">
             {currentPageTitle}
           </span>
         </nav>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-2.5">
         <LanguageToggle />
         <UserMenu user={user} />
       </div>

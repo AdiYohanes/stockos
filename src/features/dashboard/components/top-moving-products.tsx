@@ -1,8 +1,11 @@
+"use client";
+
 import * as React from "react";
 import { Flame } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/context";
 import type { TopMovingProduct } from "../types";
 import { MOCK_TOP_MOVING_PRODUCTS } from "../mock-data";
 
@@ -11,6 +14,7 @@ interface TopMovingProductsProps {
 }
 
 export function TopMovingProducts({ products = MOCK_TOP_MOVING_PRODUCTS }: TopMovingProductsProps) {
+  const { t } = useI18n();
   const maxMovement = Math.max(...products.map((p) => p.movementQty), 1);
 
   return (
@@ -22,11 +26,11 @@ export function TopMovingProducts({ products = MOCK_TOP_MOVING_PRODUCTS }: TopMo
               <Flame className="h-4 w-4" />
             </div>
             <CardTitle className="text-base sm:text-lg font-bold text-foreground">
-              Produk Pergerakan Tertinggi
+              {t.dashboard.topMovingProducts}
             </CardTitle>
           </div>
           <Badge variant="secondary">
-            30 Hari
+            {t.dashboard.days30}
           </Badge>
         </div>
       </CardHeader>

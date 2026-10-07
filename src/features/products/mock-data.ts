@@ -1,4 +1,4 @@
-import type { Product, ProductCategory } from "./types";
+import { ProductSchema, type Product, type ProductCategory } from "./schemas/product.schema";
 
 export const PRODUCT_CATEGORIES: ProductCategory[] = [
   "Electronics",
@@ -33,7 +33,7 @@ export const WAREHOUSES = [
   "Central Depot (WH-3)",
 ];
 
-export const MOCK_PRODUCTS: Product[] = [
+const RAW_MOCK_PRODUCTS: Product[] = [
   {
     id: "prod-1",
     sku: "ELEC-ESP-32",
@@ -557,3 +557,5 @@ export const MOCK_PRODUCTS: Product[] = [
     ],
   },
 ];
+
+export const MOCK_PRODUCTS: Product[] = ProductSchema.array().parse(RAW_MOCK_PRODUCTS);

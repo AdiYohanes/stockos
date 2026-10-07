@@ -24,17 +24,19 @@ export function InventoryHeader({
       <Button
         type="button"
         variant="outline"
+        size="sm"
         onClick={onOpenAdjustmentModal}
-        className="h-9 gap-2 border-[1.5px] border-black bg-white font-medium text-xs text-foreground shadow-neo-sm hover:bg-slate-50 active:translate-x-0.5 active:translate-y-0.5 transition-all"
+        className="h-9 gap-1.5 px-3 text-xs font-medium text-foreground hover:bg-slate-50 hover:border-slate-400 dark:hover:bg-slate-800"
       >
-        <SlidersHorizontal className="h-3.5 w-3.5" />
+        <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
         <span>{t.inventory.adjustStock}</span>
       </Button>
 
       <Button
         type="button"
+        size="sm"
         onClick={onOpenMovementModal}
-        className="h-9 gap-2 bg-[#543afd] hover:bg-[#462ee0] text-white border-[1.5px] border-black font-semibold text-xs shadow-neo-sm active:translate-x-0.5 active:translate-y-0.5 transition-all"
+        className="h-9 gap-1.5 px-3.5 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 shadow-none"
       >
         <ArrowUpDown className="h-3.5 w-3.5" />
         <span>{language === "id" ? "Catat Pergerakan" : "Record Movement"}</span>

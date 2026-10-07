@@ -2,16 +2,14 @@
 
 import * as React from "react";
 import {
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   ChevronLeft,
   ChevronRight,
   Warehouse,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SkuBadge } from "@/components/shared/sku-badge";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { ProductRowActions } from "./product-row-actions";
 import { ProductEmptyState } from "./product-empty-state";
@@ -44,6 +42,7 @@ export function ProductsTable({
   onQuickMovement,
   onAddProductClick,
 }: ProductsTableProps) {
+  const { t } = useI18n();
   const { page, pageSize } = filterState;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -60,32 +59,32 @@ export function ProductsTable({
   }
 
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+    <div className="flex flex-col">
       {/* Table Container */}
       <div className="w-full overflow-x-auto">
         <table className="w-full text-left text-sm border-collapse min-w-[850px]">
-          <thead className="border-b border-border bg-slate-50/90 font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider select-none">
+          <thead className="border-b border-border bg-slate-50/80 dark:bg-slate-900/60 font-sans text-xs font-medium text-muted-foreground uppercase tracking-wider select-none">
             <tr>
-              <th scope="col" className="px-4 py-3 min-w-[220px]">
-                Product Name & Category
+              <th scope="col" className="px-3.5 py-2.5 min-w-[220px]">
+                {t.products.table.colProduct}
               </th>
-              <th scope="col" className="px-3 py-3 w-[150px]">
-                SKU / Barcode
+              <th scope="col" className="px-3.5 py-2.5 w-[140px]">
+                {t.products.table.colSku}
               </th>
-              <th scope="col" className="px-3 py-3 w-[170px]">
-                Stock Level
+              <th scope="col" className="px-3.5 py-2.5 w-[160px]">
+                {t.products.table.colStock}
               </th>
-              <th scope="col" className="px-3 py-3 w-[140px] text-right">
-                Price / Value
+              <th scope="col" className="px-3.5 py-2.5 w-[150px] text-right">
+                {t.products.table.colPrice}
               </th>
-              <th scope="col" className="px-3 py-3 w-[150px]">
-                Location
+              <th scope="col" className="px-3.5 py-2.5 w-[150px]">
+                {t.products.table.colLocation}
               </th>
-              <th scope="col" className="px-3 py-3 w-[130px] text-center">
-                Status
+              <th scope="col" className="px-3.5 py-2.5 w-[130px]">
+                {t.common.status}
               </th>
-              <th scope="col" className="px-3 py-3 w-[70px] text-right">
-                Actions
+              <th scope="col" className="px-3.5 py-2.5 w-[60px] text-right">
+                <span className="sr-only">{t.common.actions}</span>
               </th>
             </tr>
           </thead>
@@ -102,35 +101,36 @@ export function ProductsTable({
                 <tr
                   key={product.id}
                   onClick={() => onViewDetails(product)}
-                  className="group transition-colors hover:bg-slate-50/80 cursor-pointer"
+                  className="group transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/40 cursor-pointer h-12"
                 >
                   {/* Col 1: Product Name & Category */}
-                  <td className="px-4 py-3">
+                  <td className="px-3.5 py-2.5">
                     <div className="flex flex-col">
-                      <span className="font-heading font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                      <span className="font-sans font-medium text-foreground text-sm group-hover:text-primary transition-colors">
                         {product.name}
                       </span>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                      <div className="mt-0.5 flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground font-sans">
                           {product.category}
                         </span>
                         {product.supplier && (
-                          <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
-                            {product.supplier}
-                          </span>
+                          <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+                              {product.supplier}
+                            </span>
+                          </>
                         )}
                       </div>
                     </div>
                   </td>
 
                   {/* Col 2: SKU & Barcode */}
-                  <td className="px-3 py-3 font-mono">
+                  <td className="px-3.5 py-2.5">
                     <div className="flex flex-col gap-0.5">
-                      <span className="inline-flex w-fit items-center rounded-sm border border-black bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-primary tracking-wider shadow-neo-sm">
-                        {product.sku}
-                      </span>
+                      <SkuBadge code={product.sku} />
                       {product.barcode && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
                           #{product.barcode}
                         </span>
                       )}
@@ -138,95 +138,99 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 3: Stock Level & Progress Bar */}
-                  <td className="px-3 py-3 font-mono">
+                  <td className="px-3.5 py-2.5">
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between text-xs font-mono tabular-nums">
                         <span
                           className={cn(
-                            "font-bold",
+                            "font-medium",
                             product.status === "out_of_stock"
-                              ? "text-destructive font-extrabold"
+                              ? "text-rose-600 font-semibold"
                               : product.status === "low_stock"
-                              ? "text-amber-600"
+                              ? "text-amber-600 font-semibold"
                               : "text-foreground"
                           )}
                         >
-                          {formatNumber(product.currentStock)} {product.unit}
+                          {formatNumber(product.currentStock)}{" "}
+                          <span className="text-[11px] text-muted-foreground font-sans">
+                            {product.unit}
+                          </span>
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          Min: {product.minStock}
+                          min {product.minStock}
                         </span>
                       </div>
 
-                      {/* Stock Bar */}
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                      {/* Subtle 3px Stock Gauge */}
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                         <div
-                          style={{ width: `${Math.max(product.currentStock > 0 ? 8 : 0, stockPercentage)}%` }}
+                          style={{ width: `${Math.max(product.currentStock > 0 ? 6 : 0, stockPercentage)}%` }}
                           className={cn(
                             "h-full rounded-full transition-all duration-300",
                             product.status === "out_of_stock"
-                              ? "bg-destructive"
+                              ? "bg-rose-600"
                               : product.status === "low_stock"
-                              ? "bg-amber-500"
-                              : "bg-emerald-500"
+                              ? "bg-amber-600"
+                              : "bg-emerald-600"
                           )}
                         />
                       </div>
                     </div>
                   </td>
 
-                  {/* Col 4: Price & Valuation */}
-                  <td className="px-3 py-3 text-right font-mono">
+                  {/* Col 4: Price & Valuation (Right-Aligned Numbers) */}
+                  <td className="px-3.5 py-2.5 text-right font-mono tabular-nums">
                     <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-foreground">
+                      <span className="text-xs font-medium text-foreground">
                         {formatCurrency(product.unitPrice || 0)}
-                        <span className="text-[10px] font-normal text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground font-sans">
                           /{product.unit}
                         </span>
                       </span>
                       <span className="text-[10px] text-muted-foreground">
-                        Total: {formatCurrency(totalProductValue)}
+                        {formatCurrency(totalProductValue)}
                       </span>
                     </div>
                   </td>
 
                   {/* Col 5: Warehouse Location */}
-                  <td className="px-3 py-3">
+                  <td className="px-3.5 py-2.5">
                     <div className="flex items-center gap-1.5 text-xs text-foreground">
                       <Warehouse className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="truncate text-xs font-medium">{product.warehouse}</span>
+                      <span className="truncate text-xs text-muted-foreground font-sans">{product.warehouse}</span>
                     </div>
                   </td>
 
-                  {/* Col 6: Status Badge */}
-                  <td className="px-3 py-3 text-center">
+                  {/* Col 6: Disciplined Status Micro-Dot */}
+                  <td className="px-3.5 py-2.5">
                     {product.status === "in_stock" && (
-                      <Badge variant="success" className="mx-auto">
-                        <CheckCircle2 className="h-3 w-3" />
-                        <span>In Stock</span>
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                        <span>{t.products.inStock}</span>
+                      </span>
                     )}
                     {product.status === "low_stock" && (
-                      <Badge variant="warning" className="mx-auto">
-                        <AlertTriangle className="h-3 w-3" />
-                        <span>Low Stock</span>
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0" />
+                        <span>{t.products.lowStock}</span>
+                      </span>
                     )}
                     {product.status === "out_of_stock" && (
-                      <Badge variant="destructive" className="mx-auto">
-                        <XCircle className="h-3 w-3" />
-                        <span>Out of Stock</span>
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-400 font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0" />
+                        <span>{t.products.outOfStock}</span>
+                      </span>
                     )}
                     {product.status === "draft" && (
-                      <Badge variant="neutral" className="mx-auto">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
                         <span>Draft</span>
-                      </Badge>
+                      </span>
                     )}
                   </td>
 
                   {/* Col 7: Actions Menu */}
-                  <td className="px-3 py-3 text-right">
+                  <td className="px-3.5 py-2.5 text-right">
                     <ProductRowActions
                       product={product}
                       onViewDetails={onViewDetails}
@@ -243,11 +247,10 @@ export function ProductsTable({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border px-4 py-3 bg-slate-50/50">
-        <div className="text-xs text-muted-foreground font-mono">
-          Showing <span className="font-semibold text-foreground">{startItem}</span> to{" "}
-          <span className="font-semibold text-foreground">{endItem}</span> of{" "}
-          <span className="font-semibold text-foreground">{totalCount}</span> products
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border px-4 py-2.5 bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="text-xs text-muted-foreground font-mono tabular-nums">
+          {t.products.table.showing} <span className="font-medium text-foreground">{startItem}</span>–<span className="font-medium text-foreground">{endItem}</span> {t.products.table.of}{" "}
+          <span className="font-medium text-foreground">{totalCount}</span> {t.products.table.products}
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -257,14 +260,14 @@ export function ProductsTable({
             size="sm"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="btn-neo h-8 px-2.5 text-xs gap-1 font-mono"
+            className="h-8 px-2.5 text-xs gap-1 font-mono tabular-nums hover:border-slate-400"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Previous
+            {t.products.table.previous}
           </Button>
 
-          <span className="text-xs font-mono text-muted-foreground px-2">
-            Page {page} of {totalPages}
+          <span className="text-xs font-mono tabular-nums text-muted-foreground px-1.5">
+            {page} / {totalPages}
           </span>
 
           <Button
@@ -273,9 +276,9 @@ export function ProductsTable({
             size="sm"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="btn-neo h-8 px-2.5 text-xs gap-1 font-mono"
+            className="h-8 px-2.5 text-xs gap-1 font-mono tabular-nums hover:border-slate-400"
           >
-            Next
+            {t.products.table.next}
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>

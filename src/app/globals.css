@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,9 +10,9 @@
   --font-space-mono: var(--font-space-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-space-mono), monospace;
-  --font-heading: var(--font-space-grotesk), var(--font-sans);
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-inter), system-ui, -apple-system, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -30,6 +29,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -43,82 +43,120 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.75);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
-  --radius-2xl: calc(var(--radius) * 2);
-  --radius-3xl: calc(var(--radius) * 2.5);
-  --radius-4xl: calc(var(--radius) * 3);
+  --color-status-healthy: var(--status-healthy);
+  --color-status-warning: var(--status-warning);
+  --color-status-critical: var(--status-critical);
+  --color-status-transit: var(--status-transit);
+  --color-status-neutral: var(--status-neutral);
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: var(--radius);
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 }
 
 :root {
-  --background: #f8f9fa;
-  --foreground: #09090b;
+  /* Canvas & Surfaces */
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #543afd;
+  --popover-foreground: #0f172a;
+
+  /* Primary Action: Deep Slate Ink (#0f172a) & Deep Slate Hover (#1e293b) */
+  --primary: #0f172a;
+  --primary-hover: #1e293b;
   --primary-foreground: #ffffff;
-  --secondary: #09090b;
-  --secondary-foreground: #ffffff;
+
+  /* Secondary & Neutral Surfaces */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
-  --accent: #543afd;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+
+  /* Semantic Destructive: Critical / Out of Stock (#dc2626) */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Focus Rings */
   --border: #e2e8f0;
   --input: #cbd5e1;
-  --ring: #543afd;
-  --chart-1: #09090b;
-  --chart-2: #543afd;
-  --chart-3: #64748b;
-  --chart-4: #94a3b8;
-  --chart-5: #cbd5e1;
-  --radius: 0.5rem;
+  --ring: #0f172a;
+
+  /* Charts */
+  --chart-1: #0f172a;
+  --chart-2: #2563eb;
+  --chart-3: #059669;
+  --chart-4: #d97706;
+  --chart-5: #64748b;
+
+  /* Functional Status (Semantic Only) */
+  --status-healthy: #059669;
+  --status-warning: #d97706;
+  --status-critical: #dc2626;
+  --status-transit: #2563eb;
+  --status-neutral: #64748b;
+
+  /* Geometry: 6px standard radius */
+  --radius: 0.375rem;
+
+  /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #09090b;
-  --sidebar-primary: #543afd;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0f172a;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #09090b;
+  --sidebar-accent-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #543afd;
+  --sidebar-ring: #0f172a;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #f8fafc;
+  --primary-hover: #e2e8f0;
+  --primary-foreground: #0f172a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1e293b;
+  --input: #334155;
+  --ring: #94a3b8;
+  --chart-1: #f8fafc;
+  --chart-2: #3b82f6;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #94a3b8;
+  --status-healthy: #10b981;
+  --status-warning: #f59e0b;
+  --status-critical: #ef4444;
+  --status-transit: #3b82f6;
+  --status-neutral: #94a3b8;
+  --radius: 0.375rem;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #f8fafc;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #94a3b8;
 }
 
 @layer base {
@@ -127,7 +165,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
   }
   button,
@@ -137,11 +175,11 @@
 }
 
 /* ==========================================================================
-   Hybrid Neo-SaaS Design System Tokens & Utilities (70% SaaS + 30% Neobrutal)
+   The Precision Ledger Foundations
    ========================================================================== */
 
 .font-inter {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 .font-space-grotesk {
@@ -149,119 +187,165 @@
 }
 
 .font-space-mono {
-  font-family: var(--font-space-mono), monospace;
+  font-family: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
 }
+
+/* Tabular figures & data styling */
+.font-tabular,
+.tabular-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Single-Surface Precision Ledger Container */
+.ledger-container {
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Operational Status Indicator Dots */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.status-dot-healthy {
+  background-color: var(--status-healthy);
+}
+.status-dot-warning {
+  background-color: var(--status-warning);
+}
+.status-dot-critical {
+  background-color: var(--status-critical);
+}
+.status-dot-transit {
+  background-color: var(--status-transit);
+}
+.status-dot-neutral {
+  background-color: var(--status-neutral);
+}
+
+/* ==========================================================================
+   Transitional Legacy Neo-SaaS Bridge Utilities
+   (Retained as flat ledger shims so unmigrated feature pages remain coherent)
+   ========================================================================== */
 
 .text-md {
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
-/* Neobrutal Micro-Shadows */
+/* Flattened Shadows */
 .shadow-neo-sm,
 .shadow-brutal-sm {
-  box-shadow: 2px 2px 0px #000000;
+  box-shadow: none;
 }
 
 .shadow-neo,
 .shadow-brutal {
-  box-shadow: 3px 3px 0px #000000;
+  box-shadow: none;
 }
 
 .shadow-neo-lg,
 .shadow-brutal-lg {
-  box-shadow: 5px 5px 0px #000000;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
 }
 
 .shadow-neo-primary,
 .shadow-brutal-primary {
-  box-shadow: 2px 2px 0px #543afd, 2px 2px 0px 1px #000000;
+  box-shadow: none;
 }
 
 .shadow-neo-primary-sm,
 .shadow-brutal-primary-sm {
-  box-shadow: 2px 2px 0px #543afd;
+  box-shadow: none;
 }
 
-/* Interactive Tactile Press Buttons */
+/* Flattened Action Buttons */
 .btn-neo,
 .btn-brutal {
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .btn-neo:hover,
 .btn-brutal:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
+  transform: none;
+  box-shadow: none;
+  background-color: var(--muted);
+  border-color: var(--input);
 }
 .btn-neo:active,
 .btn-brutal:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-neo-primary,
 .btn-brutal-primary {
-  background-color: #543afd;
-  color: #ffffff;
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+  box-shadow: none;
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease;
 }
 .btn-neo-primary:hover,
 .btn-brutal-primary:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-  background-color: #462ee0;
+  transform: none;
+  box-shadow: none;
+  background-color: var(--primary-hover);
 }
 .btn-neo-primary:active,
 .btn-brutal-primary:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-neo-black,
 .btn-brutal-black {
-  background-color: #09090b;
-  color: #ffffff;
-  border: 1.5px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  border-radius: 0.375rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+  box-shadow: none;
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease;
 }
 .btn-neo-black:hover,
 .btn-brutal-black:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-  background-color: #18181b;
+  transform: none;
+  box-shadow: none;
+  background-color: var(--primary-hover);
 }
 .btn-neo-black:active,
 .btn-brutal-black:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Input Focus */
+/* Flattened Inputs */
 .input-neo,
 .input-brutal {
-  border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff;
-  color: #09090b;
-  border-radius: 0.375rem !important;
-  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+  border: 1px solid var(--input) !important;
+  background-color: var(--card);
+  color: var(--foreground);
+  border-radius: var(--radius-md) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .input-neo:focus,
 .input-brutal:focus {
-  border-color: #000000 !important;
+  border-color: var(--ring) !important;
   outline: none !important;
-  box-shadow: 2px 2px 0px #543afd !important;
+  box-shadow: 0 0 0 1px var(--ring) !important;
 }
 .input-neo::placeholder,
 .input-brutal::placeholder {
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--muted-foreground);
 }
 
 /* ==========================================================================
