@@ -59,17 +59,21 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
     },
   });
 
+  const [error, setError] = React.useState<string | null>(null);
   const onSubmit = (data: EditProductInput) => {
-    onUpdateProduct(product.id, {
-      ...data,
-      sku: data.sku.toUpperCase(),
-    });
-    onClose();
+    setError(null);
+    try {
+      onUpdateProduct(product.id, { ...data, sku: data.sku.toUpperCase() });
+      onClose();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to update product.");
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <DialogBody className="max-h-[70vh] overflow-y-auto pr-2">
+        {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
             <Label htmlFor="edit-name">Product Name *</Label>

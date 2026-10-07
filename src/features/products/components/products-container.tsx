@@ -20,6 +20,7 @@ const ProductDetailSheet = dynamic(
 
 export function ProductsContainer() {
   const {
+    products,
     paginatedProducts,
     metrics,
     filterState,
@@ -47,20 +48,21 @@ export function ProductsContainer() {
   } = useProducts();
 
   const [quickMovementState, setQuickMovementState] = React.useState<{
-    product: Product | null;
+    productId: string | null;
     type: "in" | "out" | null;
     open: boolean;
   }>({
-    product: null,
+    productId: null,
     type: null,
     open: false,
   });
+  const movementProduct = products.find((product) => product.id === quickMovementState.productId) ?? null;
 
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
 
   const handleOpenQuickMovement = (product: Product, type: "in" | "out") => {
     setQuickMovementState({
-      product,
+      productId: product.id,
       type,
       open: true,
     });
@@ -134,6 +136,7 @@ export function ProductsContainer() {
       />
 
       <DeleteProductDialog
+        key={productToDelete?.id || "new-delete"}
         product={productToDelete}
         open={productToDelete !== null}
         onOpenChange={(open) => {
@@ -143,8 +146,8 @@ export function ProductsContainer() {
       />
 
       <QuickMovementModal
-        key={quickMovementState.product?.id || "new-movement"}
-        product={quickMovementState.product}
+        key={movementProduct?.id || "new-movement"}
+        product={movementProduct}
         type={quickMovementState.type}
         open={quickMovementState.open}
         onOpenChange={(open) => {

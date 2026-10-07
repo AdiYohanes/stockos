@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useWarehousesStore } from "@/components/providers/feature-stores-provider";
 import type {
   InterWarehouseTransferPayload,
-  StoredInventorySummary,
   WarehouseFilterState,
   WarehouseItem,
   WarehouseMetrics,
@@ -12,9 +13,8 @@ import type {
   WarehouseTransferLog,
   WarehouseType,
   WarehouseViewMode,
-  WarehouseZone,
 } from "../types";
-import { MOCK_GLOBAL_TRANSFER_LOGS, MOCK_WAREHOUSES } from "../mock-data";
+import type { CreateWarehouseInput, UpdateWarehouseInput } from "../store";
 
 export interface UseWarehousesReturn {
   // Master state
@@ -59,44 +59,10 @@ export interface UseWarehousesReturn {
   resetFilters: () => void;
 
   // Mutations
-  createWarehouse: (data: {
-    name: string;
-    code: string;
-    type: WarehouseType;
-    status: WarehouseStatus;
-    street: string;
-    city: string;
-    province: string;
-    postalCode: string;
-    managerName: string;
-    managerEmail: string;
-    managerPhone: string;
-    totalCapacityUnits: number;
-    zones?: WarehouseZone[];
-  }) => void;
-
-  updateWarehouse: (
-    id: string,
-    data: {
-      name: string;
-      code: string;
-      type: WarehouseType;
-      status: WarehouseStatus;
-      street: string;
-      city: string;
-      province: string;
-      postalCode: string;
-      managerName: string;
-      managerEmail: string;
-      managerPhone: string;
-      totalCapacityUnits: number;
-      zones?: WarehouseZone[];
-    }
-  ) => void;
-
-  deleteWarehouse: (id: string) => void;
-
-  transferStock: (payload: InterWarehouseTransferPayload) => void;
+  createWarehouse: (data: CreateWarehouseInput) => WarehouseItem;
+  updateWarehouse: (id: string, data: UpdateWarehouseInput) => WarehouseItem;
+  deleteWarehouse: (id: string) => WarehouseItem;
+  transferStock: (payload: InterWarehouseTransferPayload) => WarehouseTransferLog;
 }
 
 const INITIAL_FILTER_STATE: WarehouseFilterState = {
@@ -111,19 +77,31 @@ const INITIAL_FILTER_STATE: WarehouseFilterState = {
 };
 
 export function useWarehouses(): UseWarehousesReturn {
-  const [warehouses, setWarehouses] = React.useState<WarehouseItem[]>(MOCK_WAREHOUSES);
-  const [transferLogs, setTransferLogs] = React.useState<WarehouseTransferLog[]>(
-    MOCK_GLOBAL_TRANSFER_LOGS
+  const warehouses = useWarehousesStore((s) => s.warehouses);
+  const transferLogs = useWarehousesStore((s) => s.transferLogs);
+  const {
+    createWarehouse: storeCreateWarehouse,
+    updateWarehouse: storeUpdateWarehouse,
+    deleteWarehouse: storeDeleteWarehouse,
+    transferStock: storeTransferStock,
+  } = useWarehousesStore(
+    useShallow((s) => ({
+      createWarehouse: s.createWarehouse,
+      updateWarehouse: s.updateWarehouse,
+      deleteWarehouse: s.deleteWarehouse,
+      transferStock: s.transferStock,
+    }))
   );
+
   const [filterState, setFilterState] =
     React.useState<WarehouseFilterState>(INITIAL_FILTER_STATE);
 
   // Selected warehouse for slide-over sheet (Derived selection pattern)
   const [selectedWarehouseId, setSelectedWarehouseId] = React.useState<string | null>(null);
 
-  // Modal states
-  const [warehouseToEdit, setWarehouseToEdit] = React.useState<WarehouseItem | null>(null);
-  const [warehouseToDelete, setWarehouseToDelete] = React.useState<WarehouseItem | null>(null);
+  // Modal target IDs (Derived from store data instead of storing snapshot objects)
+  const [editWarehouseId, setEditWarehouseId] = React.useState<string | null>(null);
+  const [deleteWarehouseId, setDeleteWarehouseId] = React.useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState<boolean>(false);
   const [isTransferModalOpen, setIsTransferModalOpenState] = React.useState<boolean>(false);
   const [transferSourceWarehouseId, setTransferSourceWarehouseId] = React.useState<
@@ -143,6 +121,25 @@ export function useWarehouses(): UseWarehousesReturn {
     if (!selectedWarehouseId) return null;
     return warehouses.find((w) => w.id === selectedWarehouseId) || null;
   }, [warehouses, selectedWarehouseId]);
+
+  // Derived warehouse to edit & delete
+  const warehouseToEdit = React.useMemo(() => {
+    if (!editWarehouseId) return null;
+    return warehouses.find((w) => w.id === editWarehouseId) || null;
+  }, [warehouses, editWarehouseId]);
+
+  const warehouseToDelete = React.useMemo(() => {
+    if (!deleteWarehouseId) return null;
+    return warehouses.find((w) => w.id === deleteWarehouseId) || null;
+  }, [warehouses, deleteWarehouseId]);
+
+  const setWarehouseToEdit = React.useCallback((item: WarehouseItem | null) => {
+    setEditWarehouseId(item ? item.id : null);
+  }, []);
+
+  const setWarehouseToDelete = React.useCallback((item: WarehouseItem | null) => {
+    setDeleteWarehouseId(item ? item.id : null);
+  }, []);
 
   // Derived metrics
   const metrics = React.useMemo<WarehouseMetrics>(() => {
@@ -242,12 +239,14 @@ export function useWarehouses(): UseWarehousesReturn {
   }, [warehouses, filterState]);
 
   const totalFilteredCount = filteredWarehouses.length;
-  const totalPages = Math.ceil(totalFilteredCount / filterState.pageSize) || 1;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / filterState.pageSize));
+  // Derived page clamp without useEffect syncing
+  const currentPage = Math.min(Math.max(1, filterState.page), totalPages);
 
   const paginatedWarehouses = React.useMemo(() => {
-    const start = (filterState.page - 1) * filterState.pageSize;
+    const start = (currentPage - 1) * filterState.pageSize;
     return filteredWarehouses.slice(start, start + filterState.pageSize);
-  }, [filteredWarehouses, filterState.page, filterState.pageSize]);
+  }, [filteredWarehouses, currentPage, filterState.pageSize]);
 
   // Setters
   const setSearchQuery = React.useCallback((searchQuery: string) => {
@@ -290,259 +289,49 @@ export function useWarehouses(): UseWarehousesReturn {
 
   // Mutations
   const createWarehouse = React.useCallback(
-    (data: {
-      name: string;
-      code: string;
-      type: WarehouseType;
-      status: WarehouseStatus;
-      street: string;
-      city: string;
-      province: string;
-      postalCode: string;
-      managerName: string;
-      managerEmail: string;
-      managerPhone: string;
-      totalCapacityUnits: number;
-      zones?: WarehouseZone[];
-    }) => {
-      const now = new Date();
-      const dateStr = now.toISOString().split("T")[0];
-      const newId = `wh-${Date.now()}`;
-
-      const defaultZones: WarehouseZone[] = data.zones && data.zones.length > 0
-        ? data.zones
-        : [
-            {
-              id: `zn-${newId}-a`,
-              code: "ZN-A",
-              name: "Zone A - Primary Storage",
-              type: "shelf",
-              capacityUnits: Math.round(data.totalCapacityUnits * 0.5),
-              usedUnits: 0,
-            },
-            {
-              id: `zn-${newId}-b`,
-              code: "ZN-B",
-              name: "Zone B - Bulk Pallet Rack",
-              type: "rack",
-              capacityUnits: Math.round(data.totalCapacityUnits * 0.5),
-              usedUnits: 0,
-            },
-          ];
-
-      const newWarehouse: WarehouseItem = {
-        id: newId,
-        code: data.code.toUpperCase().trim(),
-        name: data.name.trim(),
-        type: data.type,
-        status: data.status,
-        address: {
-          street: data.street.trim(),
-          city: data.city.trim(),
-          province: data.province.trim(),
-          postalCode: data.postalCode.trim(),
-        },
-        manager: {
-          name: data.managerName.trim(),
-          email: data.managerEmail.trim(),
-          phone: data.managerPhone.trim(),
-        },
-        totalCapacityUnits: data.totalCapacityUnits,
-        usedCapacityUnits: 0,
-        totalSkusCount: 0,
-        totalValuation: 0,
-        zones: defaultZones,
-        storedInventory: [],
-        transferLogs: [],
-        createdAt: dateStr,
-      };
-
-      setWarehouses((prev) => [newWarehouse, ...prev]);
+    (data: CreateWarehouseInput) => {
+      const created = storeCreateWarehouse(data);
       setIsCreateModalOpen(false);
+      return created;
     },
-    []
+    [storeCreateWarehouse]
   );
 
   const updateWarehouse = React.useCallback(
-    (
-      id: string,
-      data: {
-        name: string;
-        code: string;
-        type: WarehouseType;
-        status: WarehouseStatus;
-        street: string;
-        city: string;
-        province: string;
-        postalCode: string;
-        managerName: string;
-        managerEmail: string;
-        managerPhone: string;
-        totalCapacityUnits: number;
-        zones?: WarehouseZone[];
-      }
-    ) => {
-      const dateStr = new Date().toISOString().split("T")[0];
-
-      setWarehouses((prev) =>
-        prev.map((item) => {
-          if (item.id !== id) return item;
-          return {
-            ...item,
-            code: data.code.toUpperCase().trim(),
-            name: data.name.trim(),
-            type: data.type,
-            status: data.status,
-            address: {
-              street: data.street.trim(),
-              city: data.city.trim(),
-              province: data.province.trim(),
-              postalCode: data.postalCode.trim(),
-            },
-            manager: {
-              name: data.managerName.trim(),
-              email: data.managerEmail.trim(),
-              phone: data.managerPhone.trim(),
-            },
-            totalCapacityUnits: data.totalCapacityUnits,
-            zones: data.zones && data.zones.length > 0 ? data.zones : item.zones,
-            updatedAt: dateStr,
-          };
-        })
-      );
-
-      setWarehouseToEdit(null);
+    (id: string, data: UpdateWarehouseInput) => {
+      const updated = storeUpdateWarehouse(id, data);
+      setEditWarehouseId(null);
+      return updated;
     },
-    []
+    [storeUpdateWarehouse]
   );
 
   const deleteWarehouse = React.useCallback(
     (id: string) => {
-      setWarehouses((prev) => prev.filter((item) => item.id !== id));
+      const deleted = storeDeleteWarehouse(id);
       if (selectedWarehouseId === id) {
         setSelectedWarehouseId(null);
       }
-      setWarehouseToDelete(null);
+      setDeleteWarehouseId(null);
+      return deleted;
     },
-    [selectedWarehouseId]
+    [storeDeleteWarehouse, selectedWarehouseId]
   );
 
-  const transferStock = React.useCallback((payload: InterWarehouseTransferPayload) => {
-    const now = new Date();
-    const timestamp = `${now.toISOString().split("T")[0]} ${now.toTimeString().slice(0, 5)}`;
-    const logId = `trf-${Date.now()}`;
-
-    setWarehouses((prev) => {
-      const source = prev.find((w) => w.id === payload.sourceWarehouseId);
-      const dest = prev.find((w) => w.id === payload.destinationWarehouseId);
-      if (!source || !dest) return prev;
-
-      // Locate item in source
-      const sourceItem = source.storedInventory?.find((i) => i.sku === payload.sku);
-      const unitCost = sourceItem ? sourceItem.unitCost : 0;
-      const transferValuation = unitCost * payload.quantity;
-
-      const newTransferLog: WarehouseTransferLog = {
-        id: logId,
-        reference: payload.reference,
-        sourceWarehouseId: source.id,
-        sourceWarehouseName: source.name,
-        destinationWarehouseId: dest.id,
-        destinationWarehouseName: dest.name,
-        sku: payload.sku,
-        itemName: payload.itemName,
-        quantity: payload.quantity,
-        dispatchedBy: payload.dispatchedBy,
-        timestamp,
-        notes: payload.notes,
-        status: "completed",
-      };
-
-      // Append to global transfer logs
-      setTransferLogs((oldLogs) => [newTransferLog, ...oldLogs]);
-
-      return prev.map((wh) => {
-        if (wh.id === payload.sourceWarehouseId) {
-          // Decrement stock from source
-          const updatedInventory: StoredInventorySummary[] = (wh.storedInventory || [])
-            .map((inv) => {
-              if (inv.sku === payload.sku) {
-                const newQty = Math.max(0, inv.quantity - payload.quantity);
-                const newAvail = Math.max(0, inv.available - payload.quantity);
-                return { ...inv, quantity: newQty, available: newAvail };
-              }
-              return inv;
-            })
-            .filter((inv) => inv.quantity > 0);
-
-          const newUsed = Math.max(0, wh.usedCapacityUnits - payload.quantity);
-          const newValuation = Math.max(0, wh.totalValuation - transferValuation);
-
-          return {
-            ...wh,
-            usedCapacityUnits: newUsed,
-            totalValuation: newValuation,
-            totalSkusCount: updatedInventory.length,
-            storedInventory: updatedInventory,
-            transferLogs: [newTransferLog, ...(wh.transferLogs || [])],
-          };
-        }
-
-        if (wh.id === payload.destinationWarehouseId) {
-          // Increment stock on destination
-          const existingInv = wh.storedInventory?.find((i) => i.sku === payload.sku);
-          let updatedInventory: StoredInventorySummary[];
-
-          if (existingInv) {
-            updatedInventory = (wh.storedInventory || []).map((inv) => {
-              if (inv.sku === payload.sku) {
-                return {
-                  ...inv,
-                  quantity: inv.quantity + payload.quantity,
-                  available: inv.available + payload.quantity,
-                };
-              }
-              return inv;
-            });
-          } else {
-            const newInvItem: StoredInventorySummary = {
-              id: `inv-${Date.now()}`,
-              sku: payload.sku,
-              name: payload.itemName,
-              category: sourceItem ? sourceItem.category : "General",
-              quantity: payload.quantity,
-              available: payload.quantity,
-              unitCost,
-              unit: sourceItem ? sourceItem.unit : "pcs",
-              locationBin: "A-01-01",
-            };
-            updatedInventory = [newInvItem, ...(wh.storedInventory || [])];
-          }
-
-          const newUsed = wh.usedCapacityUnits + payload.quantity;
-          const newValuation = wh.totalValuation + transferValuation;
-
-          return {
-            ...wh,
-            usedCapacityUnits: newUsed,
-            totalValuation: newValuation,
-            totalSkusCount: updatedInventory.length,
-            storedInventory: updatedInventory,
-            transferLogs: [newTransferLog, ...(wh.transferLogs || [])],
-          };
-        }
-
-        return wh;
-      });
-    });
-
-    setIsTransferModalOpenState(false);
-  }, []);
+  const transferStock = React.useCallback(
+    (payload: InterWarehouseTransferPayload) => {
+      const log = storeTransferStock(payload);
+      setIsTransferModalOpenState(false);
+      setTransferSourceWarehouseId(null);
+      return log;
+    },
+    [storeTransferStock]
+  );
 
   return {
     warehouses,
     transferLogs,
-    filterState,
+    filterState: { ...filterState, page: currentPage },
     hasActiveFilters,
     filteredWarehouses,
     paginatedWarehouses,

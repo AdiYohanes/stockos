@@ -68,14 +68,14 @@ function StockAdjustmentForm({
   const [error, setError] = React.useState<string | null>(null);
 
   const currentStock = activeItem ? activeItem.currentStock : 0;
-  const newStockNum = parseInt(newStockStr, 10);
+  const newStockNum = newStockStr.trim() ? Number(newStockStr) : NaN;
   const delta = isNaN(newStockNum) ? 0 : newStockNum - currentStock;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (isNaN(newStockNum) || newStockNum < 0) {
+    if (!Number.isSafeInteger(newStockNum) || newStockNum < 0) {
       setError("Please enter a valid non-negative physical stock count.");
       return;
     }
@@ -95,7 +95,11 @@ function StockAdjustmentForm({
       return;
     }
 
-    onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+    try {
+      onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to adjust stock");
+    }
   };
 
   return (
@@ -234,7 +238,10 @@ function StockAdjustmentForm({
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2">
+          <div
+            role="alert"
+            className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
+          >
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>

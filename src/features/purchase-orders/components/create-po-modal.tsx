@@ -60,6 +60,7 @@ function createLineItemId(seq: number): string {
 
 export function CreatePOModal({ isOpen, onClose, onCreate }: CreatePOModalProps) {
   const { language, t } = useI18n();
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {
     register,
@@ -137,9 +138,16 @@ export function CreatePOModal({ isOpen, onClose, onCreate }: CreatePOModalProps)
       notes: formData.notes,
     };
 
-    onCreate(newPo);
-    reset(DEFAULT_PO_FORM);
-    onClose();
+    setSubmitError(null);
+    try {
+      onCreate(newPo);
+      reset(DEFAULT_PO_FORM);
+      onClose();
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to create purchase order"
+      );
+    }
   };
 
   return (
@@ -157,6 +165,14 @@ export function CreatePOModal({ isOpen, onClose, onCreate }: CreatePOModalProps)
           </DialogHeader>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+            {submitError && (
+              <div
+                role="alert"
+                className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-sans"
+              >
+                {submitError}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-semibold text-sm">

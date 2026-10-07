@@ -33,12 +33,18 @@ export function DeleteProductDialog({
   onConfirmDelete,
 }: DeleteProductDialogProps) {
   const { t } = useI18n();
+  const [error, setError] = React.useState<string | null>(null);
 
   if (!product) return null;
 
   const handleDelete = () => {
-    onConfirmDelete(product.id);
-    onOpenChange(false);
+    setError(null);
+    try {
+      onConfirmDelete(product.id);
+      onOpenChange(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to delete product.");
+    }
   };
 
   return (
@@ -63,6 +69,7 @@ export function DeleteProductDialog({
           </DialogHeader>
 
           <DialogBody>
+            {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
             <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-1">
               <div className="flex items-center gap-2">
                 <SkuBadge code={product.sku} />

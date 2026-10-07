@@ -254,22 +254,20 @@ Avoid turning entire pages into Client Components simply because one small inter
 
 # 9. State Management
 
-Current default:
+Current ownership:
 
-- Server state where possible
-- URL state for filters/search when appropriate
-- Local React state for small UI interactions
+- Server state where possible; authentication remains server-owned through the existing mock auth boundary.
+- URL state for shareable filters/search when appropriate.
+- Local React state for filters, sorting, pagination, modal visibility, selected entity IDs, form drafts, and feedback.
+- Zustand vanilla stores for session-scoped mutable mock collections: products, inventory, warehouses, suppliers, and purchase orders.
 
-Do not introduce a global state library without a demonstrated need.
+Each feature owns its `store.ts`, state/actions, validation, and mock seeds. Existing feature hooks subscribe through narrow selectors and compose local UI state with derived metrics. Business mutations live in named store actions, not component setters. Related data and audit logs update atomically; rejected actions throw errors without modifying state, and forms display errors without closing.
 
-Examples that normally do not require global state:
+`FeatureStoresProvider` in the authenticated dashboard layout creates independent store instances per provider mount. Context carries stable store references only. Navigating between dashboard routes preserves collections; leaving the dashboard or fully reloading resets them to mock seeds. Stores are not persisted and are never read or mutated from React Server Components. Module-level mutable store singletons are not used, so server requests cannot share session state.
 
-- Modal visibility
-- Form interaction
-- Table sorting
-- Simple filters
+Products, Inventory, Warehouses, and Purchase Orders still use independent feature fixtures and identifiers. This state ownership refactor does not unify stock models, connect PO receipts to Inventory, or make Dashboard/Reports analytics live. Historical analytics remain mock fixtures. Future backend data belongs in the real data-access boundary rather than being copied into these client stores.
 
-A global store should only be introduced when multiple unrelated parts of the application genuinely need synchronized client state.
+Settings drafts and the existing i18n context remain unchanged. Do not introduce more shared stores without demonstrated shared-client-state needs.
 
 ---
 
