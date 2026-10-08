@@ -5,7 +5,6 @@ import {
   OverviewCards,
   InventoryHealth,
   NeedAttentionTable,
-  TopMovingProducts,
   MOCK_OVERVIEW_METRICS,
 } from "@/features/dashboard";
 
@@ -41,22 +40,17 @@ export default async function DashboardPage() {
       {/* 2. Overview Metrics Cards (4 cards) */}
       <OverviewCards metrics={MOCK_OVERVIEW_METRICS} />
 
-      {/* 3. Main Analytics 3-Column Desktop Grid */}
+      {/* 3. Main Analytics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 items-stretch">
-        {/* Col 1: Stock Movement (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col">
+        {/* Col 1: Stock Movement (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col">
           <StockMovementChart />
         </div>
 
-        {/* Col 2: Need Attention (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col">
-          <NeedAttentionTable />
-        </div>
-
-        {/* Col 3: Inventory Health & Top Moving Products (3 cols) */}
-        <div className="lg:col-span-3 flex flex-col gap-4 sm:gap-5">
+        {/* Col 2: Inventory Health & Need Attention (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-4 sm:gap-5">
           <InventoryHealth />
-          <TopMovingProducts />
+          <NeedAttentionTable />
         </div>
       </div>
     </div>

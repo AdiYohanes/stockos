@@ -55,18 +55,6 @@ export interface AttentionItem {
   lastRestocked: string;
 }
 
-export interface TopMovingProduct {
-  id: string;
-  sku: string;
-  name: string;
-  category: string;
-  movementQty: number;
-  stockIn: number;
-  stockOut: number;
-  currentStock: number;
-  unit: string;
-  turnoverRate: string;
-}
 
 export interface QuickActionItem {
   id: string;

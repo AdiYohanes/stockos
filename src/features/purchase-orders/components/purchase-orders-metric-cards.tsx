@@ -94,7 +94,7 @@ export function PurchaseOrdersMetricCards({
             </span>
           </div>
           <b className="font-display font-[900] text-4xl block mt-3">
-            ${(metrics.totalSpend / 1000).toFixed(1)}K
+            Rp {(metrics.totalSpend / 1000).toFixed(1)}K
           </b>
           <div className="mt-4 pt-3 border-t-2 border-black/10 font-mono text-[9px] uppercase">
             <span className="font-bold">+8.2%</span> vs last month
@@ -129,7 +129,7 @@ export function PurchaseOrdersMetricCards({
             {metrics.receivedCount}
           </b>
           <div className="mt-4 pt-3 border-t-2 border-paper/20 font-mono text-[9px] uppercase">
-            $89,230 received
+            Rp 89.230 received
           </div>
         </div>
       </section>

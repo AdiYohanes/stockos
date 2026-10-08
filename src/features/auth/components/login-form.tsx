@@ -13,7 +13,6 @@ import {
   Sparkles,
   ArrowRight,
   Warehouse,
-  Package,
 } from "lucide-react";
 import { MOCK_CREDENTIALS, loginMockUser } from "@/features/auth/mock-auth";
 import type { AuthFormState } from "@/features/auth/types";
@@ -281,14 +280,24 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Warehouse and stock decoration */}
-      <div className="flex items-center justify-between gap-4 border-t-[3px] border-border bg-background px-4 py-2 sm:px-6 [@media(max-height:700px)]:hidden">
-        <div aria-hidden="true" className="pointer-events-none flex items-end gap-2">
-          <Warehouse className="h-8 w-8" strokeWidth={1.5} />
-          <Package className="h-5 w-5" strokeWidth={1.5} />
-          <Package className="h-4 w-4" strokeWidth={1.5} />
+      {/* Brutalist Graphical Footer */}
+      <div className="grid grid-cols-[1fr_auto_auto] border-t-[3px] border-border [@media(max-height:700px)]:hidden">
+        <div className="flex items-center justify-start border-r-[3px] border-border bg-primary px-4 py-3 text-primary-foreground sm:px-6">
+          <div aria-hidden="true" className="flex items-center gap-4">
+            <Warehouse className="h-6 w-6" strokeWidth={2.5} />
+            <div className="flex items-center gap-1.5">
+              <span className="block h-4 w-4 border-2 border-current bg-[#00e676] shadow-[2px_2px_0_0_#000]" />
+              <span className="block h-4 w-4 rounded-full border-2 border-current bg-[#ff9100] shadow-[2px_2px_0_0_#000]" />
+              <span className="block h-4 w-4 rotate-45 border-2 border-current bg-white shadow-[2px_2px_0_0_#000]" />
+            </div>
+          </div>
         </div>
-        <span className="bg-black px-3 py-1.5 font-mono text-xs font-bold tracking-widest text-white">/ LOGIN</span>
+        <div className="flex items-center border-r-[3px] border-border bg-[#ff1744] px-4 font-mono text-sm font-black tracking-widest text-white">
+          SECURE
+        </div>
+        <div className="flex items-center bg-black px-4 py-3 font-mono text-xs font-bold tracking-widest text-white">
+          / LOGIN
+        </div>
       </div>
     </div>
   );

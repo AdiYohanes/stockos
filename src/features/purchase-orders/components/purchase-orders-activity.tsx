@@ -44,7 +44,7 @@ export function PurchaseOrdersActivity() {
                 PO-2026-0155 approved
               </p>
               <p className="text-sm opacity-70">
-                Demo User approved $9,280 for Northstar Fulfillment
+                Demo User approved Rp 9.280 for Northstar Fulfillment
               </p>
               <p className="font-mono text-[9px] uppercase opacity-50 mt-1">
                 42 minutes ago

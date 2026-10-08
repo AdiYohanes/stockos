@@ -131,8 +131,8 @@ export function StockMovementChart() {
   }, [currentData]);
 
   return (
-    <Card className="flex flex-col h-full justify-between overflow-hidden">
-      <CardHeader className="pb-3 pt-4 px-4 sm:px-5 space-y-3">
+    <Card className="flex flex-col h-full overflow-hidden">
+      <CardHeader className="pb-3 pt-4 px-4 sm:px-5 space-y-3 shrink-0">
         {/* Header row: Title + Timeframe Selector + Net Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
           <div className="flex items-center gap-2">
@@ -240,15 +240,16 @@ export function StockMovementChart() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-3 sm:px-4 pb-4 pt-1">
+      <CardContent className="px-3 sm:px-4 pb-4 pt-1 flex-1 flex flex-col min-h-0">
         {/* Recharts Bar Chart */}
-        <div className="h-56 sm:h-64 w-full">
+        <div className="flex-1 w-full min-h-[224px]">
           {mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={currentData.data}
                 margin={{ top: 12, right: 10, left: -18, bottom: 4 }}
-                barGap={3}
+                barGap={4}
+                barCategoryGap="25%"
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -293,7 +294,7 @@ export function StockMovementChart() {
                   name={t.dashboard.stockIn}
                   fill="#543afd"
                   radius={[3, 3, 0, 0]}
-                  maxBarSize={28}
+                  maxBarSize={48}
                 />
 
                 <Bar
@@ -301,7 +302,7 @@ export function StockMovementChart() {
                   name={t.dashboard.stockOut}
                   fill="#09090b"
                   radius={[3, 3, 0, 0]}
-                  maxBarSize={28}
+                  maxBarSize={48}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -313,7 +314,7 @@ export function StockMovementChart() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 pt-2 font-mono text-[11px] font-semibold text-muted-foreground">
+        <div className="flex items-center justify-center gap-6 pt-2 font-mono text-[11px] font-semibold text-muted-foreground shrink-0 mt-auto">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-xs border border-black bg-[#543afd]" />
             <span className="text-foreground">{t.dashboard.stockInbound}</span>
