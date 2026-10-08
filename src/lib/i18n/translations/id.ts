@@ -99,7 +99,7 @@ export const idTranslations: Translations = {
     refresh: "Perbarui",
     stockTransfer: "Transfer Stok",
     acrossCategories: "Dari 8 kategori",
-    avgCost: "Biaya rata-rata $174.12",
+    avgCost: "Biaya rata-rata Rp 174.120",
     belowMinReorder: "Di bawah batas pemesanan ulang",
     zeroUnitsAvailable: "Nol unit tersedia",
     inventoryOverview: "Ringkasan Ikhtisar Inventaris",

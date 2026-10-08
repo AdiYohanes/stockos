@@ -5,10 +5,10 @@
 
 export function formatNumber(value: number): string {
   const parts = Math.round(value).toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return parts.join(",");
 }
 
 export function formatCurrency(value: number): string {
-  return `$${formatNumber(value)}`;
+  return `Rp ${formatNumber(value)}`;
 }

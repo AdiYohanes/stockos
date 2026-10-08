@@ -19,10 +19,10 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
   return (
     <Card className="flex flex-col justify-between overflow-hidden">
       <CardHeader className="pb-2 pt-4 px-4 sm:px-5 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#dcfce7] text-[#15803d] shadow-neo-sm">
-              <HeartPulse className="h-4 w-4" />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-black bg-[#dcfce7] text-[#15803d] shadow-neo-sm">
+              <HeartPulse className="h-5 w-5" />
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold text-foreground">

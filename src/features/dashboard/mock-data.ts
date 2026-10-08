@@ -3,7 +3,6 @@ import type {
   StockMovementData,
   InventoryHealthData,
   AttentionItem,
-  TopMovingProduct,
   QuickActionItem,
 } from "./types";
 
@@ -22,11 +21,11 @@ export const MOCK_OVERVIEW_METRICS: OverviewMetric[] = [
   {
     id: "inventory_value",
     label: "Nilai Inventaris",
-    value: "$248.650",
+    value: "Rp 248.650",
     rawValue: 248650,
     change: "+5,4% vs bulan lalu",
     trend: "up",
-    supportingText: "Rata-rata biaya $174,12",
+    supportingText: "Rata-rata biaya Rp 174,12",
     iconName: "value",
     variant: "default",
   },
@@ -178,68 +177,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
   },
 ];
 
-export const MOCK_TOP_MOVING_PRODUCTS: TopMovingProduct[] = [
-  {
-    id: "top-1",
-    sku: "CABL-USBC-2M",
-    name: "Braided USB-C to USB-C Cable 100W 2m",
-    category: "Kabel & Adaptor",
-    movementQty: 480,
-    stockIn: 300,
-    stockOut: 180,
-    currentStock: 240,
-    unit: "pcs",
-    turnoverRate: "8.4x",
-  },
-  {
-    id: "top-2",
-    sku: "FILA-PLA-BLK",
-    name: "PLA+ 3D Printer Filament 1.75mm Black 1kg",
-    category: "Pencetakan 3D",
-    movementQty: 395,
-    stockIn: 250,
-    stockOut: 145,
-    currentStock: 180,
-    unit: "gulungan",
-    turnoverRate: "7.1x",
-  },
-  {
-    id: "top-3",
-    sku: "FAST-M3-SS",
-    name: "M3 Stainless Steel Socket Head Screw Kit (500pcs)",
-    category: "Pengencang",
-    movementQty: 310,
-    stockIn: 200,
-    stockOut: 110,
-    currentStock: 95,
-    unit: "kit",
-    turnoverRate: "6.5x",
-  },
-  {
-    id: "top-4",
-    sku: "TOOL-PRC-24",
-    name: "Precision Magnetic Screwdriver Set (24 Bits)",
-    category: "Perkakas",
-    movementQty: 265,
-    stockIn: 150,
-    stockOut: 115,
-    currentStock: 74,
-    unit: "set",
-    turnoverRate: "5.8x",
-  },
-  {
-    id: "top-5",
-    sku: "SENS-ENV-BME",
-    name: "BME280 Temperature Humidity Sensor Module",
-    category: "Sensor",
-    movementQty: 220,
-    stockIn: 140,
-    stockOut: 80,
-    currentStock: 115,
-    unit: "pcs",
-    turnoverRate: "5.2x",
-  },
-];
 
 export const MOCK_QUICK_ACTIONS: QuickActionItem[] = [
   {

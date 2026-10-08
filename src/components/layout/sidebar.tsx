@@ -60,8 +60,8 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
           onClick={onNavigate}
           className="flex items-center gap-3 hover:opacity-90"
         >
-          <div className="w-10 h-10 bg-primary border-[3px] border-border shadow-hard-sm flex items-center justify-center">
-            <StockOSLogo size={20} className="text-foreground" />
+          <div className="w-10 h-10 bg-primary shadow-hard-sm flex items-center justify-center">
+            <StockOSLogo size={20} className="text-white" />
           </div>
           <div className="flex flex-col">
             <span className="font-heading font-[900] text-xl tracking-tighter block leading-none text-foreground uppercase">StockOS</span>
@@ -92,7 +92,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                 "flex items-center gap-3 px-3 py-3 border-[3px] font-heading font-bold uppercase text-xs transition-colors",
                 isActive
                   ? "bg-primary border-border shadow-hard-sm text-primary-foreground"
-                  : "border-transparent text-foreground hover:bg-primary hover:border-border"
+                  : "border-transparent text-foreground hover:bg-primary hover:border-border hover:text-primary-foreground"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />

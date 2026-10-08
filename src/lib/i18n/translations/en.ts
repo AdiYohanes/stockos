@@ -98,7 +98,7 @@ export const enTranslations: Translations = {
     refresh: "Refresh",
     stockTransfer: "Stock Transfer",
     acrossCategories: "Across 8 categories",
-    avgCost: "Avg cost $174.12",
+    avgCost: "Avg cost Rp 174.120",
     belowMinReorder: "Below min reorder threshold",
     zeroUnitsAvailable: "Zero units available",
     inventoryOverview: "Inventory Overview Summary",

@@ -45,8 +45,8 @@ export function Navbar({ user, onOpenMobileSidebar }: NavbarProps) {
           <h1 className="font-heading font-[900] uppercase tracking-tighter text-2xl">
             {currentPageTitle}
           </h1>
-          <span className="bg-primary border-[2px] border-border px-2 py-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest">
-            <i className="w-1.5 h-1.5 bg-foreground"></i>Live
+          <span className="bg-primary border-[2px] border-border px-2 py-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
+            <i className="w-1.5 h-1.5 bg-white"></i>Live
           </span>
         </div>
       </div>
