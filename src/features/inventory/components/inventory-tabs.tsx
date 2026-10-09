@@ -22,21 +22,21 @@ export function InventoryTabs({
   const { t } = useI18n();
 
   return (
-    <div className="flex border-[3px] border-border font-mono text-[10px] font-bold uppercase">
+    <div className="flex border-[3px] border-ink font-mono text-[10px] font-bold uppercase shadow-hard-sm">
       {/* Tab 1: Stock Levels */}
       <button
         type="button"
         onClick={() => onTabChange("stock_levels")}
         className={cn(
-          "px-4 py-3 flex items-center gap-2 border-r-[3px] border-border transition-colors",
+          "px-4 py-3 flex items-center gap-2 border-r-[3px] border-ink transition-colors cursor-pointer",
           activeTab === "stock_levels"
-            ? "bg-foreground text-background"
-            : "bg-card text-foreground hover:bg-primary hover:text-foreground"
+            ? "bg-ink text-paper"
+            : "bg-paper text-ink hover:bg-ink/10"
         )}
       >
         <Boxes className="h-4 w-4" />
         <span>{t.inventory.stockLevelsTab}</span>
-        <span className={cn("px-1.5 py-0.5", activeTab === "stock_levels" ? "bg-background text-foreground" : "bg-border text-background")}>
+        <span className={cn("px-1.5 py-0.5", activeTab === "stock_levels" ? "bg-paper text-ink" : "bg-ink text-paper")}>
           {stockCount}
         </span>
       </button>
@@ -46,15 +46,15 @@ export function InventoryTabs({
         type="button"
         onClick={() => onTabChange("movements")}
         className={cn(
-          "px-4 py-3 flex items-center gap-2 transition-colors",
+          "px-4 py-3 flex items-center gap-2 transition-colors cursor-pointer",
           activeTab === "movements"
-            ? "bg-foreground text-background"
-            : "bg-card text-foreground hover:bg-primary hover:text-foreground"
+            ? "bg-ink text-paper"
+            : "bg-paper text-ink hover:bg-ink/10"
         )}
       >
         <History className="h-4 w-4" />
         <span>{t.inventory.movementAuditTab}</span>
-        <span className={cn("px-1.5 py-0.5", activeTab === "movements" ? "bg-background text-foreground" : "bg-border text-background")}>
+        <span className={cn("px-1.5 py-0.5", activeTab === "movements" ? "bg-paper text-ink" : "bg-ink text-paper")}>
           {movementsCount}
         </span>
       </button>

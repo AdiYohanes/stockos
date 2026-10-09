@@ -7,15 +7,10 @@ import {
   LayoutDashboard,
   Package,
   Boxes,
-  Warehouse,
-  Truck,
-  ShoppingBag,
   BarChart3,
   Settings,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { StockOSLogo } from "@/components/stockos-logo";
 import { useI18n } from "@/lib/i18n/context";
 import type { Translations } from "@/lib/i18n/types";
@@ -30,9 +25,6 @@ export const NAV_ITEMS: NavItem[] = [
   { titleKey: "dashboard", href: "/", icon: LayoutDashboard },
   { titleKey: "products", href: "/products", icon: Package },
   { titleKey: "inventory", href: "/inventory", icon: Boxes },
-  { titleKey: "warehouses", href: "/warehouses", icon: Warehouse },
-  { titleKey: "suppliers", href: "/suppliers", icon: Truck },
-  { titleKey: "purchaseOrders", href: "/purchase-orders", icon: ShoppingBag },
   { titleKey: "reports", href: "/reports", icon: BarChart3 },
   { titleKey: "settings", href: "/settings", icon: Settings },
 ];
@@ -65,7 +57,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
           </div>
           <div className="flex flex-col">
             <span className="font-heading font-[900] text-xl tracking-tighter block leading-none text-foreground uppercase">StockOS</span>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-foreground/80 mt-1">Mini ERP</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-foreground/80 mt-1">Shop Stock</span>
           </div>
         </Link>
       </div>
@@ -92,7 +84,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                 "flex items-center gap-3 px-3 py-3 border-[3px] font-heading font-bold uppercase text-xs transition-colors",
                 isActive
                   ? "bg-primary border-border shadow-hard-sm text-primary-foreground"
-                  : "border-transparent text-foreground hover:bg-primary hover:border-border hover:text-primary-foreground"
+                  : "border-transparent text-foreground hover:bg-primary hover:border-border hover:text-white"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />

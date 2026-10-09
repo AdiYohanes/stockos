@@ -22,8 +22,6 @@ export default function ReportsPage() {
     setTimeframe,
     searchQuery,
     setSearchQuery,
-    selectedWarehouse,
-    setSelectedWarehouse,
     selectedCategory,
     setSelectedCategory,
     resetFilters,
@@ -37,13 +35,12 @@ export default function ReportsPage() {
     valuationSummary,
     velocityList,
     reorderRiskList,
-    warehouseList,
     supplierList,
     movementTrends,
   } = useReports();
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
+    <div className="flex flex-col gap-6 w-full">
       {/* Page Header */}
       <ReportsHeader
         timeframe={timeframe}
@@ -65,8 +62,6 @@ export default function ReportsPage() {
           onTabChange={setActiveTab}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          selectedWarehouse={selectedWarehouse}
-          onWarehouseChange={setSelectedWarehouse}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           onResetFilters={resetFilters}
@@ -94,7 +89,6 @@ export default function ReportsPage() {
 
         {activeTab === "performance" && (
           <PerformanceAnalyticsView
-            warehouses={warehouseList}
             suppliers={supplierList}
           />
         )}

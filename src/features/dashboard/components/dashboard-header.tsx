@@ -37,12 +37,12 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
     <header className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       {/* Title + Meta */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:gap-3 min-w-0 flex-1">
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {t.nav.dashboard}
           </h1>
-          <span className="inline-flex items-center gap-1.5 rounded-none border-[2px] border-black dark:border-white bg-[#dcfce7] dark:bg-[#052e16] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#15803d] dark:text-[#4ade80]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#15803d] dark:bg-[#4ade80] animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 rounded-none border-[3px] border-black dark:border-white bg-[#dcfce7] dark:bg-[#052e16] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#15803d] dark:text-[#4ade80]">
+            <span className="h-1.5 w-1.5 rounded-none bg-[#15803d] dark:bg-[#4ade80] animate-pulse" />
             {t.dashboard.badgeText}
           </span>
         </div>

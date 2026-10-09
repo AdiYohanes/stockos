@@ -3,7 +3,7 @@ import { InventoryContainer } from "@/features/inventory";
 
 export const metadata: Metadata = {
   title: "Inventory Control | StockOS",
-  description: "Monitor real-time warehouse stock balance, thresholds, and movement audit logs.",
+  description: "Monitor shop stock levels, minimum thresholds, and movement history.",
 };
 
 export default function InventoryPage() {

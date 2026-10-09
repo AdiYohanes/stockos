@@ -43,7 +43,7 @@ export function DeleteProductDialog({
       onConfirmDelete(product.id);
       onOpenChange(false);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Unable to delete product.");
+      setError(error instanceof Error ? error.message : t.common.error);
     }
   };
 
@@ -51,17 +51,17 @@ export function DeleteProductDialog({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden">
+        <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 shrink-0">
-                <AlertTriangle className="h-4.5 w-4.5" />
+              <div className="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-rose-100 text-rose-600 shrink-0 shadow-hard-sm">
+                <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-base font-semibold text-foreground font-sans">
+                <DialogTitle className="text-lg font-bold uppercase tracking-wider text-ink font-sans">
                   {t.products.deleteDialog.title}
                 </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
+                <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
                   {t.products.deleteDialog.description}
                 </DialogDescription>
               </div>
@@ -69,26 +69,25 @@ export function DeleteProductDialog({
           </DialogHeader>
 
           <DialogBody>
-            {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-            <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-1">
+            {error && <p role="alert" className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-2">{error}</p>}
+            <div className="border-[3px] border-ink bg-paper p-4 space-y-2 shadow-hard-sm">
               <div className="flex items-center gap-2">
                 <SkuBadge code={product.sku} />
-                <span className="font-sans font-medium text-sm text-foreground truncate">
+                <span className="font-sans font-bold text-ink uppercase truncate">
                   {product.name}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground font-mono tabular-nums">
-                {t.products.deleteDialog.currentStock}: <strong>{product.currentStock} {product.unit}</strong> • {t.products.deleteDialog.location}: <strong>{product.warehouse}</strong>
-              </p>
+              <p className="text-[10px] text-ink/60 font-mono uppercase tracking-widest">
+                {t.products.deleteDialog.currentStock}: <strong className="text-ink">{product.currentStock} {product.unit}</strong>              </p>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-rose-600 leading-relaxed bg-rose-50 border-[3px] border-rose-200 p-2">
               {t.products.deleteDialog.warningText}
             </p>
           </DialogBody>
 
-          <DialogFooter className="mt-4 pt-3 border-t border-border">
+          <DialogFooter className="mt-4 pt-3 border-t-[3px] border-ink">
             <DialogClose
-              render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
+              render={<Button variant="outline" size="sm" type="button" className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest text-ink rounded-none border-[3px] border-ink shadow-hard-sm press" />}
             >
               {t.common.cancel}
             </DialogClose>
@@ -96,9 +95,9 @@ export function DeleteProductDialog({
               type="button"
               size="sm"
               onClick={handleDelete}
-              className="h-9 text-xs font-medium bg-rose-600 text-white hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 gap-1.5"
+              className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest bg-rose-500 text-ink rounded-none border-[3px] border-ink hover:bg-rose-600 shadow-hard-sm press gap-1.5"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
               {t.products.deleteDialog.confirmDelete}
             </Button>
           </DialogFooter>

@@ -1,7 +1,7 @@
 export type CurrencyCode = "IDR" | "USD" | "EUR" | "SGD";
 export type ValuationMethod = "FIFO" | "LIFO" | "WEIGHTED_AVERAGE";
 export type DefaultUnit = "Pcs" | "Kg" | "Box" | "Liter" | "Pack" | "Roll";
-export type TeamRole = "Admin" | "Warehouse Manager" | "Inventory Clerk" | "Viewer";
+export type TeamRole = "Admin" | "Store Manager" | "Inventory Clerk" | "Viewer";
 export type TeamMemberStatus = "Active" | "Invited" | "Suspended";
 
 export type SettingsTab = "company" | "inventory" | "notifications" | "team" | "system";

@@ -29,7 +29,6 @@ export interface MovementVelocityItem {
   sku: string;
   name: string;
   category: string;
-  warehouse: string;
   stockInQty: number;
   stockOutQty: number;
   currentStock: number;
@@ -45,7 +44,6 @@ export interface ReorderRiskItem {
   sku: string;
   name: string;
   category: string;
-  warehouse: string;
   currentStock: number;
   minThreshold: number;
   daysRemaining: number;
@@ -55,18 +53,6 @@ export interface ReorderRiskItem {
   urgency: RiskUrgency;
   leadTimeDays: number;
   supplierName: string;
-}
-
-export interface WarehousePerformance {
-  warehouseId: string;
-  name: string;
-  code: string;
-  location: string;
-  capacityUsedPercent: number;
-  totalValuation: number;
-  stockCount: number;
-  turnoverRate: number;
-  status: "optimal" | "near_capacity" | "underutilized";
 }
 
 export interface SupplierPerformance {
@@ -83,7 +69,6 @@ export interface SupplierPerformance {
 export interface ReportFilter {
   search: string;
   timeframe: ReportTimeframe;
-  warehouseId: string;
   categoryId: string;
   tab: ReportTab;
 }

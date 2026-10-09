@@ -14,7 +14,7 @@ import {
 } from "@/features/settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Server, Database, ShieldCheck, Activity, Cpu, HardDrive } from "lucide-react";
+import { Server, ShieldCheck, Activity, HardDrive } from "lucide-react";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("company");
@@ -44,7 +44,7 @@ export default function SettingsPage() {
   }, [settings.notifications]);
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
+    <div className="flex flex-col gap-6 w-full">
       {/* Page Header */}
       <SettingsHeader
         hasUnsavedChanges={hasUnsavedChanges}

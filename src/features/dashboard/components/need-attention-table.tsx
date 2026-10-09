@@ -3,7 +3,6 @@
 import * as React from "react";
 import { AlertCircle, AlertTriangle, XCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { AttentionItem, AttentionStatus } from "../types";
@@ -11,9 +10,10 @@ import { MOCK_ATTENTION_ITEMS } from "../mock-data";
 
 interface NeedAttentionTableProps {
   items?: AttentionItem[];
+  className?: string;
 }
 
-export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttentionTableProps) {
+export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS, className }: NeedAttentionTableProps) {
   const { t } = useI18n();
   const [filter, setFilter] = React.useState<"all" | AttentionStatus>("all");
 
@@ -26,33 +26,33 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
   const lowStockCount = items.filter((i) => i.status === "low_stock").length;
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
-      <CardHeader className="pb-3 pt-4 px-4 sm:px-5 space-y-0 shrink-0">
+    <Card className={cn("flex flex-col flex-1 min-h-[300px] overflow-hidden bg-white border-[3px] border-ink shadow-hard-sm", className)}>
+      <CardHeader className="pb-3 pt-4 px-4 sm:px-5 space-y-0 shrink-0 border-b-[3px] border-ink">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#fee2e2] text-[#b91c1c] shadow-neo-sm">
-              <AlertCircle className="h-4 w-4 shrink-0" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-[#fee2e2] text-[#b91c1c] shadow-hard-sm">
+              <AlertCircle className="h-5 w-5 shrink-0" />
             </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold truncate">
+              <CardTitle className="text-sm font-bold uppercase tracking-widest text-ink font-sans truncate">
                 {t.dashboard.needAttention}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
                 {t.dashboard.needAttentionSubtitle}
               </p>
             </div>
           </div>
 
           {/* Filter pills */}
-          <div className="flex items-center gap-1 rounded-md border border-border bg-muted/50 p-0.5 shrink-0">
+          <div className="flex items-center overflow-x-auto max-w-full border-[3px] border-ink bg-paper p-0.5 shadow-hard-sm shrink-0">
             <button
               type="button"
               onClick={() => setFilter("all")}
               className={cn(
-                "rounded-sm px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                "px-3 py-1 font-mono text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap uppercase border-r-[2px] border-ink",
                 filter === "all"
-                  ? "bg-white text-foreground border border-black shadow-neo-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-ink text-paper"
+                  : "text-ink hover:bg-ink/10"
               )}
             >
               {t.common.all} ({items.length})
@@ -61,10 +61,10 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
               type="button"
               onClick={() => setFilter("out_of_stock")}
               className={cn(
-                "rounded-sm px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                "px-3 py-1 font-mono text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap uppercase border-r-[2px] border-ink",
                 filter === "out_of_stock"
-                  ? "bg-[#fee2e2] text-[#b91c1c] border border-black shadow-neo-sm font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#b91c1c] text-white"
+                  : "text-ink hover:bg-ink/10"
               )}
             >
               {t.dashboard.outOfStock} ({outOfStockCount})
@@ -73,10 +73,10 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
               type="button"
               onClick={() => setFilter("low_stock")}
               className={cn(
-                "rounded-sm px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                "px-3 py-1 font-mono text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap uppercase",
                 filter === "low_stock"
-                  ? "bg-[#fef3c7] text-[#b45309] border border-black shadow-neo-sm font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#b45309] text-white"
+                  : "text-ink hover:bg-ink/10"
               )}
             >
               {t.dashboard.lowStock} ({lowStockCount})
@@ -86,25 +86,25 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
       </CardHeader>
 
       <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-        <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-          <table className="w-full table-fixed text-left text-sm">
-            <thead className="sticky top-0 z-10 border-y border-border bg-slate-50/90 backdrop-blur-xs font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-auto ledger-container">
+          <table className="w-full min-w-[450px] table-fixed text-left text-sm">
+            <thead className="sticky top-0 z-10 border-b-[3px] border-ink bg-paper font-sans text-[10px] font-bold text-ink uppercase tracking-widest shadow-hard-sm">
               <tr>
-                <th scope="col" className="w-[48%] px-3 py-2.5">
+                <th scope="col" className="w-[48%] px-4 py-3 border-r-[2px] border-black/10">
                   {t.dashboard.itemAndSku}
                 </th>
-                <th scope="col" className="w-[26%] px-2 py-2.5 text-center">
+                <th scope="col" className="w-[26%] px-3 py-3 text-center border-r-[2px] border-black/10">
                   {t.dashboard.stockMin}
                 </th>
-                <th scope="col" className="w-[26%] px-2 py-2.5 text-right">
+                <th scope="col" className="w-[26%] px-3 py-3 text-right">
                   {t.common.status}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y-[2px] divide-black/10">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-xs text-muted-foreground font-mono">
+                  <td colSpan={3} className="py-8 text-center text-[10px] uppercase tracking-widest text-ink/60 font-mono bg-paper">
                     {t.dashboard.noAttentionItems}
                   </td>
                 </tr>
@@ -118,54 +118,54 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS }: NeedAttenti
                   return (
                     <tr
                       key={item.id}
-                      className="transition-colors hover:bg-slate-50/80 group cursor-pointer"
+                      className="transition-colors hover:bg-paper group cursor-pointer bg-white"
                     >
-                      <td className="px-3 py-2.5 overflow-hidden">
-                        <div className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
+                      <td className="px-4 py-3 overflow-hidden border-r-[2px] border-black/10">
+                        <div className="font-bold text-ink truncate text-sm">
                           {item.name}
                         </div>
-                        <div className="text-xs text-muted-foreground font-mono truncate mt-0.5">
-                          {item.sku} <span className="text-muted-foreground/40">•</span> {item.warehouse}
+                        <div className="text-[10px] text-ink/60 font-mono uppercase tracking-widest truncate mt-1">
+                          <span className="font-bold text-ink bg-paper px-1 border border-ink/20 mr-2">{item.sku}</span>
                         </div>
                       </td>
 
-                      <td className="px-2 py-2.5 text-center font-mono overflow-hidden">
-                        <div className="text-xs font-bold text-foreground">
+                      <td className="px-3 py-3 text-center font-mono overflow-hidden border-r-[2px] border-black/10">
+                        <div className="text-[11px] font-bold text-ink mb-1.5">
                           <span
                             className={
                               item.currentStock === 0
-                                ? "text-destructive font-extrabold"
+                                ? "text-destructive"
                                 : "text-amber-600 dark:text-amber-400"
                             }
                           >
                             {item.currentStock}
                           </span>
-                          <span className="text-muted-foreground text-xs font-normal">
-                            /{item.minStock} {item.unit}
+                          <span className="text-ink/60 ml-0.5">
+                            /{item.minStock} <span className="text-[9px] uppercase">{item.unit}</span>
                           </span>
                         </div>
-                        <div className="mx-auto mt-1 h-1.5 w-full max-w-16 overflow-hidden rounded-full bg-slate-200">
+                        <div className="mx-auto h-2 w-full max-w-16 overflow-hidden bg-paper border border-ink">
                           <div
                             style={{ width: `${stockPercentage}%` }}
                             className={cn(
-                              "h-full rounded-full transition-all duration-300",
+                              "h-full transition-all duration-300 border-r border-ink",
                               item.currentStock === 0 ? "bg-destructive" : "bg-amber-500"
                             )}
                           />
                         </div>
                       </td>
 
-                      <td className="px-2 py-2.5 text-right overflow-hidden">
+                      <td className="px-3 py-3 text-right overflow-hidden">
                         {item.status === "out_of_stock" ? (
-                          <Badge variant="destructive" className="max-w-full">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border-[3px] border-ink bg-[#fee2e2] text-[#b91c1c] max-w-full">
                             <XCircle className="h-3 w-3 shrink-0" />
                             <span className="truncate">{t.dashboard.outOfStockBadge}</span>
-                          </Badge>
+                          </span>
                         ) : (
-                          <Badge variant="warning" className="max-w-full">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border-[3px] border-ink bg-[#fef3c7] text-[#b45309] max-w-full">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
                             <span className="truncate">{t.dashboard.lowStockBadge}</span>
-                          </Badge>
+                          </span>
                         )}
                       </td>
                     </tr>

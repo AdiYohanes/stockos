@@ -45,7 +45,7 @@ interface FormInnerProps {
     reference: string,
     note?: string
   ) => void;
-  onBatal: () => void;
+  onCancel: () => void;
 }
 
 function StockAdjustmentForm({
@@ -62,8 +62,6 @@ function StockAdjustmentForm({
   const [newStockStr, setNewStockStr] = React.useState<string>(
     activeItem ? activeItem.currentStock.toString() : "0"
   );
-  const [reason, setReason] = React.useState<AdjustmentReason>("cycle_count");
-  const [reference, setReference] = React.useState<string>("ADJ-AUDIT");
   const [note, setNote] = React.useState<string>("");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -90,13 +88,9 @@ function StockAdjustmentForm({
       return;
     }
 
-    if (!reference.trim()) {
-      setError("Please specify an adjustment reference code.");
-      return;
-    }
-
     try {
-      onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+      const autoRef = `SO-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000)}`;
+      onSubmit(activeItem.id, newStockNum, "cycle_count", autoRef, note.trim() || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to adjust stock");
     }
@@ -185,51 +179,15 @@ function StockAdjustmentForm({
           </div>
         </div>
 
-        {/* 3. Reason Code & Reference */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="reasonSelect" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Alasan Selisih
-            </Label>
-            <select
-              id="reasonSelect"
-              value={reason}
-              onChange={(e) => setReason(e.target.value as AdjustmentReason)}
-              className="w-full h-9 rounded-none border-[3px] border-ink bg-background px-2.5 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
-            >
-              <option value="cycle_count">Stok Opname Rutin</option>
-              <option value="damaged_goods">Barang Rusak</option>
-              <option value="expired">Barang Expired/Basi</option>
-              <option value="theft_loss">Hilang / Selisih</option>
-              <option value="supplier_return">Retur ke Supplier</option>
-              <option value="correction">Koreksi Salah Input</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="adjReference" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Kode Referensi *
-            </Label>
-            <Input
-              id="adjReference"
-              type="text"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              required
-              className="h-9 text-xs font-mono tabular-nums uppercase border-ink focus:border-slate-900"
-            />
-          </div>
-        </div>
-
-        {/* 4. Notes */}
-        <div className="space-y-1.5">
+        {/* 3. Notes */}
+        <div className="space-y-1.5 mt-2">
           <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
             Catatan Opname
           </Label>
           <Input
             id="adjNote"
             type="text"
-            placeholder="e.g. Annual physical count variance in shelf A-02"
+            placeholder="Keterangan / alasan selisih (opsional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className="h-9 text-xs border-ink focus:border-slate-900"

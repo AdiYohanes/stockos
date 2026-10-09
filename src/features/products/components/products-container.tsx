@@ -36,7 +36,6 @@ export function ProductsContainer() {
     setSearchQuery,
     setCategory,
     setStatus,
-    setWarehouse,
     setSorting,
     setPage,
     resetFilters,
@@ -69,9 +68,8 @@ export function ProductsContainer() {
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto pb-10">
+    <div className="flex flex-col gap-4 sm:gap-5 w-full pb-10">
       <ProductsHeader
-        totalCount={metrics.totalProducts}
         onProductAdded={addProduct}
       />
 
@@ -82,7 +80,7 @@ export function ProductsContainer() {
       />
 
       {/* Unified Search, Filter, and Table Ledger Surface */}
-      <div className="rounded-md border border-border bg-card overflow-hidden">
+      <div className="ledger-container">
         <ProductsToolbar
           filterState={filterState}
           metrics={metrics}
@@ -90,7 +88,6 @@ export function ProductsContainer() {
           onSearchChange={setSearchQuery}
           onCategoryChange={setCategory}
           onStatusChange={setStatus}
-          onWarehouseChange={setWarehouse}
           onSortChange={setSorting}
           onResetFilters={resetFilters}
         />

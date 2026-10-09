@@ -63,7 +63,7 @@ function StockMovementForm({
   const [type, setType] = React.useState<"in" | "out">(initialType || "in");
   const [quantity, setQuantity] = React.useState<string>("");
   const [reference, setReference] = React.useState<string>(
-    initialType === "out" ? "SO-DISP" : "PO-REC"
+    initialType === "out" ? "SO-DISP" : "IN-REC"
   );
   const [note, setNote] = React.useState<string>("");
   const [error, setError] = React.useState<string | null>(null);
@@ -93,7 +93,7 @@ function StockMovementForm({
     }
 
     if (!reference.trim()) {
-      setError("Please provide a reference code (e.g. PO number, Sales Order, Work Order).");
+      setError("Please provide a reference code (e.g. receipt or sale number).");
       return;
     }
 
@@ -118,14 +118,14 @@ function StockMovementForm({
               onClick={() => {
                 setType("in");
                 if (!reference || reference.startsWith("SO-")) {
-                  setReference("PO-REC");
+                  setReference("IN-REC");
                 }
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-none text-xs font-medium border transition-colors cursor-pointer",
                 type === "in"
                   ? "bg-emerald-600 text-white border-transparent hover:bg-emerald-700"
-                  : "bg-background text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-800"
+                  : "bg-background text-foreground border-ink hover:bg-slate-50 dark:hover:bg-slate-800"
               )}
             >
               <ArrowDownRight className="h-4 w-4" />
@@ -136,15 +136,15 @@ function StockMovementForm({
               type="button"
               onClick={() => {
                 setType("out");
-                if (!reference || reference.startsWith("PO-")) {
+                if (!reference || reference.startsWith("IN-")) {
                   setReference("SO-DISP");
                 }
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-none text-xs font-medium border transition-colors cursor-pointer",
                 type === "out"
                   ? "bg-rose-600 text-white border-transparent hover:bg-rose-700"
-                  : "bg-background text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-800"
+                  : "bg-background text-foreground border-ink hover:bg-slate-50 dark:hover:bg-slate-800"
               )}
             >
               <ArrowUpRight className="h-4 w-4" />
@@ -159,12 +159,12 @@ function StockMovementForm({
             Inventory Item
           </Label>
           {initialItem ? (
-            <div className="p-3 rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+            <div className="p-3 rounded-none border-[3px] border-ink bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
               <div className="flex flex-col gap-1 min-w-0 pr-2">
                 <SkuBadge code={initialItem.sku} />
                 <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
                 <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                  Location: {initialItem.warehouse} • Bin {initialItem.locationBin}
+                  Shelf: {initialItem.locationBin}
                 </span>
               </div>
               <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
@@ -177,7 +177,7 @@ function StockMovementForm({
               id="itemSelect"
               value={selectedItemId}
               onChange={(e) => setSelectedItemId(e.target.value)}
-              className="w-full h-9 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
+              className="w-full h-9 rounded-none border-[3px] border-ink bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -202,7 +202,7 @@ function StockMovementForm({
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
-              className="h-9 text-xs font-mono tabular-nums border-border focus:border-slate-900"
+              className="h-9 text-xs font-mono tabular-nums border-ink focus:border-slate-900"
             />
           </div>
 
@@ -213,11 +213,11 @@ function StockMovementForm({
             <Input
               id="reference"
               type="text"
-              placeholder="PO-XXXX / SO-XXXX"
+              placeholder="IN-XXXX / SO-XXXX"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               required
-              className="h-9 text-xs font-mono tabular-nums uppercase border-border focus:border-slate-900"
+              className="h-9 text-xs font-mono tabular-nums uppercase border-ink focus:border-slate-900"
             />
           </div>
         </div>
@@ -233,7 +233,7 @@ function StockMovementForm({
             placeholder="e.g. Received from Supplier X / Order fulfillment"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-border focus:border-slate-900"
+            className="h-9 text-xs border-ink focus:border-slate-900"
           />
         </div>
 
@@ -241,7 +241,7 @@ function StockMovementForm({
         {error && (
           <div
             role="alert"
-            className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans"
+            className="rounded-none bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans"
           >
             {error}
           </div>
@@ -249,9 +249,9 @@ function StockMovementForm({
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="mt-4 pt-3 border-t border-border">
+      <DialogFooter className="mt-4 pt-3 border-t border-ink">
         <DialogClose
-          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-border hover:border-slate-400" />}
+          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-ink hover:border-slate-400" />}
         >
           Cancel
         </DialogClose>

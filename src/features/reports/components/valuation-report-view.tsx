@@ -12,7 +12,6 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { ValuationSummary } from "../types";
 
@@ -42,19 +41,19 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
   return (
     <div className="space-y-6">
       {/* Chart Card */}
-      <Card className="border border-black bg-white shadow-neo-sm">
-        <CardHeader className="border-b border-border pb-3">
+      <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
+        <CardHeader className="border-b border-ink pb-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="font-heading text-base font-bold text-foreground">
               Inventory Asset Valuation by Category
             </CardTitle>
             <div className="flex items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#543afd]" />
+                <span className="h-3 w-3 rounded-none bg-[#543afd]" />
                 <span className="text-muted-foreground">Asset Cost</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#09090b]" />
+                <span className="h-3 w-3 rounded-none bg-[#09090b]" />
                 <span className="text-muted-foreground">Retail Value</span>
               </div>
             </div>
@@ -76,7 +75,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                       if (!active || !payload || !payload.length) return null;
                       const data = payload[0].payload;
                       return (
-                        <div className="rounded-md border border-black bg-white p-3 font-mono text-xs shadow-neo">
+                        <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{data.fullName}</p>
                           <div className="space-y-1">
                             <p className="text-[#543afd]">Total Cost: {formatCurrency(data.cost)}</p>
@@ -101,8 +100,8 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
       </Card>
 
       {/* Category Breakdown Table */}
-      <Card className="border border-black bg-white shadow-neo-sm">
-        <CardHeader className="border-b border-border pb-3">
+      <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
+        <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
             Category Asset & Margin Breakdown
           </CardTitle>
@@ -111,7 +110,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
-                <TableRow className="border-b border-border">
+                <TableRow className="border-b border-ink">
                   <TableHead className="font-mono text-xs font-bold text-foreground">Category Name</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">SKUs</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Units</TableHead>
@@ -123,7 +122,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
               </TableHeader>
               <TableBody>
                 {summary.categories.map((cat) => (
-                  <TableRow key={cat.categoryId} className="border-b border-border hover:bg-slate-50">
+                  <TableRow key={cat.categoryId} className="border-b border-ink hover:bg-slate-50">
                     <TableCell className="font-semibold text-xs text-foreground">
                       {cat.categoryName}
                     </TableCell>
@@ -140,13 +139,13 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                       {formatCurrency(cat.totalRetailValue)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right">
-                      <span className="inline-flex rounded-xs bg-[#dcfce7] px-1.5 py-0.5 font-bold text-[#15803d]">
+                      <span className="inline-flex rounded-none bg-[#dcfce7] px-1.5 py-0.5 font-bold text-[#15803d]">
                         +{cat.marginPercent}%
                       </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="h-2 flex-1 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+                        <div className="h-2 flex-1 rounded-none bg-slate-100 overflow-hidden border-[3px] border-ink">
                           <div
                             className="h-full bg-[#543afd]"
                             style={{ width: `${cat.ratioPercent}%` }}

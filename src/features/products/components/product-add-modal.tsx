@@ -8,9 +8,7 @@ import {
   Barcode,
   Plus,
   Sparkles,
-  Layers,
-  DollarSign,
-  Warehouse as WarehouseIcon,
+  Search,
 } from "lucide-react";
 import {
   DialogRoot,
@@ -28,42 +26,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PRODUCT_CATEGORIES, PRODUCT_UNITS, WAREHOUSES } from "../mock-data";
 import {
   CreateProductInputSchema,
   type CreateProductInput,
   type Product,
 } from "../schemas/product.schema";
+import { useProducts } from "../hooks/use-products";
 
 interface ProductAddModalProps {
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  onProductAdded?: (productData: {
-    name: string;
-    sku: string;
-    category: string;
-    unit: string;
-    unitPrice?: number;
-    initialStock?: number;
-    minStock: number;
-    warehouse?: string;
-    description?: string;
-    supplier?: string;
-  }) => Product;
+  onProductAdded?: (productData: CreateProductInput) => Product;
 }
 
-const DEFAULT_FORM_VALUES: CreateProductInput = {
-  name: "",
-  sku: "",
-  category: "Electronics",
-  unit: "pcs",
-  unitPrice: 0,
-  initialStock: 0,
-  minStock: 20,
-  warehouse: "Main Hub (WH-1)",
+const DEFAULT_FORM_VALUES: Partial<CreateProductInput> = {
   supplier: "",
-  description: "",
+  name: "",
+  barcode: "",
+  cartons: 0,
+  initialStock: 0,
+  totalPurchasePrice: 0,
+  unitPrice: 0,
+  sku: "",
+  category: "Consumables",
+  unit: "pcs",
+  minStock: 10,
 };
 
 export function ProductAddModal({
@@ -84,11 +72,38 @@ export function ProductAddModal({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<CreateProductInput>({
     resolver: zodResolver(CreateProductInputSchema),
-    defaultValues: DEFAULT_FORM_VALUES,
+    defaultValues: DEFAULT_FORM_VALUES as CreateProductInput,
   });
+
+  const { products, recordMovement, updateProduct } = useProducts();
+  const currentName = watch("name");
+  const existingProduct = React.useMemo(() => {
+    if (!currentName) return null;
+    return products.find((p) => p.name.toLowerCase() === currentName.toLowerCase()) || null;
+  }, [currentName, products]);
+
+  React.useEffect(() => {
+    if (existingProduct) {
+      setValue("supplier", existingProduct.supplier);
+      setValue("sku", existingProduct.sku);
+      setValue("barcode", existingProduct.barcode || "");
+      setValue("unitPrice", existingProduct.unitPrice);
+      setValue("category", existingProduct.category);
+      setValue("unit", existingProduct.unit);
+      setValue("minStock", existingProduct.minStock);
+    }
+  }, [existingProduct, setValue]);
+
+  const totalPurchasePriceNum = watch("totalPurchasePrice") || 0;
+  const totalPiecesNum = watch("initialStock") || 0;
+  const unitPurchasePrice = totalPiecesNum > 0 ? totalPurchasePriceNum / totalPiecesNum : 0;
+  const unitPriceNum = watch("unitPrice") || 0;
+  const profitPerUnit = unitPriceNum - unitPurchasePrice;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (isControlled && setControlledOpen) {
@@ -101,7 +116,7 @@ export function ProductAddModal({
       setError(null);
       setTimeout(() => {
         setIsSuccess(false);
-        reset(DEFAULT_FORM_VALUES);
+        reset(DEFAULT_FORM_VALUES as CreateProductInput);
         setCreatedProduct(null);
       }, 200);
     }
@@ -110,17 +125,41 @@ export function ProductAddModal({
   const onSubmit = (data: CreateProductInput) => {
     setError(null);
     try {
-      if (!onProductAdded) throw new Error("Product creation is unavailable.");
-      setCreatedProduct(onProductAdded(data));
-      setIsSuccess(true);
+      if (existingProduct) {
+        if (data.initialStock > 0) {
+          recordMovement(existingProduct.id, "in", data.initialStock, "RESTOCK", "Restock via tambah produk");
+        }
+        updateProduct(existingProduct.id, {
+          unitPrice: data.unitPrice,
+          supplier: data.supplier,
+          barcode: data.barcode,
+        });
+        setCreatedProduct({
+          ...existingProduct,
+          currentStock: existingProduct.currentStock + data.initialStock,
+          unitPrice: data.unitPrice,
+          supplier: data.supplier,
+          barcode: data.barcode,
+        });
+        setIsSuccess(true);
+      } else {
+        if (!onProductAdded) throw new Error("Fitur tambah produk belum tersedia.");
+
+        if (!data.sku || data.sku.trim() === "") {
+          data.sku = data.barcode ? data.barcode.substring(0, 8).toUpperCase() : `PRD-${Math.floor(Math.random() * 10000)}`;
+        }
+
+        setCreatedProduct(onProductAdded(data));
+        setIsSuccess(true);
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Unable to create product.");
+      setError(error instanceof Error ? error.message : "Gagal membuat produk.");
     }
   };
 
   const handleAddAnother = () => {
     setIsSuccess(false);
-    reset(DEFAULT_FORM_VALUES);
+    reset(DEFAULT_FORM_VALUES as CreateProductInput);
     setCreatedProduct(null);
   };
 
@@ -129,21 +168,20 @@ export function ProductAddModal({
       {children && <DialogTrigger render={children as React.ReactElement} />}
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-lg overflow-hidden">
+        <DialogPopup className="overflow-hidden max-w-xl rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
           {!isSuccess ? (
-            /* ================= FORM VIEW ================= */
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-slate-100 dark:bg-slate-800 text-foreground">
-                    <PackagePlus className="h-4 w-4" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-acid/10 shadow-hard-sm">
+                    <PackagePlus className="h-5 w-5 text-acid" />
                   </div>
                   <div>
-                    <DialogTitle className="text-base font-semibold text-foreground font-sans">
-                      Add New Product
+                    <DialogTitle className="text-lg font-bold text-ink uppercase tracking-wider font-sans">
+                      Tambah / Update Produk
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                      Register a new inventory item with SKU & tracking parameters
+                    <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
+                      Input stok barang baru atau update stok lama
                     </DialogDescription>
                   </div>
                 </div>
@@ -151,282 +189,215 @@ export function ProductAddModal({
 
               <form onSubmit={handleSubmit(onSubmit)}>
                 <DialogBody className="max-h-[70vh] overflow-y-auto pr-2">
-                  {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+                  {error && <p role="alert" className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-2">{error}</p>}
+
+                  <input type="hidden" {...register("category")} />
+                  <input type="hidden" {...register("unit")} />
+                  <input type="hidden" {...register("minStock", { valueAsNumber: true })} />
+                  <input type="hidden" {...register("sku")} />
+
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label htmlFor="prod-name">Product Name *</Label>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="product-supplier" className="text-[10px] font-bold uppercase tracking-widest text-ink">1. Supplier</Label>
                       <Input
-                        id="prod-name"
-                        placeholder="e.g. ESP32-WROOM-32D Microcontroller Module"
-                        {...register("name")}
-                        className="h-9 text-xs sm:text-sm"
+                        id="product-supplier"
+                        placeholder="Nama Supplier"
+                        {...register("supplier")}
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
-                      {errors.name && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.name.message}
-                        </p>
+                      {errors.supplier && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.supplier.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-sku">SKU Code *</Label>
-                      <div className="relative">
-                        <Input
-                          id="prod-sku"
-                          placeholder="e.g. ELEC-ESP-32"
-                          className="h-9 pr-8 font-mono tabular-nums uppercase text-xs sm:text-sm"
-                          {...register("sku")}
-                        />
-                        <Barcode className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      </div>
-                      {errors.sku && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.sku.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-category">Category *</Label>
-                      <select
-                        id="prod-category"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
-                        {...register("category")}
-                      >
-                        {PRODUCT_CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.category && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.category.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-unit">Unit of Measure *</Label>
-                      <select
-                        id="prod-unit"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer font-mono"
-                        {...register("unit")}
-                      >
-                        {PRODUCT_UNITS.map((u) => (
-                          <option key={u} value={u}>
-                            {u}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.unit && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.unit.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-warehouse">Warehouse Location *</Label>
-                      <select
-                        id="prod-warehouse"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
-                        {...register("warehouse")}
-                      >
-                        {WAREHOUSES.map((wh) => (
-                          <option key={wh} value={wh}>
-                            {wh}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.warehouse && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.warehouse.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-unit-price">Unit Price ($)</Label>
-                      <div className="relative">
-                        <Input
-                          id="prod-unit-price"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          className="h-9 pl-7 font-mono tabular-nums text-xs sm:text-sm"
-                          {...register("unitPrice", { valueAsNumber: true })}
-                        />
-                        <DollarSign className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      </div>
-                      {errors.unitPrice && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.unitPrice.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-initial-stock">Initial Stock</Label>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="product-name" className="text-[10px] font-bold uppercase tracking-widest text-ink">
+                        2. Nama Product {existingProduct && <span className="text-emerald-600">(Produk Ditemukan - Akan Update Stok)</span>}
+                      </Label>
                       <Input
-                        id="prod-initial-stock"
+                        id="product-name"
+                        placeholder="Nama produk"
+                        list="existing-products"
+                        {...register("name")}
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                      />
+                      <datalist id="existing-products">
+                        {products.map((p) => (
+                          <option key={p.id} value={p.name} />
+                        ))}
+                      </datalist>
+                      {errors.name && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.name.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-cartons" className="text-[10px] font-bold uppercase tracking-widest text-ink">3. Jml Karton/Dus</Label>
+                      <Input
+                        id="product-cartons"
                         type="number"
                         min="0"
                         placeholder="0"
-                        className="h-9 font-mono tabular-nums text-xs sm:text-sm"
-                        {...register("initialStock", { valueAsNumber: true })}
+                        {...register("cartons", { valueAsNumber: true })}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
-                      {errors.initialStock && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.initialStock.message}
-                        </p>
-                      )}
                     </div>
 
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-min-stock">Min Stock Level *</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-pcs" className="text-[10px] font-bold uppercase tracking-widest text-ink">4. Jml Pcs (Total)</Label>
                       <Input
-                        id="prod-min-stock"
+                        id="product-pcs"
                         type="number"
                         min="0"
-                        placeholder="20"
-                        className="h-9 font-mono tabular-nums text-xs sm:text-sm"
-                        {...register("minStock", { valueAsNumber: true })}
+                        placeholder="0"
+                        {...register("initialStock", { valueAsNumber: true })}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
-                      {errors.minStock && (
-                        <p className="text-[11px] font-medium text-destructive">
-                          {errors.minStock.message}
-                        </p>
+                      {errors.initialStock && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.initialStock.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <Label htmlFor="prod-supplier">Supplier</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-purchase" className="text-[10px] font-bold uppercase tracking-widest text-ink">5. Harga Total (Beli)</Label>
                       <Input
-                        id="prod-supplier"
-                        placeholder="e.g. Espressif Systems Ltd."
-                        className="h-9 text-xs sm:text-sm"
-                        {...register("supplier")}
+                        id="product-purchase"
+                        type="number"
+                        min="0"
+                        placeholder="Rp 0"
+                        {...register("totalPurchasePrice", { valueAsNumber: true })}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label htmlFor="prod-desc">Description (Optional)</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-sell" className="text-[10px] font-bold uppercase tracking-widest text-ink">6. Harga Jual Satuan</Label>
                       <Input
-                        id="prod-desc"
-                        placeholder="Short notes about specifications or application..."
-                        className="h-9 text-xs sm:text-sm"
-                        {...register("description")}
+                        id="product-sell"
+                        type="number"
+                        min="0"
+                        placeholder="Rp 0"
+                        {...register("unitPrice", { valueAsNumber: true })}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
+                      {errors.unitPrice && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.unitPrice.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="product-barcode" className="text-[10px] font-bold uppercase tracking-widest text-ink">7. Barcode</Label>
+                      <div className="relative">
+                        <Input
+                          id="product-barcode"
+                          placeholder="Scan Barcode / SKU"
+                          className="pr-8 font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                          {...register("barcode", {
+                            onChange: (e) => {
+                              setValue("barcode", e.target.value.toUpperCase());
+                              setValue("sku", e.target.value.toUpperCase());
+                            }
+                          })}
+                        />
+                        <Barcode className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/50" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-[3px] border-ink bg-paper p-3 text-sm font-mono space-y-1 shadow-hard-sm">
+                    <div className="flex justify-between">
+                      <span className="text-ink/70">Modal Satuan:</span>
+                      <span className="font-bold">Rp {unitPurchasePrice.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-ink/70">Harga Jual:</span>
+                      <span className="font-bold">Rp {unitPriceNum.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 mt-1 border-t-2 border-dashed border-ink/20">
+                      <span className="text-ink/70">Profit per Pcs:</span>
+                      <span className={`font-bold ${profitPerUnit > 0 ? 'text-emerald-600' : profitPerUnit < 0 ? 'text-red-600' : 'text-ink'}`}>
+                        {profitPerUnit > 0 ? '+' : ''}Rp {profitPerUnit.toLocaleString('id-ID')}
+                      </span>
                     </div>
                   </div>
                 </DialogBody>
 
-                <DialogFooter className="mt-4 pt-3 border-t border-border">
+                <DialogFooter className="mt-4 pt-3 border-t-[3px] border-ink">
                   <DialogClose
-                    render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
+                    render={<Button variant="outline" size="sm" type="button" className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest text-ink rounded-none border-[3px] border-ink shadow-hard-sm press" />}
                   >
-                    Cancel
+                    Batal
                   </DialogClose>
-                  <Button type="submit" size="sm" className="h-9 text-xs font-medium gap-1.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
-                    <Plus className="h-3.5 w-3.5" />
-                    Save Product
+                  <Button type="submit" size="sm" className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest text-ink bg-acid/80 hover:bg-acid border-[3px] border-ink shadow-hard-sm press gap-1.5">
+                    <Plus className="h-4 w-4" />
+                    Simpan Produk
                   </Button>
                 </DialogFooter>
               </form>
             </>
           ) : (
-            /* ================= SUCCESS VIEW ================= */
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                    <Sparkles className="h-4 w-4" />
+            <div className="p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-5 flex items-center justify-center">
+                  <div className="absolute h-24 w-24 rounded-none bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
+                  <div className="absolute -top-1.5 -right-2 text-emerald-500 animate-in fade-in zoom-in duration-500 delay-300">
+                    <Sparkles className="h-4 w-4 fill-emerald-500/30" />
                   </div>
-                  <div>
-                    <DialogTitle className="text-base font-semibold text-foreground font-sans">
-                      Product Registered Successfully!
-                    </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                      The product has been added to inventory with an initial status.
-                    </DialogDescription>
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-none border-[3px] border-ink bg-emerald-50 shadow-hard-sm animate-check-pop">
+                    <svg
+                      className="h-12 w-12 text-emerald-600"
+                      viewBox="0 0 52 52"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="26" cy="26" r="23" strokeWidth="2.5" className="stroke-emerald-200/80" />
+                      <circle cx="26" cy="26" r="23" strokeWidth="3" strokeLinecap="round" className="stroke-emerald-600 animate-check-circle" />
+                      <path d="M15 26.5L22.5 34L37 18.5" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round" className="stroke-emerald-600 animate-check-path" />
+                    </svg>
                   </div>
                 </div>
-              </DialogHeader>
 
-              <DialogBody className="space-y-4 py-2">
+                <DialogTitle className="text-xl font-bold font-sans uppercase tracking-widest text-ink">
+                  Produk Tersimpan
+                </DialogTitle>
+
                 {createdProduct && (
-                  <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="font-mono tabular-nums text-xs font-semibold text-foreground">
-                          {createdProduct.sku}
-                        </span>
-                        <h4 className="text-sm font-semibold text-foreground font-sans">
+                  <div className="mt-5 w-full border-[3px] border-ink bg-paper p-4 text-left shadow-hard-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center border-[3px] border-ink bg-acid/10 px-2 py-0.5 font-mono text-[10px] font-bold text-acid tracking-wider uppercase">
+                            {createdProduct.barcode || createdProduct.sku || "NO-BARCODE"}
+                          </span>
+                        </div>
+                        <p className="font-sans font-bold text-ink text-sm pt-1 uppercase">
                           {createdProduct.name}
-                        </h4>
+                        </p>
+                        <p className="font-mono text-[10px] text-ink/60 uppercase">
+                          Supplier: {createdProduct.supplier}
+                        </p>
                       </div>
-                      <span className="inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium bg-card text-foreground font-sans">
-                        {createdProduct.category}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 border-t border-border/60 pt-3 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
-                          Stock
-                        </span>
-                        <span className="font-mono tabular-nums font-semibold text-foreground">
-                          {createdProduct.currentStock} {createdProduct.unit}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
-                          Min Level
-                        </span>
-                        <span className="font-mono tabular-nums font-semibold text-foreground">
-                          {createdProduct.minStock} {createdProduct.unit}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-sans">
-                          Unit Price
-                        </span>
-                        <span className="font-mono tabular-nums font-semibold text-foreground">
-                          ${createdProduct.unitPrice.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground border-t border-border/60 pt-2 font-sans">
-                      <WarehouseIcon className="h-3.5 w-3.5" />
-                      <span>{createdProduct.warehouse}</span>
                     </div>
                   </div>
                 )}
-              </DialogBody>
 
-              <DialogFooter className="mt-2 pt-3 border-t border-border gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddAnother}
-                  className="h-9 text-xs gap-1.5 hover:border-slate-400"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add Another
-                </Button>
-                <DialogClose
-                  render={
-                    <Button size="sm" className="h-9 text-xs font-medium gap-1.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
-                      <Layers className="h-3.5 w-3.5" />
-                      Done
-                    </Button>
-                  }
-                />
-              </DialogFooter>
-            </>
+                <div className="mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+                  <DialogClose
+                    render={<Button type="button" variant="outline" className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest text-ink bg-white rounded-none border-[3px] border-ink shadow-hard-sm press flex-1 sm:flex-initial" />}
+                  >
+                    Selesai
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest text-ink bg-acid/80 hover:bg-acid rounded-none border-[3px] border-ink shadow-hard-sm press flex-1 sm:flex-initial gap-1.5"
+                    onClick={handleAddAnother}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Tambah Lain
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </DialogPopup>
       </DialogPortal>

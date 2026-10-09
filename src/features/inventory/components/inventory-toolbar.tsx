@@ -2,20 +2,23 @@
 
 import * as React from "react";
 import { Icon } from "@iconify/react";
+import { useI18n } from "@/lib/i18n/context";
 
 interface InventoryToolbarProps {
   totalItems: number;
 }
 
 export function InventoryToolbar({ totalItems }: InventoryToolbarProps) {
+  const { t } = useI18n();
+
   return (
     <section className="flex flex-wrap justify-between items-center gap-4 mb-5">
       <div>
         <h3 className="font-display font-[900] uppercase text-xl tracking-tight">
-          Inventory Items
+          {t.inventory.inventoryItem}
         </h3>
         <p className="font-mono text-[10px] uppercase tracking-widest opacity-50 mt-1">
-          {totalItems.toLocaleString("id-ID")} products indexed
+          {totalItems.toLocaleString("id-ID")} {t.inventory.totalCatalogItems}
         </p>
       </div>
       <div className="flex border-[3px] border-ink font-mono text-[10px] font-bold uppercase">

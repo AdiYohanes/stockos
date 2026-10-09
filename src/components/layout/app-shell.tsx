@@ -20,8 +20,9 @@ export function AppShell({ children, user }: AppShellProps) {
 
       {/* Main Container */}
       <div className="flex-1 min-w-0 flex flex-col pb-16 md:pb-0">
-        <Navbar user={user} onOpenMobileSidebar={() => {}} />
-        <main className="flex-1 p-5 md:p-8 max-w-[1500px] w-full mx-auto">
+        <Navbar user={user} />
+        {/* ponytail: temporary border debugging container boundaries */}
+        <main className="flex-1 p-5 md:p-8 max-w-[1800px] w-full mx-auto">
           {children}
         </main>
       </div>

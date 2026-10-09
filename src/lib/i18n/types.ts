@@ -38,9 +38,7 @@ export interface Translations {
     dashboard: string;
     products: string;
     inventory: string;
-    warehouses: string;
     suppliers: string;
-    purchaseOrders: string;
     reports: string;
     settings: string;
     logout: string;
@@ -54,7 +52,6 @@ export interface Translations {
     badgeText: string;
     totalProducts: string;
     lowStockAlerts: string;
-    totalWarehouses: string;
     activeSuppliers: string;
     recentActivity: string;
     quickActions: string;
@@ -96,7 +93,6 @@ export interface Translations {
     healthDistribution: string;
     topMovingProducts: string;
     refresh: string;
-    stockTransfer: string;
     acrossCategories: string;
     avgCost: string;
     belowMinReorder: string;
@@ -120,7 +116,6 @@ export interface Translations {
     minStock: string;
     unitPrice: string;
     totalValue: string;
-    warehouseLocation: string;
     description: string;
     supplier: string;
     totalCatalog: string;
@@ -128,7 +123,6 @@ export interface Translations {
     ofTotalInventory: string;
     requiresReordering: string;
     criticalZeroQuantity: string;
-    allWarehouses: string;
     sort: string;
     sortName: string;
     sortSku: string;
@@ -140,7 +134,6 @@ export interface Translations {
       colSku: string;
       colStock: string;
       colPrice: string;
-      colLocation: string;
       showing: string;
       to: string;
       of: string;
@@ -196,7 +189,6 @@ export interface Translations {
       categoryLabel: string;
       priceLabel: string;
       minStockLabel: string;
-      warehouseLabel: string;
       supplierLabel: string;
       descLabel: string;
     };
@@ -215,7 +207,6 @@ export interface Translations {
     adjustmentType: string;
     typeIn: string;
     typeOut: string;
-    typeTransfer: string;
     reason: string;
     reasonPlaceholder: string;
     adjustmentSuccess: string;
@@ -243,7 +234,6 @@ export interface Translations {
     // Toolbar
     searchStockPlaceholder: string;
     searchMovementPlaceholder: string;
-    allWarehouses: string;
     allCategories: string;
     sortName: string;
     sortSku: string;
@@ -266,7 +256,6 @@ export interface Translations {
     // Stock Table
     colSku: string;
     colProductLocation: string;
-    colWarehouse: string;
     colStockHealth: string;
     colOnHand: string;
     colAvailable: string;
@@ -287,7 +276,6 @@ export interface Translations {
     stockInBadge: string;
     stockOutBadge: string;
     adjustmentBadge: string;
-    transferBadge: string;
     colReference: string;
     colItemSku: string;
     colType: string;
@@ -301,8 +289,6 @@ export interface Translations {
     ofMaxCap: string;
     onHand: string;
     available: string;
-    warehouseLocationDetails: string;
-    assignedWarehouse: string;
     storageBin: string;
     minReorderThreshold: string;
     maxStorageCapacity: string;
@@ -341,20 +327,6 @@ export interface Translations {
     correctionEntry: string;
     auditNote: string;
     applyAdjustment: string;
-  };
-  warehouses: {
-    title: string;
-    subtitle: string;
-    badgeText: string;
-    addWarehouse: string;
-    editWarehouse: string;
-    capacity: string;
-    occupancy: string;
-    manager: string;
-    address: string;
-    phone: string;
-    totalSkus: string;
-    warehouseDetails: string;
   };
   suppliers: {
     title: string;
@@ -414,8 +386,6 @@ export interface Translations {
     selectProduct: string;
     quantity: string;
     enterQuantity: string;
-    warehouse: string;
-    selectWarehouse: string;
     addProduct: {
       title: string;
       subtitle: string;
@@ -447,7 +417,6 @@ export interface Translations {
       successSubtitle: string;
       stockAdded: string;
       selectedProduct: string;
-      mainWarehouse: string;
       refSupplier: string;
       receiveAnother: string;
     };
@@ -471,20 +440,6 @@ export interface Translations {
         returnSupplier: string;
         other: string;
       };
-    };
-    transfer: {
-      title: string;
-      subtitle: string;
-      fromLabel: string;
-      toLabel: string;
-      originPlaceholder: string;
-      destinationPlaceholder: string;
-      notesPlaceholder: string;
-      submit: string;
-      successTitle: string;
-      successSubtitle: string;
-      transferQty: string;
-      transferAnother: string;
     };
   };
 }

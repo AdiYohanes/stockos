@@ -1,4 +1,4 @@
-import { SystemSettings } from "./types";
+import type { SystemSettings, TeamMember } from "./types";
 
 export const DEFAULT_SETTINGS: SystemSettings = {
   company: {
@@ -28,7 +28,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     supplierReorderReminder: true,
     systemAuditLogs: true,
     webhookUrl: "https://api.logistiknusantara.co.id/webhooks/stockos-events",
-    alertRecipients: "ops@logistiknusantara.co.id, warehouse.lead@logistiknusantara.co.id",
+    alertRecipients: "ops@logistiknusantara.co.id",
   },
   team: [
     {
@@ -46,12 +46,12 @@ export const DEFAULT_SETTINGS: SystemSettings = {
       id: "usr-002",
       name: "Siti Rahma",
       email: "siti.rahma@logistiknusantara.co.id",
-      role: "Warehouse Manager",
+      role: "Store Manager",
       avatar: "SR",
       status: "Active",
       lastActive: "15 mins ago",
       joinedAt: "2025-02-01",
-      permissions: ["Warehouse Control", "Stock Transfer", "Stock Adjustment"],
+      permissions: ["Shop Operations", "Stock In/Out", "Stock Adjustment"],
     },
     {
       id: "usr-003",
@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
       status: "Invited",
       lastActive: "Pending Invitation",
       joinedAt: "2026-08-10",
-      permissions: ["Read Only Reports", "Catalog View"],
+      permissions: ["Read Only Reports", "Products View"],
     },
   ],
   updatedAt: "2026-08-13T08:00:00.000Z",
@@ -93,7 +93,11 @@ export function loadSettingsFromStorage(): SystemSettings {
       company: { ...DEFAULT_SETTINGS.company, ...(parsed.company || {}) },
       inventory: { ...DEFAULT_SETTINGS.inventory, ...(parsed.inventory || {}) },
       notifications: { ...DEFAULT_SETTINGS.notifications, ...(parsed.notifications || {}) },
-      team: Array.isArray(parsed.team) ? parsed.team : DEFAULT_SETTINGS.team,
+      team: Array.isArray(parsed.team)
+        ? parsed.team.map((member: Omit<TeamMember, "role"> & { role: string }) => member?.role === "Warehouse Manager"
+          ? { ...member, role: "Store Manager", permissions: ["Shop Operations", "Stock In/Out", "Stock Adjustment"] }
+          : member)
+        : DEFAULT_SETTINGS.team,
     };
   } catch (err) {
     console.error("Failed to load settings from localStorage:", err);

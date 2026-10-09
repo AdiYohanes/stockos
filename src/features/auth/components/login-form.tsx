@@ -17,9 +17,11 @@ import {
 import { MOCK_CREDENTIALS, loginMockUser } from "@/features/auth/mock-auth";
 import type { AuthFormState } from "@/features/auth/types";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 export function LoginForm() {
   const router = useRouter();
+  const { t, language } = useI18n();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
@@ -87,23 +89,23 @@ export function LoginForm() {
   const isDisabled = isLoading || isSuccess;
 
   return (
-    <div className="w-full border-[3px] border-border bg-card text-card-foreground shadow-hard-lg selection:bg-primary selection:text-primary-foreground">
+    <div className="w-full border-[3px] border-ink bg-card text-card-foreground shadow-hard-lg selection:bg-primary selection:text-primary-foreground">
       {/* Card Header */}
       <div className="space-y-4 p-4 sm:p-6 [@media(max-height:700px)]:space-y-2 [@media(max-height:700px)]:p-2.5">
         <div className="space-y-2">
           <h1 className="font-heading text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-            Sign in to StockOS
+            {t.auth.loginTitle}
           </h1>
           <p className="text-sm leading-relaxed [@media(max-height:700px)]:hidden">
-            Enter your workspace credentials to access inventory.
+            {t.auth.loginSubtitle}
           </p>
         </div>
 
         {/* Demo Fast Fill Banner */}
-        <div className="border-[3px] border-border bg-background p-2.5 sm:p-3 [@media(max-height:700px)]:border-0 [@media(max-height:700px)]:bg-transparent [@media(max-height:700px)]:p-0">
+        <div className="border-[3px] border-ink bg-background p-2.5 sm:p-3 [@media(max-height:700px)]:border-0 [@media(max-height:700px)]:bg-transparent [@media(max-height:700px)]:p-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 [@media(max-height:700px)]:hidden">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-border bg-primary text-primary-foreground">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-ink bg-primary text-primary-foreground">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
               <span className="text-sm font-bold">Demo Sandbox</span>
@@ -113,7 +115,7 @@ export function LoginForm() {
               onClick={handleAutoFillDemo}
               disabled={isDisabled}
               className={cn(
-                "min-h-11 border-2 border-border px-3 text-xs font-bold [@media(max-height:700px)]:w-full outline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60",
+                "min-h-11 border-2 border-ink px-3 text-xs font-bold [@media(max-height:700px)]:w-full outline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60",
                 demoFilled
                   ? "bg-[#dcfce7] text-[#166534]"
                   : "bg-card text-card-foreground hover:bg-background"
@@ -151,7 +153,7 @@ export function LoginForm() {
         <form onSubmit={handleSubmit} noValidate aria-busy={isLoading} className="space-y-3 [@media(max-height:700px)]:space-y-2">
           <div className="space-y-1.5">
             <label htmlFor="email" className="block text-sm font-semibold">
-              Email Address
+              {t.auth.emailLabel}
             </label>
             <input
               id="email"
@@ -170,7 +172,7 @@ export function LoginForm() {
               }}
               placeholder="demo@stockos.com"
               className={cn(
-                "min-h-11 w-full border-[3px] border-border bg-card px-3 py-2 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
+                "min-h-11 w-full border-[3px] border-ink bg-card px-3 py-2 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
                 errors.email && "border-[#be123c]"
               )}
             />
@@ -181,7 +183,7 @@ export function LoginForm() {
 
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-              <label htmlFor="password" className="text-sm font-semibold">Password</label>
+              <label htmlFor="password" className="text-sm font-semibold">{t.auth.passwordLabel}</label>
               <Link href="/reset" className="inline-flex min-h-8 items-center text-xs underline underline-offset-4 outline-offset-2 hover:decoration-2 focus-visible:outline-2 focus-visible:outline-primary">
                 Forgot password?
               </Link>
@@ -204,7 +206,7 @@ export function LoginForm() {
                 }}
                 placeholder="••••••••"
                 className={cn(
-                  "min-h-11 w-full border-[3px] border-border bg-card px-3 py-2 pr-14 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
+                  "min-h-11 w-full border-[3px] border-ink bg-card px-3 py-2 pr-14 text-base text-card-foreground caret-primary outline-offset-2 placeholder:text-card-foreground/70 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:text-sm",
                   errors.password && "border-[#be123c]"
                 )}
               />
@@ -235,7 +237,7 @@ export function LoginForm() {
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               <span className={cn(
-                "flex h-6 w-6 items-center justify-center border-2 border-border shadow-hard-sm outline-offset-4 peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-disabled:opacity-60",
+                "flex h-6 w-6 items-center justify-center border-2 border-ink shadow-hard-sm outline-offset-4 peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-disabled:opacity-60",
                 rememberMe ? "bg-primary text-primary-foreground" : "bg-card"
               )}>
                 {rememberMe && <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />}
@@ -248,14 +250,14 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={isDisabled}
-            className="flex min-h-12 w-full items-center justify-center gap-3 border-[3px] border-border bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-hard outline-offset-4 transition-[transform,box-shadow,background-color] hover:bg-[var(--primary-hover)] focus-visible:outline-2 focus-visible:outline-primary active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-70 disabled:active:translate-x-0 disabled:active:translate-y-0 sm:text-base"
+            className="flex min-h-12 w-full items-center justify-center gap-3 border-[3px] border-ink bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-hard outline-offset-4 transition-[transform,box-shadow,background-color] hover:bg-[var(--primary-hover)] focus-visible:outline-2 focus-visible:outline-primary active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-70 disabled:active:translate-x-0 disabled:active:translate-y-0 sm:text-base"
           >
             {isLoading ? (
-              <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /><span>Verifying...</span></>
+              <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /><span>{t.common.loading}</span></>
             ) : isSuccess ? (
-              <><CheckCircle2 className="h-4 w-4" aria-hidden="true" /><span>Success</span></>
+              <><CheckCircle2 className="h-4 w-4" aria-hidden="true" /><span>{t.common.success}</span></>
             ) : (
-              <><span>Sign in to Dashboard</span><ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" /></>
+              <><span>{t.auth.signInButton}</span><ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" /></>
             )}
           </button>
         </form>
@@ -269,7 +271,7 @@ export function LoginForm() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {["Google", "GitHub"].map((provider) => (
-              <button key={provider} type="button" disabled={isDisabled} className="min-h-11 border-2 border-border bg-card px-3 py-2 text-sm font-bold shadow-hard-sm outline-offset-4 hover:bg-background focus-visible:outline-2 focus-visible:outline-primary active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-60">
+              <button key={provider} type="button" disabled={isDisabled} className="min-h-11 border-2 border-ink bg-card px-3 py-2 text-sm font-bold shadow-hard-sm outline-offset-4 hover:bg-background focus-visible:outline-2 focus-visible:outline-primary active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-60">
                 {provider}
               </button>
             ))}
@@ -281,19 +283,16 @@ export function LoginForm() {
       </div>
 
       {/* Brutalist Graphical Footer */}
-      <div className="grid grid-cols-[1fr_auto_auto] border-t-[3px] border-border [@media(max-height:700px)]:hidden">
-        <div className="flex items-center justify-start border-r-[3px] border-border bg-primary px-4 py-3 text-primary-foreground sm:px-6">
+      <div className="grid grid-cols-[1fr_auto] border-t-[3px] border-ink [@media(max-height:700px)]:hidden">
+        <div className="flex items-center justify-start border-r-[3px] border-ink bg-primary px-4 py-3 text-primary-foreground sm:px-6">
           <div aria-hidden="true" className="flex items-center gap-4">
             <Warehouse className="h-6 w-6" strokeWidth={2.5} />
             <div className="flex items-center gap-1.5">
               <span className="block h-4 w-4 border-2 border-current bg-[#00e676] shadow-[2px_2px_0_0_#000]" />
-              <span className="block h-4 w-4 rounded-full border-2 border-current bg-[#ff9100] shadow-[2px_2px_0_0_#000]" />
+              <span className="block h-4 w-4 rounded-none border-2 border-current bg-[#ff9100] shadow-[2px_2px_0_0_#000]" />
               <span className="block h-4 w-4 rotate-45 border-2 border-current bg-white shadow-[2px_2px_0_0_#000]" />
             </div>
           </div>
-        </div>
-        <div className="flex items-center border-r-[3px] border-border bg-[#ff1744] px-4 font-mono text-sm font-black tracking-widest text-white">
-          SECURE
         </div>
         <div className="flex items-center bg-black px-4 py-3 font-mono text-xs font-bold tracking-widest text-white">
           / LOGIN

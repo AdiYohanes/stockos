@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { PackageSearch, Plus, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
 
 interface ProductEmptyStateProps {
@@ -19,44 +18,38 @@ export function ProductEmptyState({
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 sm:p-14 text-center">
-      {/* Icon Badge: Calm hairline surface */}
-      <div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-slate-100 dark:bg-slate-800 mb-3 text-muted-foreground">
-        <PackageSearch className="h-5 w-5" />
+    <div className="flex flex-col items-center justify-center p-12 text-center bg-paper border-[3px] border-ink shadow-hard-sm">
+      <div className="flex h-12 w-12 items-center justify-center border-[3px] border-ink bg-white mb-4 shadow-hard-sm text-ink">
+        <PackageSearch className="h-6 w-6" />
       </div>
 
-      {/* Heading & description */}
-      <h3 className="text-sm sm:text-base font-semibold font-sans text-foreground">
+      <h3 className="font-display font-[900] uppercase tracking-tighter text-xl text-ink">
         {hasFilters ? t.products.empty.noMatching : t.products.empty.noProducts}
       </h3>
-      <p className="mt-1 max-w-sm text-xs text-muted-foreground leading-relaxed">
+      <p className="mt-2 max-w-sm text-xs font-mono uppercase tracking-widest text-ink/70">
         {hasFilters ? t.products.empty.noMatchingDesc : t.products.empty.noProductsDesc}
       </p>
 
-      {/* Action CTA */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
         {hasFilters && onResetFilters && (
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={onResetFilters}
-            className="h-8 px-3 text-xs gap-1.5 hover:border-slate-400"
+            className="press btn-neo h-10 px-4 text-xs font-bold uppercase flex items-center gap-2"
           >
-            <RotateCcw className="h-3 w-3" />
+            <RotateCcw className="h-4 w-4" />
             {t.products.empty.resetAllFilters}
-          </Button>
+          </button>
         )}
         {onAddProduct && (
-          <Button
+          <button
             type="button"
-            size="sm"
             onClick={onAddProduct}
-            className="h-8 px-3 text-xs gap-1.5 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+            className="press btn-neo-primary h-10 px-4 text-xs font-bold uppercase flex items-center gap-2"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             {t.products.addProduct}
-          </Button>
+          </button>
         )}
       </div>
     </div>

@@ -6,43 +6,41 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ReportTab } from "../types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ReportsToolbarProps {
   activeTab: ReportTab;
   onTabChange: (tab: ReportTab) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  selectedWarehouse: string;
-  onWarehouseChange: (wh: string) => void;
   selectedCategory: string;
   onCategoryChange: (cat: string) => void;
   onResetFilters: () => void;
 }
-
-const TABS: { id: ReportTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "valuation", label: "Valuation & Margin", icon: PieChart },
-  { id: "velocity", label: "Movement & Velocity", icon: Activity },
-  { id: "reorder", label: "Reorder Risk Forecast", icon: AlertCircle },
-  { id: "performance", label: "Warehouse & Supplier", icon: Building2 },
-];
 
 export function ReportsToolbar({
   activeTab,
   onTabChange,
   searchQuery,
   onSearchChange,
-  selectedWarehouse,
-  onWarehouseChange,
   selectedCategory,
   onCategoryChange,
   onResetFilters,
 }: ReportsToolbarProps) {
-  const hasActiveFilters = searchQuery !== "" || selectedWarehouse !== "all" || selectedCategory !== "all";
+  const { t } = useI18n();
+  const hasActiveFilters = searchQuery !== "" || selectedCategory !== "all";
+
+  const TABS: { id: ReportTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: "valuation", label: t.reports.tabValuation || "Stock Valuation", icon: PieChart },
+    { id: "velocity", label: t.reports.tabMovement || "Stock Movement", icon: Activity },
+    { id: "reorder", label: t.reports.tabLowStock || "Low Stock Items", icon: AlertCircle },
+    { id: "performance", label: "Supplier Deliveries", icon: Building2 }, // Fallback if no translation
+  ];
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-black bg-white p-4 shadow-neo-sm">
+    <div className="flex flex-col gap-4 bg-white border-b-[3px] border-ink p-5">
       {/* Sub-report Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b-[3px] border-ink pb-4">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -52,10 +50,10 @@ export function ReportsToolbar({
               type="button"
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex items-center gap-2 rounded-md px-3 py-2 font-mono text-xs font-bold transition-all",
+                "flex items-center gap-2 rounded-none px-3 py-2 font-mono text-xs font-bold transition-all",
                 isActive
-                  ? "bg-[#543afd] text-white border border-black shadow-neo-sm"
-                  : "bg-[#f8f9fa] text-slate-700 hover:bg-slate-200/70 hover:text-foreground"
+                  ? "bg-acid text-white border-[3px] border-ink shadow-hard-sm"
+                  : "bg-paper text-slate-700 hover:bg-slate-200/70 hover:text-foreground"
               )}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -72,10 +70,10 @@ export function ReportsToolbar({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search SKU, product name, or category..."
+            placeholder={t.common.search || "Search SKU, product name, or category..."}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 text-xs border border-slate-300 focus:border-black focus:ring-1 focus:ring-[#543afd]"
+            className="pl-9 text-xs border-[3px] border-ink focus:bg-[#fffef2] focus:shadow-[8px_8px_0_#543AFD,8px_8px_0_3px_#000]"
           />
         </div>
 
@@ -85,26 +83,14 @@ export function ReportsToolbar({
           <select
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="h-9 rounded-md border border-slate-300 bg-white px-3 font-mono text-xs font-semibold text-foreground focus:border-black focus:outline-none focus:ring-1 focus:ring-[#543afd]"
+            className="h-9 rounded-none border-[3px] border-ink bg-white px-3 font-mono text-xs font-semibold text-foreground focus:border-black focus:outline-none focus:ring-1 focus:ring-[#543afd]"
           >
-            <option value="all">All Categories</option>
+            <option value="all">{t.common.all || "All Categories"}</option>
             <option value="Electronics & Sensors">Electronics & Sensors</option>
             <option value="Industrial Tools">Industrial Tools</option>
             <option value="Raw Materials">Raw Materials</option>
             <option value="Packaging Materials">Packaging Materials</option>
             <option value="Safety Gear & Apparel">Safety Gear & Apparel</option>
-          </select>
-
-          {/* Warehouse Filter */}
-          <select
-            value={selectedWarehouse}
-            onChange={(e) => onWarehouseChange(e.target.value)}
-            className="h-9 rounded-md border border-slate-300 bg-white px-3 font-mono text-xs font-semibold text-foreground focus:border-black focus:outline-none focus:ring-1 focus:ring-[#543afd]"
-          >
-            <option value="all">All Warehouses</option>
-            <option value="Main Logistics Hub">Main Logistics Hub</option>
-            <option value="West Coast Annex">West Coast Annex</option>
-            <option value="North Storage Depot">North Storage Depot</option>
           </select>
 
           {/* Reset Filters button */}
@@ -113,10 +99,10 @@ export function ReportsToolbar({
               variant="outline"
               size="sm"
               onClick={onResetFilters}
-              className="h-9 border border-black bg-white px-2.5 font-mono text-xs font-bold text-foreground shadow-neo-sm hover:bg-slate-100"
+              className="h-9 border-[3px] border-ink bg-white px-2.5 font-mono text-xs font-bold text-foreground shadow-neo-sm hover:bg-slate-100"
             >
               <RotateCcw className="mr-1 h-3.5 w-3.5" />
-              Reset
+              {t.common.reset || "Reset"}
             </Button>
           )}
         </div>

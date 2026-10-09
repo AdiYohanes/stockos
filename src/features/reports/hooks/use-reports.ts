@@ -1,20 +1,11 @@
 "use client";
 
 import * as React from "react";
-import type {
-  ReportTab,
-  ReportTimeframe,
-  ReportFilter,
-  MovementVelocityItem,
-  ReorderRiskItem,
-  WarehousePerformance,
-  SupplierPerformance,
-} from "../types";
+import type { ReportTab, ReportTimeframe } from "../types";
 import {
   MOCK_VALUATION_SUMMARY,
   MOCK_MOVEMENT_VELOCITY,
   MOCK_REORDER_RISK,
-  MOCK_WAREHOUSE_PERFORMANCE,
   MOCK_SUPPLIER_PERFORMANCE,
   MOCK_MOVEMENT_TRENDS_30D,
 } from "../mock-data";
@@ -23,12 +14,11 @@ export function useReports() {
   const [activeTab, setActiveTab] = React.useState<ReportTab>("valuation");
   const [timeframe, setTimeframe] = React.useState<ReportTimeframe>("30d");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedWarehouse, setSelectedWarehouse] = React.useState<string>("all");
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   
   // Slide-over inspection state
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(null);
-  const [selectedItemType, setSelectedItemType] = React.useState<"velocity" | "reorder" | "warehouse" | null>(null);
+  const [selectedItemType, setSelectedItemType] = React.useState<"velocity" | "reorder" | null>(null);
 
   // Modal export state
   const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
@@ -40,14 +30,12 @@ export function useReports() {
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.category.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesWarehouse =
-        selectedWarehouse === "all" || item.warehouse === selectedWarehouse;
       const matchesCategory =
         selectedCategory === "all" || item.category === selectedCategory;
 
-      return matchesSearch && matchesWarehouse && matchesCategory;
+      return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedWarehouse, selectedCategory]);
+  }, [searchQuery, selectedCategory]);
 
   // Filtered reorder risk items
   const filteredReorderRisk = React.useMemo(() => {
@@ -56,25 +44,22 @@ export function useReports() {
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.supplierName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesWarehouse =
-        selectedWarehouse === "all" || item.warehouse === selectedWarehouse;
       const matchesCategory =
         selectedCategory === "all" || item.category === selectedCategory;
 
-      return matchesSearch && matchesWarehouse && matchesCategory;
+      return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedWarehouse, selectedCategory]);
+  }, [searchQuery, selectedCategory]);
 
   // Reset all filters
   const resetFilters = React.useCallback(() => {
     setSearchQuery("");
-    setSelectedWarehouse("all");
     setSelectedCategory("all");
   }, []);
 
   // Inspect detail handler
   const handleInspect = React.useCallback(
-    (id: string, type: "velocity" | "reorder" | "warehouse") => {
+    (id: string, type: "velocity" | "reorder") => {
       setSelectedItemId(id);
       setSelectedItemType(type);
     },
@@ -103,12 +88,11 @@ export function useReports() {
         `${c.marginPercent.toFixed(1)}%`,
       ]);
     } else if (type === "velocity") {
-      headers = ["SKU", "Product Name", "Category", "Warehouse", "Stock In", "Stock Out", "Turnover Ratio", "Velocity Tier"];
+      headers = ["SKU", "Product Name", "Category", "Stock In", "Stock Out", "Turnover Ratio", "Velocity Tier"];
       rows = filteredVelocity.map((v) => [
         `"${v.sku}"`,
         `"${v.name}"`,
         `"${v.category}"`,
-        `"${v.warehouse}"`,
         v.stockInQty.toString(),
         v.stockOutQty.toString(),
         v.turnoverRatio.toFixed(1),
@@ -128,14 +112,14 @@ export function useReports() {
         r.urgency.toUpperCase(),
       ]);
     } else if (type === "performance") {
-      headers = ["Warehouse Code", "Warehouse Name", "Capacity Used (%)", "Total Valuation ($)", "Turnover Rate", "Status"];
-      rows = MOCK_WAREHOUSE_PERFORMANCE.map((w) => [
-        `"${w.code}"`,
-        `"${w.name}"`,
-        `${w.capacityUsedPercent.toFixed(1)}%`,
-        w.totalValuation.toFixed(2),
-        w.turnoverRate.toFixed(1),
-        w.status.toUpperCase(),
+      headers = ["Supplier Code", "Supplier Name", "Deliveries", "On-Time (%)", "Rating", "Total Spend ($)"];
+      rows = MOCK_SUPPLIER_PERFORMANCE.map((supplier) => [
+        `"${supplier.code}"`,
+        `"${supplier.name}"`,
+        supplier.fulfilledOrders.toString(),
+        supplier.onTimeDeliveryRate.toFixed(1),
+        supplier.qualityRating.toFixed(1),
+        supplier.totalSpend.toFixed(2),
       ]);
     }
 
@@ -156,8 +140,6 @@ export function useReports() {
     setTimeframe,
     searchQuery,
     setSearchQuery,
-    selectedWarehouse,
-    setSelectedWarehouse,
     selectedCategory,
     setSelectedCategory,
     resetFilters,
@@ -174,7 +156,6 @@ export function useReports() {
     valuationSummary: MOCK_VALUATION_SUMMARY,
     velocityList: filteredVelocity,
     reorderRiskList: filteredReorderRisk,
-    warehouseList: MOCK_WAREHOUSE_PERFORMANCE,
     supplierList: MOCK_SUPPLIER_PERFORMANCE,
     movementTrends: MOCK_MOVEMENT_TRENDS_30D,
   };

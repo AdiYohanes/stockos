@@ -15,10 +15,10 @@ const StockMovementChart = dynamic(
     ),
   {
     loading: () => (
-      <div className="flex h-[380px] w-full flex-col justify-between rounded-lg border border-border bg-card p-5 shadow-sm animate-pulse">
-        <div className="h-6 w-40 rounded bg-muted"></div>
-        <div className="h-[260px] w-full rounded bg-muted/40"></div>
-        <div className="h-4 w-56 rounded bg-muted/60"></div>
+      <div className="flex h-[380px] w-full flex-col justify-between border-[3px] border-ink bg-white p-5 shadow-hard-sm animate-pulse">
+        <div className="h-6 w-40 bg-ink/20"></div>
+        <div className="h-[260px] w-full bg-ink/10"></div>
+        <div className="h-4 w-56 bg-ink/20"></div>
       </div>
     ),
   }
@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   const { user } = await getMockAuthState();
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto">
+    <div className="flex flex-col gap-4 sm:gap-5 w-full">
       {/* 1. Header with integrated Quick Actions */}
       <DashboardHeader userName={user?.name} />
 
