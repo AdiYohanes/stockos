@@ -6,10 +6,10 @@ import { UserMenu } from "@/components/layout/user-menu";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { NAV_ITEMS } from "@/components/layout/sidebar";
 import { useI18n } from "@/lib/i18n/context";
-import type { MockUser } from "@/features/auth/types";
+import type { OwnerUser } from "@/features/auth/types";
 
 interface NavbarProps {
-  user: MockUser | null;
+  user: OwnerUser;
 }
 
 export function Navbar({ user }: NavbarProps) {
@@ -50,7 +50,7 @@ export function Navbar({ user }: NavbarProps) {
       <div className="flex items-center gap-3">
         <LanguageToggle />
         <span className="hidden md:block font-mono text-[10px] uppercase tracking-widest text-foreground/50">
-          {user?.name || "Demo User"} / {user?.role || "Admin"}
+          {user.name} / {t.auth.ownerRole}
         </span>
         <UserMenu user={user} />
       </div>

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getMockAuthState } from "@/features/auth/mock-auth";
+import { getOwnerSession } from "@/features/auth/server";
 import { AppShell } from "@/components/layout/app-shell";
 import { FeatureStoresProvider } from "@/components/providers/feature-stores-provider";
 
@@ -8,9 +8,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, user } = await getMockAuthState();
+  const user = await getOwnerSession();
 
-  if (!isAuthenticated) {
+  if (!user) {
     redirect("/login");
   }
 

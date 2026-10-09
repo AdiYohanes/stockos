@@ -2,7 +2,9 @@
 
 ## Project
 
-StockOS is a lightweight web-based Stock Management System / Mini ERP.
+StockOS is a lightweight web-based stock management system for one small shop (warung).
+
+Warehouses, multiple locations, inter-warehouse transfers, and purchase orders are outside current product scope. Do not reintroduce them without an explicit scope change.
 
 Primary goals:
 
@@ -19,18 +21,26 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Phase: Frontend Foundation**
+**Implementation phase: Backend Foundation — ticket 1, single-owner authentication only**
 
-Current focus:
+**Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
+
+Explicit implementation approval received 2026-10-09 for secret-protected owner setup, invitation/email verification, initial password setup, login, resend, and logout against isolated local Supabase. This scope permits the required auth dependencies, local resources, private auth/bootstrap migrations, and server boundaries. Full password recovery, persistent products/inventory/reports/settings, cloud provisioning, deployment, and real-shop use remain outside this approval.
+
+Backend target is confirmed for one owner/warung, Supabase PostgreSQL/Auth, Next.js Server Components/Server Actions, and Vercel. Documentation/specification preparation and GitHub issue publication are authorized, not implementation. Read `docs/BACKEND_PLAN.md` for gates, `docs/DATABASE.md` for constraints/transactions, `docs/API_CONTRACT.md` for operation boundaries, `docs/FULLSTACK_SPEC.md` for acceptance/testing, and `GLOSSARY.md` for domain terms. Distinguish approved target from actual mock runtime.
+
+Backend application code, migrations, authentication, infrastructure, and dependencies are permitted only within the explicitly approved ticket 1 scope above. All other backend work requires separate explicit approval. Existing frontend verification gaps remain open.
+
+Current implemented scope:
 
 - Frontend screens
 - UI/UX
 - Feature flows
 - Responsive behavior
 - Mock data
-- Mock authentication
+- Local Supabase owner authentication (ticket 1); provider/application verification in progress
 
-Production backend, database persistence, and production authentication are not implemented yet.
+Product/inventory/report persistence and production readiness are not implemented. Authentication no longer uses mock cookies; other feature data remains mocked.
 
 Do not move into backend implementation unless explicitly requested.
 
@@ -41,9 +51,9 @@ Do not move into backend implementation unless explicitly requested.
 At the beginning of a new coding session, initialize project context by reading:
 
 1. `AGENTS.md`
-2. `docs/PRD.md`
-3. `docs/ARCHITECTURE.md`
-4. `docs/PROGRESS.md`
+2. `PRD.md`
+3. `ARCHITECTURE.md`
+4. `PROGRESS.md`
 5. `design.md`
 
 Use these documents as project context for the current session.
@@ -62,7 +72,7 @@ If session context is lost, reset, compacted, or uncertain, reload the relevant 
 
 Use each document for its intended responsibility.
 
-### `docs/PRD.md`
+### `PRD.md`
 
 Source of truth for:
 
@@ -85,7 +95,7 @@ Source of truth for:
 - Component styling
 - Interaction patterns
 
-### `docs/ARCHITECTURE.md`
+### `ARCHITECTURE.md`
 
 Source of truth for:
 
@@ -95,7 +105,7 @@ Source of truth for:
 - Data flow
 - Architectural decisions
 
-### `docs/PROGRESS.md`
+### `PROGRESS.md`
 
 Source of truth for:
 
@@ -128,7 +138,7 @@ During the current Frontend Foundation phase:
 - Keep mock implementations isolated and replaceable.
 - Keep UI independent from mock implementation details.
 - Build realistic frontend flows without pretending they are production backend behavior.
-- Do not create database schemas or migrations.
+- Do not create executable database schemas or migrations. Proposed schema documentation is allowed during Backend Planning; it must not be inferred solely from frontend mock types.
 - Do not introduce backend infrastructure.
 - Do not implement production APIs.
 - Do not introduce production authentication.
@@ -165,7 +175,7 @@ Before adding a dependency:
 
 ## Project Structure
 
-Follow the feature-oriented structure defined in `docs/ARCHITECTURE.md`.
+Follow the feature-oriented structure defined in `ARCHITECTURE.md`.
 
 Primary structure:
 
@@ -223,7 +233,7 @@ Do not optimize or abstract prematurely.
 
 ## Next.js and React
 
-Follow the architectural guidance in `docs/ARCHITECTURE.md`.
+Follow the architectural guidance in `ARCHITECTURE.md`.
 
 General rules:
 
@@ -244,11 +254,11 @@ React 19 & Feature State Patterns:
 - **Hydration-Safe Mount Detection**: When needing client-only mount checks (e.g. chart rendering), use `React.useSyncExternalStore` rather than `useState(false)` + `useEffect(setMounted(true))`.
 - **Pure Render Handlers**: Do not call impure functions like `Math.random()` during component render. Generate unique IDs or deterministic references inside event handlers or form submissions.
 
-Standard Feature UI Structure (Products, Inventory, Warehouses, Suppliers, Dashboard, Reports, Settings):
+Standard Feature UI Structure (Products, Inventory, Dashboard, Reports, Settings):
 
 - **Standard Page Header**: Top title header with h1 + monospace status/category badge + bullet separator + description text on left, and responsive action buttons toolbar on right (see Section 6 of `design.md`).
 - **Metric Summary Cards**: 3-4 top cards summarizing volume/health that also act as quick click-to-filter triggers.
-- **Unified Toolbar**: Instant search bar + status pills with live counts + category/warehouse select dropdowns + sort toggle + reset button.
+- **Unified Toolbar**: Instant search bar + status pills with live counts + category select dropdowns + sort toggle + reset button.
 - **High-Density Table**: Space Mono badges for SKUs/codes, visual ratio/progress bars, currency formatting, status pills, and contextual row actions.
 - **Slide-Over Detail Sheet**: Inspection panel for specifications, health gauges, and movement/history logs without leaving the table view.
 
@@ -447,14 +457,14 @@ Do not require the user to repeatedly restate context already documented in the 
 
 Do not update every document after every small code change.
 
-### Update `docs/PROGRESS.md` when:
+### Update `PROGRESS.md` when:
 
 - A significant screen or feature is completed.
 - A feature moves into active development.
 - A meaningful milestone is reached.
 - The current development phase changes.
 
-### Update `docs/ARCHITECTURE.md` when:
+### Update `ARCHITECTURE.md` when:
 
 - Technical boundaries change.
 - Data flow changes significantly.
@@ -462,7 +472,7 @@ Do not update every document after every small code change.
 - Shared infrastructure is introduced.
 - Backend development begins.
 
-### Update `docs/PRD.md` when:
+### Update `PRD.md` when:
 
 - Product scope changes.
 - Feature requirements change.
@@ -537,9 +547,9 @@ Do not automatically move the project from frontend development into backend dev
 
 Before starting Backend Foundation, review and update:
 
-- `docs/PRD.md`
-- `docs/ARCHITECTURE.md`
-- `docs/PROGRESS.md`
+- `PRD.md`
+- `ARCHITECTURE.md`
+- `PROGRESS.md`
 - `AGENTS.md`
 
 Backend decisions should then define:
@@ -553,7 +563,7 @@ Backend decisions should then define:
 - Server-side operations
 - Persistence
 
-These decisions are intentionally deferred during the current Frontend Foundation phase.
+Target decisions are confirmed in the backend documents. Documentation/spec approval and `ready-for-agent` do not authorize implementation. Before code, obtain explicit implementation approval and update the phase in the four documents above. Prove provider bootstrap/email/session behavior, native transaction/security contracts, and remaining verification gates; do not silently relax constraints or expand scope when a provider integration is blocked.
 
 ---
 
@@ -562,3 +572,13 @@ These decisions are intentionally deferred during the current Frontend Foundatio
 Before making changes:
 
 > Understand the existing project, follow its documentation and established patterns, implement the smallest complete solution, and do not expand technical scope beyond the current development phase.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

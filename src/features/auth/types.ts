@@ -9,19 +9,7 @@ export interface AuthFormState {
   message?: string;
 }
 
-export interface MockUser {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-}
-
-export interface MockCredentials {
-  email: string;
-  password: string;
-}
-
-export interface MockAuthState {
-  isAuthenticated: boolean;
-  user: MockUser | null;
-}
+export type OwnerUser = { id: string; name: string; email: string };
+export type OwnerAuthResult =
+  | { ok: true; state: "verification" | "login" | "authenticated" }
+  | { ok: false; code: string; traceId?: string };

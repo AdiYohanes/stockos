@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { getMockAuthState } from "@/features/auth/mock-auth";
+import { redirect } from "next/navigation";
+import { getOwnerSession } from "@/features/auth/server";
 import {
   DashboardHeader,
   OverviewCards,
@@ -30,7 +32,8 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const { user } = await getMockAuthState();
+  const user = await getOwnerSession();
+  if (!user) redirect("/login");
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full">
@@ -44,7 +47,17 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 items-stretch">
         {/* Col 1: Stock Movement (7 cols) */}
         <div className="lg:col-span-7 flex flex-col">
-          <StockMovementChart />
+          <Suspense
+            fallback={
+              <div className="flex h-[380px] w-full flex-col justify-between border-[3px] border-ink bg-white p-5 shadow-hard-sm animate-pulse">
+                <div className="h-6 w-40 bg-ink/20" />
+                <div className="h-[260px] w-full bg-ink/10" />
+                <div className="h-4 w-56 bg-ink/20" />
+              </div>
+            }
+          >
+            <StockMovementChart />
+          </Suspense>
         </div>
 
         {/* Col 2: Inventory Health & Need Attention (5 cols) */}

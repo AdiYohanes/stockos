@@ -1,32 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import { LogOut, User as UserIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
-import { logoutMockUser } from "@/features/auth/mock-auth";
-import type { MockUser } from "@/features/auth/types";
+import { SignOutButton } from "@/features/auth/components/sign-out-button";
+import type { OwnerUser } from "@/features/auth/types";
 
 interface UserMenuProps {
-  user: MockUser | null;
+  user: OwnerUser;
 }
 
 export function UserMenu({ user }: UserMenuProps) {
-  const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
-  const { language, t } = useI18n();
-
-  const handleSignOut = () => {
-    setIsLoggingOut(true);
-    logoutMockUser();
-    router.push("/login");
-    router.refresh();
-  };
-
-  const displayName = user?.name || "Demo User";
-  const displayEmail = user?.email || "demo@stockos.com";
-  const displayRole = user?.role || "admin";
+  const { t } = useI18n();
+  const displayName = user.name;
+  const displayEmail = user.email;
+  const displayRole = t.auth.ownerRole;
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -51,23 +38,16 @@ export function UserMenu({ user }: UserMenuProps) {
         </div>
       </div>
 
-      <Button
+      <SignOutButton
         variant="outline"
         size="sm"
-        onClick={handleSignOut}
-        disabled={isLoggingOut}
         className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
         title={t.nav.logout}
+        aria-label={t.nav.logout}
       >
-        <LogOut className="h-3.5 w-3.5" />
-        <span className="hidden md:inline">
-          {isLoggingOut
-            ? language === "id"
-              ? "Keluar..."
-              : "Signing out..."
-            : t.nav.logout}
-        </span>
-      </Button>
+        <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+        <span className="hidden md:inline">{t.nav.logout}</span>
+      </SignOutButton>
     </div>
   );
 }

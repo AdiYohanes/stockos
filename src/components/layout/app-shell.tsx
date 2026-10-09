@@ -4,11 +4,11 @@ import * as React from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import type { MockUser } from "@/features/auth/types";
+import type { OwnerUser } from "@/features/auth/types";
 
 interface AppShellProps {
   children: React.ReactNode;
-  user: MockUser | null;
+  user: OwnerUser;
 }
 
 export function AppShell({ children, user }: AppShellProps) {

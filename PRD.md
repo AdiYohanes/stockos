@@ -2,7 +2,7 @@
 
 ## 1. Product Overview
 
-StockOS is a lightweight stock management web application for one small shop (warung). It helps owners and staff manage products, stock levels, and daily stock movements through a simple interface.
+StockOS is a lightweight stock management web application for one small shop (warung). It helps one owner manage products, stock levels, and daily stock movements through a simple interface. The confirmed initial fullstack scope has one owner account, not staff accounts.
 
 All stock belongs to one shop. Warehouses, multiple locations, inter-warehouse transfers, and purchase orders are outside product scope. Incoming goods are recorded directly as stock-in movements with receipt references, without a purchasing lifecycle.
 
@@ -33,7 +33,7 @@ Users should be able to quickly answer questions such as:
 Initial target users:
 
 - Owners of a single small shop or warung
-- Shop staff receiving goods, recording sales-related stock out, and counting stock
+- The same owner receiving goods, manually recording sold quantities, and counting stock; no staff onboarding in the initial release
 
 Initial product scope should prioritize simple operational workflows rather than enterprise ERP requirements.
 
@@ -51,15 +51,19 @@ Frontend flows:
 - Reset password
 - Logout
 
-Current implementation may use mock authentication during frontend development.
+Ticket 1 implements local Supabase owner authentication. Full recovery remains unavailable; other feature data remains mocked.
 
-Production authentication will be implemented during a later backend phase.
+Target authentication is Supabase email/password with verified email and password recovery. Owner signup requires a server setup secret, atomically claims the only owner slot, and closes after binding. Public provider signup is disabled; no staff/team accounts. Partial provider setup must recover the same attempt, not create another owner. Ticket 1 uses invitation-mode setup without collecting a password until email verification; implementation approved for isolated local tests only.
 
 ---
 
 ### Dashboard
 
-Dashboard should provide an immediate overview of inventory health.
+Confirmed target dashboard cards: Total Products, Potensi Pendapatan, Potensi Laba Kotor, and Out of Stock. Low-stock alerts remain in stock health and the attention list.
+
+Potensi Pendapatan is the selling value of current available stock at current selling prices, assuming all units are sold. Potensi Laba Kotor subtracts the weighted-average purchase-cost value of that stock. Both are current-stock estimates without a month-to-date sales period; negative potential margin remains visible. They are not actual revenue or net profit. Stock Out records sold quantities manually, not payment or actual sales prices; no POS, expense, shipping, or accounting module is approved.
+
+Current frontend still uses demo Revenue/Estimated Net Profit fixtures. Replace those labels/data during authorized integration; this requirement update does not change existing UI code.
 
 Potential information includes:
 
@@ -96,7 +100,7 @@ Basic product information may include:
 - Minimum stock threshold
 - Status
 
-Exact data fields should be finalized before backend schema implementation.
+Confirmed product fields and constraints are specified in `docs/DATABASE.md`. SKU is trimmed/uppercase/unique across archives; SKU/base unit lock after inventory history exists. Names/category/supplier use text suggestions rather than fixed technical enums; supplier and shelf are optional. Archive requires zero stock and preserves identity/history; reactivation reuses the SKU. No permanent product/history deletion through the app. Existing-product restock selects ID/SKU, never merges by name alone.
 
 ---
 
@@ -111,7 +115,7 @@ Core concepts:
 - Low-stock status
 - Out-of-stock status
 
-Inventory implementation should remain simple during MVP.
+Inventory remains simple: one authoritative balance per product, whole base-unit quantities, no reservations or weighed/fractional goods. Cartons are receiving-input conversion only. Stock below zero is rejected. Receipt/opening-stock total purchase cost is required in whole IDR; zero means genuinely free goods. Exact weighted-average modal is updated atomically with quantity and evidence.
 
 ---
 
@@ -123,7 +127,7 @@ Initial movement types may include:
 
 - Stock in
 - Stock out
-- Adjustment
+- Stock Opname (Adjustment)
 
 Each movement should eventually record enough information to understand:
 
@@ -133,13 +137,21 @@ Each movement should eventually record enough information to understand:
 - When it happened
 - Who initiated it
 
-Exact persistence rules will be defined during backend design.
+Confirmed rules: Stock In adds received goods and total purchase cost; Stock Out removes sold quantities only, manually recorded without a POS. Opname reconciles physical stock and quantity-entry errors separately from sold volume, retaining even unchanged counts. A changed stock version requires review/recount. Found positive stock after zero requires purchase cost; other counts preserve average modal.
+
+Quantity corrections append a linked opname record. Modal corrections append a reasoned present-value adjustment without replaying prior sales/receipts. Preserve original history. Stock/modal/evidence and retry result succeed or fail together; concurrent stock out cannot oversell and request retries cannot duplicate changes.
+
+### Reports and Settings
+
+Live reports cover stock valuation/potentials, opening/received/sold volume by shop-timezone date period, separate count/modal evidence, and threshold-based low/zero stock. Export safe CSV from the same source. Supplier scores, lead-time/days-to-empty predictions, and unsupported velocity tiers are removed during integration.
+
+Shared settings contain shop profile, IANA timezone (`Asia/Jakarta`, `Asia/Makassar`, `Asia/Jayapura`), and new-product unit/threshold defaults. IDR/weighted costing/no-negative-stock/audit are fixed rules. Display/language preferences stay browser-local. No team management, email/webhook stock delivery, expiry tracking, or operational data wipe. Preference/default reset never deletes products, history, or the owner.
 
 ---
 
 ## 5. Frontend Phase Scope
 
-The current development phase focuses only on frontend implementation.
+Backend Foundation ticket 1 is approved for single-owner setup, invitation/email verification, initial password setup, login, resend, and logout using isolated local Supabase. Required auth code, dependencies, local resources, and bootstrap migrations are authorized. Other features remain Frontend Foundation mocks; full recovery, domain persistence, cloud provisioning, deployment, and real-shop use require separate approval.
 
 Frontend objectives:
 
@@ -262,8 +274,8 @@ Possible future capabilities may include:
 
 - Sales integration
 - Barcode support
-- Production-backed inventory valuation and reporting
-- Enforced roles and permissions
+- Additional reporting beyond the approved inventory valuation/volume/threshold scope
+- Staff accounts and enforced multi-role permissions
 - Real notifications
 
 Warehouses, multiple locations, transfers, and purchase orders are not an approved roadmap; adding them requires an explicit scope change.
@@ -276,7 +288,7 @@ These are future considerations and should not automatically be treated as appro
 
 Current development phase:
 
-**Frontend Foundation**
+**Backend Foundation ticket 1 active — single-owner auth; remaining features are frontend mocks**
 
 Implemented:
 
@@ -293,3 +305,19 @@ Implemented:
 Active dashboard navigation: Dashboard, Products, Inventory, Reports, Settings. No warehouse or purchase-order module.
 
 Backend and database persistence are not yet implemented. Product and inventory collections are independent session-scoped mocks; dashboard and report analytics remain fixtures. Settings preferences alone use browser-local storage.
+
+## 13. Backend Preparation — Documentation Only
+
+Backend design is confirmed for the single-owner workflows above, not ERP/accounting. `docs/DATABASE.md` specifies native constraints and transactions; `docs/API_CONTRACT.md` specifies server queries/actions; `ARCHITECTURE.md` defines boundaries; `docs/FULLSTACK_SPEC.md` is the issue specification; `docs/BACKEND_PLAN.md` sequences implementation, proof, and release gates.
+
+Remaining work is implementation approval and provider/operational proof, not unapproved business-feature expansion. Supabase owner provisioning with public signup disabled, email delivery/recovery, session revocation, native decimal transactions, and access restrictions must be verified in isolated resources before claiming delivery.
+
+Acceptance expectations for the proposed backend:
+
+- Authorized changes survive reload and are visible consistently across features and sessions.
+- A stock change and its audit record succeed or fail together; concurrent or repeated submissions cannot silently lose or duplicate stock changes.
+- Unauthorized or invalid requests do not mutate data. Error states preserve unsaved form input.
+- Historical records remain explainable after product edits, archival, or stock corrections.
+- Reports identify their data sources and do not present demo values as production results.
+
+Design/scope and the testing seam are approved. Backend implementation still requires separate explicit approval; initial deployment is private testing, with operational readiness/backup/restore and applicable deployment permission required before real-shop use.
