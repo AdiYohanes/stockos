@@ -26,7 +26,6 @@ export function InventoryStockTable({
   onResetFilters,
   onSelectItem,
   onAdjustItem,
-  onQuickMove,
 }: InventoryStockTableProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / filterState.pageSize));
   const startIndex = (filterState.page - 1) * filterState.pageSize + 1;
@@ -37,25 +36,25 @@ export function InventoryStockTable({
       case "in_stock":
       case "overstocked":
         return (
-          <span className="bg-acid border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+          <span className="bg-acid border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
             Optimal
           </span>
         );
       case "low_stock":
         return (
-          <span className="bg-orange-400 border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+          <span className="bg-orange-400 border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
             Low Stock
           </span>
         );
       case "out_of_stock":
         return (
-          <span className="bg-ink text-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+          <span className="bg-ink text-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
             Critical
           </span>
         );
       default:
         return (
-          <span className="bg-paper border-2 border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+          <span className="bg-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
             {item.status}
           </span>
         );
@@ -81,9 +80,8 @@ export function InventoryStockTable({
             <tr>
               <th className="px-5 py-4">SKU</th>
               <th className="px-5 py-4">Product Name</th>
-              <th className="px-5 py-4">Warehouse</th>
               <th className="px-5 py-4 text-right">Current Stock</th>
-              <th className="px-5 py-4 text-right">Min Level</th>
+              <th className="px-5 py-4 text-right">Harga (Beli / Jual)</th>
               <th className="px-5 py-4">Status</th>
               <th className="px-5 py-4 text-right">Actions</th>
             </tr>
@@ -91,7 +89,7 @@ export function InventoryStockTable({
           <tbody className="divide-y-[2px] divide-black/10">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center">
+                <td colSpan={6} className="py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p className="font-display font-bold uppercase text-ink text-lg mt-4">
                       No matching items
@@ -128,9 +126,6 @@ export function InventoryStockTable({
                       {item.category}
                     </p>
                   </td>
-                  <td className="px-5 py-4 font-mono text-xs text-ink">
-                    {item.warehouse}
-                  </td>
                   <td
                     className={cn(
                       "px-5 py-4 text-right font-display font-[900]",
@@ -148,20 +143,20 @@ export function InventoryStockTable({
                       <button
                         onClick={() => onAdjustItem(item)}
                         title="Adjust Stock"
-                        className="press w-8 h-8 bg-white border-2 border-ink shadow-hard-sm flex items-center justify-center text-ink"
+                        className="press w-8 h-8 bg-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center text-ink"
                       >
                         <Icon icon="ph:pencil-simple-bold" className="text-lg" />
                       </button>
                       <button
                         onClick={() => onSelectItem(item)}
                         title="View Details"
-                        className="press w-8 h-8 bg-white border-2 border-ink shadow-hard-sm flex items-center justify-center text-ink"
+                        className="press w-8 h-8 bg-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center text-ink"
                       >
                         <Icon icon="ph:eye-bold" className="text-lg" />
                       </button>
                       <button
                         title="Delete"
-                        className="press w-8 h-8 bg-ink text-acid border-2 border-ink shadow-hard-sm flex items-center justify-center"
+                        className="press w-8 h-8 bg-ink text-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center"
                       >
                         <Icon icon="ph:trash-bold" className="text-lg" />
                       </button>

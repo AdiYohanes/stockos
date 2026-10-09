@@ -31,37 +31,23 @@ interface AddProductModalProps {
 }
 
 interface ProductFormData {
+  supplier: string;
   name: string;
-  sku: string;
-  category: string;
-  unit: string;
-  initialStock: string;
-  minStock: string;
+  cartons: string;
+  totalPieces: string;
+  totalPurchasePrice: string;
+  unitPrice: string;
+  barcode: string;
 }
 
-const CATEGORIES = [
-  "Electronics",
-  "Mechanical",
-  "Structural",
-  "Motors",
-  "Power",
-  "Consumables",
-  "Cables & Adapters",
-  "3D Printing",
-  "Fasteners",
-  "Tools",
-  "Sensors",
-];
-
-const UNITS = ["pcs", "units", "kits", "sets", "spools", "bars", "cells", "tubes", "kg", "m"];
-
 const INITIAL_FORM_DATA: ProductFormData = {
+  supplier: "",
   name: "",
-  sku: "",
-  category: "",
-  unit: "pcs",
-  initialStock: "",
-  minStock: "",
+  cartons: "",
+  totalPieces: "",
+  totalPurchasePrice: "",
+  unitPrice: "",
+  barcode: "",
 };
 
 export function AddProductModal({ children }: AddProductModalProps) {
@@ -71,10 +57,16 @@ export function AddProductModal({ children }: AddProductModalProps) {
   const [formData, setFormData] = React.useState<ProductFormData>(INITIAL_FORM_DATA);
   const [submittedProduct, setSubmittedProduct] = React.useState<ProductFormData | null>(null);
 
+  // Derived values
+  const totalPurchasePriceNum = parseFloat(formData.totalPurchasePrice) || 0;
+  const totalPiecesNum = parseInt(formData.totalPieces) || 0;
+  const unitPurchasePrice = totalPiecesNum > 0 ? totalPurchasePriceNum / totalPiecesNum : 0;
+  const unitPriceNum = parseFloat(formData.unitPrice) || 0;
+  const profitPerUnit = unitPriceNum - unitPurchasePrice;
+
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (!nextOpen) {
-      // Reset form on close after a brief delay so close animation stays clean
       setTimeout(() => {
         setIsSuccess(false);
         setFormData(INITIAL_FORM_DATA);
@@ -104,21 +96,20 @@ export function AddProductModal({ children }: AddProductModalProps) {
       <DialogTrigger render={children as React.ReactElement} />
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="overflow-hidden">
+        <DialogPopup className="overflow-hidden max-w-xl">
           {!isSuccess ? (
-            /* ================= FORM VIEW ================= */
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-primary/10 shadow-neo-sm">
-                    <PackagePlus className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-acid/10 shadow-hard-sm">
+                    <PackagePlus className="h-5 w-5 text-acid" />
                   </div>
                   <div>
-                    <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      {t.modals.addProduct.title}
+                    <DialogTitle className="text-lg font-bold text-ink uppercase tracking-wider font-sans">
+                      Tambah Produk (Toko)
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                      {t.modals.addProduct.subtitle}
+                    <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
+                      Input stok barang & hitung margin
                     </DialogDescription>
                   </div>
                 </div>
@@ -128,92 +119,114 @@ export function AddProductModal({ children }: AddProductModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-name">{t.modals.addProduct.nameLabel}</Label>
+                      <Label htmlFor="product-supplier" className="text-[10px] font-bold uppercase tracking-widest text-ink">1. Supplier</Label>
                       <Input
-                        id="product-name"
-                        placeholder={t.modals.addProduct.namePlaceholder}
-                        value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        id="product-supplier"
+                        placeholder="Nama Supplier"
+                        value={formData.supplier}
+                        onChange={(e) => handleInputChange("supplier", e.target.value)}
                         required
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="product-sku">{t.modals.addProduct.skuLabel}</Label>
-                      <div className="relative">
-                        <Input
-                          id="product-sku"
-                          placeholder={t.modals.addProduct.skuPlaceholder}
-                          className="pr-8 font-mono"
-                          value={formData.sku}
-                          onChange={(e) => handleInputChange("sku", e.target.value.toUpperCase())}
-                          required
-                        />
-                        <Barcode className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="product-category">{t.modals.addProduct.categoryLabel}</Label>
-                      <select
-                        id="product-category"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
-                        value={formData.category}
-                        onChange={(e) => handleInputChange("category", e.target.value)}
-                        required
-                      >
-                        <option value="">{t.modals.addProduct.selectCategory}</option>
-                        {CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="product-unit">{t.modals.addProduct.unitLabel}</Label>
-                      <select
-                        id="product-unit"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
-                        value={formData.unit}
-                        onChange={(e) => handleInputChange("unit", e.target.value)}
-                        required
-                      >
-                        {UNITS.map((u) => (
-                          <option key={u} value={u}>
-                            {u}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="product-initial-stock">{t.modals.addProduct.initialStockLabel}</Label>
-                      <Input
-                        id="product-initial-stock"
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={formData.initialStock}
-                        onChange={(e) => handleInputChange("initialStock", e.target.value)}
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="product-min-stock">{t.modals.addProduct.minStockLabel}</Label>
+                      <Label htmlFor="product-name" className="text-[10px] font-bold uppercase tracking-widest text-ink">2. Nama Product</Label>
                       <Input
-                        id="product-min-stock"
+                        id="product-name"
+                        placeholder="Nama produk"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        required
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-cartons" className="text-[10px] font-bold uppercase tracking-widest text-ink">3. Jml Karton/Dus</Label>
+                      <Input
+                        id="product-cartons"
                         type="number"
                         min="0"
-                        placeholder={t.modals.addProduct.minStockPlaceholder}
-                        value={formData.minStock}
-                        onChange={(e) => handleInputChange("minStock", e.target.value)}
-                        required
+                        placeholder="0"
+                        value={formData.cartons}
+                        onChange={(e) => handleInputChange("cartons", e.target.value)}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
-                      <p className="text-[10px] text-muted-foreground">
-                        {t.modals.addProduct.minStockHelp}
-                      </p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-pcs" className="text-[10px] font-bold uppercase tracking-widest text-ink">4. Jml Pcs (Total)</Label>
+                      <Input
+                        id="product-pcs"
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={formData.totalPieces}
+                        onChange={(e) => handleInputChange("totalPieces", e.target.value)}
+                        required
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-purchase" className="text-[10px] font-bold uppercase tracking-widest text-ink">5. Harga Total (Beli)</Label>
+                      <Input
+                        id="product-purchase"
+                        type="number"
+                        min="0"
+                        placeholder="Rp 0"
+                        value={formData.totalPurchasePrice}
+                        onChange={(e) => handleInputChange("totalPurchasePrice", e.target.value)}
+                        required
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="product-sell" className="text-[10px] font-bold uppercase tracking-widest text-ink">6. Harga Jual Satuan</Label>
+                      <Input
+                        id="product-sell"
+                        type="number"
+                        min="0"
+                        placeholder="Rp 0"
+                        value={formData.unitPrice}
+                        onChange={(e) => handleInputChange("unitPrice", e.target.value)}
+                        required
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="product-barcode" className="text-[10px] font-bold uppercase tracking-widest text-ink">7. Barcode</Label>
+                      <div className="relative">
+                        <Input
+                          id="product-barcode"
+                          placeholder="Scan Barcode / SKU"
+                          className="pr-8 font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
+                          value={formData.barcode}
+                          onChange={(e) => handleInputChange("barcode", e.target.value.toUpperCase())}
+                        />
+                        <Barcode className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/50" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Profit Calculation Summary */}
+                  <div className="mt-4 border-[3px] border-ink bg-paper p-3 text-sm font-mono space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-ink/70">Modal Satuan:</span>
+                      <span className="font-bold">Rp {unitPurchasePrice.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-ink/70">Harga Jual:</span>
+                      <span className="font-bold">Rp {unitPriceNum.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 mt-1 border-t-2 border-dashed border-ink/20">
+                      <span className="text-ink/70">Profit per Pcs:</span>
+                      <span className={`font-bold ${profitPerUnit > 0 ? 'text-emerald-600' : profitPerUnit < 0 ? 'text-red-600' : 'text-ink'}`}>
+                        {profitPerUnit > 0 ? '+' : ''}Rp {profitPerUnit.toLocaleString('id-ID')}
+                      </span>
                     </div>
                   </div>
                 </DialogBody>
@@ -222,126 +235,78 @@ export function AddProductModal({ children }: AddProductModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" />}
                   >
-                    {t.common.cancel}
+                    Batal
                   </DialogClose>
                   <Button type="submit" size="sm">
-                    {t.modals.addProduct.submit}
+                    Simpan Produk
                   </Button>
                 </DialogFooter>
               </form>
             </>
           ) : (
-            /* ================= MODERN SUCCESS VIEW ================= */
             <div className="p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
               <div className="flex flex-col items-center text-center">
-                {/* Modern Animated Checkmark */}
                 <div className="relative mb-5 flex items-center justify-center">
-                  {/* Subtle pulsing background ring */}
-                  <div className="absolute h-24 w-24 rounded-full bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
-                  
-                  {/* Sparkle decorative icons */}
+                  <div className="absolute h-24 w-24 rounded-none bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
                   <div className="absolute -top-1.5 -right-2 text-emerald-500 animate-in fade-in zoom-in duration-500 delay-300">
                     <Sparkles className="h-4 w-4 fill-emerald-500/30" />
                   </div>
-                  <div className="absolute -bottom-1 -left-2 text-primary animate-in fade-in zoom-in duration-500 delay-500">
-                    <Sparkles className="h-3 w-3 fill-primary/30" />
-                  </div>
-
-                  {/* Main Tactile Check Badge */}
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-black bg-emerald-50 shadow-neo animate-check-pop">
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-none border-[3px] border-ink bg-emerald-50 shadow-hard-sm animate-check-pop">
                     <svg
                       className="h-12 w-12 text-emerald-600"
                       viewBox="0 0 52 52"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      {/* Outer Circle Animation */}
-                      <circle
-                        className="stroke-emerald-200/80"
-                        cx="26"
-                        cy="26"
-                        r="23"
-                        strokeWidth="2.5"
-                      />
-                      <circle
-                        className="stroke-emerald-600 animate-check-circle"
-                        cx="26"
-                        cy="26"
-                        r="23"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                      {/* Checkmark Path Animation */}
-                      <path
-                        className="stroke-emerald-600 animate-check-path"
-                        d="M15 26.5L22.5 34L37 18.5"
-                        strokeWidth="3.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                      <circle cx="26" cy="26" r="23" strokeWidth="2.5" className="stroke-emerald-200/80" />
+                      <circle cx="26" cy="26" r="23" strokeWidth="3" strokeLinecap="round" className="stroke-emerald-600 animate-check-circle" />
+                      <path d="M15 26.5L22.5 34L37 18.5" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round" className="stroke-emerald-600 animate-check-path" />
                     </svg>
                   </div>
                 </div>
 
-                {/* Text Announcement */}
-                <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                  {t.modals.addProduct.successTitle}
+                <DialogTitle className="text-xl font-bold font-sans uppercase tracking-widest text-ink">
+                  Produk Tersimpan
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
-                  {t.modals.addProduct.successSubtitle}
-                </DialogDescription>
 
-                {/* Product Summary Preview Card */}
                 {submittedProduct && (
-                  <div className="mt-5 w-full rounded-lg border border-border bg-muted/40 p-4 text-left shadow-neo-sm animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150">
+                  <div className="mt-5 w-full border-[3px] border-ink bg-paper p-4 text-left shadow-hard-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-sm border border-black bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary tracking-wider uppercase shadow-neo-sm">
-                            {submittedProduct.sku || "N/A"}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
-                            <Layers className="h-3 w-3" />
-                            {submittedProduct.category || t.modals.addProduct.generalCategory}
+                          <span className="inline-flex items-center border-[3px] border-ink bg-acid/10 px-2 py-0.5 font-mono text-[10px] font-bold text-acid tracking-wider uppercase">
+                            {submittedProduct.barcode || "NO-BARCODE"}
                           </span>
                         </div>
-                        <p className="font-heading font-semibold text-foreground text-sm truncate pt-1">
-                          {submittedProduct.name || t.modals.addProduct.untitled}
+                        <p className="font-sans font-bold text-ink text-sm pt-1 uppercase">
+                          {submittedProduct.name}
+                        </p>
+                        <p className="font-mono text-[10px] text-ink/60 uppercase">
+                          Supplier: {submittedProduct.supplier}
                         </p>
                       </div>
-
                       <div className="text-right shrink-0">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono block">
-                          {t.modals.addProduct.initialStockLabel}
-                        </span>
-                        <span className="font-mono text-base font-bold text-foreground">
-                          {submittedProduct.initialStock || "0"}{" "}
-                          <span className="text-xs font-normal text-muted-foreground">
-                            {submittedProduct.unit}
-                          </span>
+                        <span className="font-mono text-base font-bold text-ink">
+                          {submittedProduct.totalPieces} Pcs
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="mt-6 flex w-full flex-col-reverse gap-2.5 sm:flex-row sm:justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="btn-neo flex-1 sm:flex-initial sm:px-6"
-                    onClick={() => handleOpenChange(false)}
+                <div className="mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+                  <DialogClose
+                    render={<Button type="button" variant="outline" className="btn-neo flex-1 sm:flex-initial sm:px-6" />}
                   >
-                    {t.modals.finish}
-                  </Button>
+                    Selesai
+                  </DialogClose>
                   <Button
                     type="button"
                     className="btn-neo-primary flex-1 sm:flex-initial sm:px-6 gap-1.5"
                     onClick={handleAddAnother}
                   >
                     <Plus className="h-4 w-4" />
-                    {t.modals.addProduct.addAnother}
+                    Tambah Lain
                   </Button>
                 </div>
               </div>

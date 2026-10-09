@@ -1,6 +1,6 @@
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "overstocked";
 
-export type MovementType = "in" | "out" | "adjustment" | "transfer";
+export type MovementType = "in" | "out" | "adjustment";
 
 export type AdjustmentReason =
   | "cycle_count"
@@ -19,7 +19,6 @@ export interface StockMovement {
   quantity: number; // Positive for IN, negative for OUT, delta (+/-) for ADJ
   previousStock: number;
   newStock: number;
-  warehouse: string;
   reference: string;
   reason?: AdjustmentReason;
   note?: string;
@@ -32,7 +31,6 @@ export interface InventoryItem {
   sku: string;
   name: string;
   category: string;
-  warehouse: string;
   locationBin: string; // e.g. "A-02-14" (Aisle, Shelf, Bin)
   currentStock: number; // Physical On-Hand
   reservedStock: number; // Allocated to pending orders
@@ -40,7 +38,8 @@ export interface InventoryItem {
   minStock: number; // Safety/reorder threshold
   maxStock: number; // Optimal capacity ceiling
   unit: string;
-  unitCost: number; // Valuation unit cost
+  unitCost: number; // Harga beli satuan
+  unitPrice?: number; // Harga jual satuan
   status: StockStatus;
   lastMovementAt: string;
   movementLogs?: StockMovement[];
@@ -62,7 +61,6 @@ export type InventorySortOrder = "asc" | "desc";
 export interface InventoryFilterState {
   tab: InventoryTab;
   searchQuery: string;
-  warehouse: string;
   status: "all" | StockStatus;
   movementType: "all" | MovementType;
   category: string;
