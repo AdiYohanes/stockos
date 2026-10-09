@@ -51,7 +51,6 @@ export interface AttentionItem {
   minStock: number;
   unit: string;
   status: AttentionStatus;
-  warehouse: string;
   lastRestocked: string;
 }
 
@@ -60,6 +59,6 @@ export interface QuickActionItem {
   id: string;
   title: string;
   description: string;
-  icon: "plus" | "arrow-down" | "arrow-up" | "transfer";
+  icon: "plus" | "arrow-down" | "arrow-up";
   badge?: string;
 }

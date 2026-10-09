@@ -41,46 +41,46 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Basic Company Info */}
-      <Card className="border-border shadow-none">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Building2 className="h-5 w-5 text-[#543afd]" /> {language === "id" ? "Identitas Usaha & Kontak" : "Business Identity & Contact"}
+      <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
+        <CardHeader className="border-b-[3px] border-ink pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+            <Building2 className="h-5 w-5 text-ink" /> {t.settings.businessIdentity}
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
-            {language === "id" ? "Informasi umum nama usaha, nomor registrasi pajak, dan kontak operasional utama." : "General company info, tax registration number, and primary operational contact."}
+          <CardDescription className="text-xs text-ink/60">
+            {t.settings.businessIdentityDesc}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
-            <Label htmlFor="companyName" className="text-xs font-semibold text-slate-700">
+            <Label htmlFor="companyName" className="text-xs font-semibold text-ink font-bold">
               {t.settings.storeName}
             </Label>
             <Input
               id="companyName"
               value={formData.companyName}
               onChange={(e) => handleChange("companyName", e.target.value)}
-              placeholder={language === "id" ? "Contoh: PT Logistik Nusantara" : "e.g. Acme Logistics Corp"}
-              className="h-9 text-xs focus-visible:ring-[#543afd]"
+              placeholder={t.settings.companyNamePlaceholder}
+              className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="taxId" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <CreditCard className="h-3.5 w-3.5 text-slate-400" /> NPWP / Tax Registration ID
+            <Label htmlFor="taxId" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+              <CreditCard className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none" /> NPWP / Tax Registration ID
             </Label>
             <Input
               id="taxId"
               value={formData.taxId}
               onChange={(e) => handleChange("taxId", e.target.value)}
               placeholder="01.234.567.8-012.000"
-              className="h-9 font-mono text-xs focus-visible:ring-[#543afd]"
+              className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="officialEmail" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-                <Mail className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Email Resmi" : "Official Email"}
+              <Label htmlFor="officialEmail" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+                <Mail className="h-3.5 w-3.5 text-ink/60" /> {t.settings.officialEmail}
               </Label>
               <Input
                 id="officialEmail"
@@ -88,58 +88,58 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
                 value={formData.officialEmail}
                 onChange={(e) => handleChange("officialEmail", e.target.value)}
                 placeholder="ops@company.com"
-                className="h-9 text-xs focus-visible:ring-[#543afd]"
+                className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-                <Phone className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "No. Telepon" : "Phone Number"}
+              <Label htmlFor="phone" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+                <Phone className="h-3.5 w-3.5 text-ink/60" /> {t.settings.phoneNumber}
               </Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
                 placeholder="+62 21 5550 123"
-                className="h-9 font-mono text-xs focus-visible:ring-[#543afd]"
+                className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="address" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <MapPin className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Alamat Lengkap Operasional" : "Full Operational Address"}
+            <Label htmlFor="address" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+              <MapPin className="h-3.5 w-3.5 text-ink/60" /> {t.settings.operationalAddress}
             </Label>
             <Textarea
               id="address"
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
               rows={3}
-              placeholder={language === "id" ? "Jl. Industri Utama No. 1..." : "123 Industrial Way..."}
-              className="text-xs resize-none focus-visible:ring-[#543afd]"
+              placeholder={t.settings.addressPlaceholder}
+              className="text-xs resize-none input-focus border-[3px] border-ink rounded-none"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Regional & Financial Preferences */}
-      <Card className="border-border shadow-none">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Globe className="h-5 w-5 text-[#543afd]" /> {language === "id" ? "Lokalisasi & Standar Keuangan" : "Localization & Financial Standards"}
+      <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
+        <CardHeader className="border-b-[3px] border-ink pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+            <Globe className="h-5 w-5 text-ink" /> {t.settings.localizationFinancial}
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
-            {language === "id" ? "Mata uang default laporan, zona waktu gudang, dan format penanggalan transaksi." : "Report default currency, warehouse timezone, and date format preferences."}
+          <CardDescription className="text-xs text-ink/60">
+            {t.settings.localizationDesc}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-ink font-bold">
               {t.settings.currency}
             </Label>
             <Select value={formData.currency} onValueChange={handleCurrencyChange}>
-              <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder={language === "id" ? "Pilih Mata Uang" : "Select Currency"} />
+              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
+                <SelectValue placeholder={t.settings.selectCurrencyPlaceholder} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="IDR">IDR - Rupiah Indonesia (Rp)</SelectItem>
@@ -148,18 +148,18 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
                 <SelectItem value="SGD">SGD - Singapore Dollar (S$)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-slate-500">
-              {language === "id" ? "Mata uang yang digunakan untuk laporan valuasi persediaan dan harga pokok." : "Primary currency used for inventory valuation and cost reporting."}
+            <p className="text-[11px] text-ink/60">
+              {t.settings.currencyDesc}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-ink font-bold">
               {t.settings.timezone}
             </Label>
             <Select value={formData.timezone} onValueChange={(v) => handleChange("timezone", (v as string) || "Asia/Jakarta (WIB)")}>
-              <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder={language === "id" ? "Pilih Zona Waktu" : "Select Timezone"} />
+              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
+                <SelectValue placeholder={t.settings.selectTimezonePlaceholder} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Asia/Jakarta (WIB)">WIB - Asia/Jakarta (UTC+7)</SelectItem>
@@ -170,31 +170,31 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
-              {language === "id" ? "Format Tanggal Laporan" : "Report Date Format"}
+            <Label className="text-xs font-semibold text-ink font-bold">
+              {t.settings.reportDateFormat}
             </Label>
             <Select value={formData.dateFormat} onValueChange={(v) => handleChange("dateFormat", (v as string) || "DD/MM/YYYY")}>
-              <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
-                <SelectValue placeholder={language === "id" ? "Pilih Format Tanggal" : "Select Date Format"} />
+              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
+                <SelectValue placeholder={t.settings.selectDateFormatPlaceholder} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY ({language === "id" ? "Contoh" : "e.g. "}: 31/12/2026)</SelectItem>
-                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD ({language === "id" ? "Contoh" : "e.g. "}: 2026-12-31)</SelectItem>
-                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY ({language === "id" ? "Contoh" : "e.g. "}: 12/31/2026)</SelectItem>
+                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY ({t.settings.exampleFormat}: 31/12/2026)</SelectItem>
+                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD ({t.settings.exampleFormat}: 2026-12-31)</SelectItem>
+                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY ({t.settings.exampleFormat}: 12/31/2026)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="operatingHours" className="flex items-center gap-1 text-xs font-semibold text-slate-700">
-              <Clock className="h-3.5 w-3.5 text-slate-400" /> {language === "id" ? "Jam Operasional Gudang" : "Warehouse Operating Hours"}
+            <Label htmlFor="operatingHours" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+              <Clock className="h-3.5 w-3.5 text-ink/60" /> {t.settings.shopOperatingHours}
             </Label>
             <Input
               id="operatingHours"
               value={formData.operatingHours}
               onChange={(e) => handleChange("operatingHours", e.target.value)}
               placeholder="08:00 - 17:00 WIB"
-              className="h-9 text-xs focus-visible:ring-[#543afd]"
+              className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
         </CardContent>

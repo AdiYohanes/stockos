@@ -112,7 +112,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 50,
     unit: "pcs",
     status: "out_of_stock",
-    warehouse: "Gudang Utama (WH-1)",
     lastRestocked: "14 hari lalu",
   },
   {
@@ -124,7 +123,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 100,
     unit: "pcs",
     status: "out_of_stock",
-    warehouse: "Gudang Timur (WH-2)",
     lastRestocked: "21 hari lalu",
   },
   {
@@ -136,7 +134,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 30,
     unit: "batang",
     status: "out_of_stock",
-    warehouse: "Gudang Utama (WH-1)",
     lastRestocked: "18 hari lalu",
   },
   {
@@ -148,7 +145,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 25,
     unit: "unit",
     status: "low_stock",
-    warehouse: "Gudang Utama (WH-1)",
     lastRestocked: "8 hari lalu",
   },
   {
@@ -160,7 +156,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 80,
     unit: "sel",
     status: "low_stock",
-    warehouse: "Gudang Timur (WH-2)",
     lastRestocked: "5 hari lalu",
   },
   {
@@ -172,7 +167,6 @@ export const MOCK_ATTENTION_ITEMS: AttentionItem[] = [
     minStock: 40,
     unit: "tabung",
     status: "low_stock",
-    warehouse: "Gudang Utama (WH-1)",
     lastRestocked: "3 hari lalu",
   },
 ];
@@ -189,7 +183,7 @@ export const MOCK_QUICK_ACTIONS: QuickActionItem[] = [
   {
     id: "stock-in",
     title: "Stok Masuk",
-    description: "Terima barang & PO masuk",
+    description: "Catat barang masuk ke warung",
     icon: "arrow-down",
     badge: "Masuk",
   },
@@ -199,12 +193,5 @@ export const MOCK_QUICK_ACTIONS: QuickActionItem[] = [
     description: "Catat pengeluaran / penjualan",
     icon: "arrow-up",
     badge: "Keluar",
-  },
-  {
-    id: "transfer-stock",
-    title: "Transfer Stok",
-    description: "Transfer barang antar gudang",
-    icon: "transfer",
-    badge: "Internal",
   },
 ];

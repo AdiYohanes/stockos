@@ -5,7 +5,6 @@ import {
   ArrowDownToLine,
   Plus,
   Sparkles,
-  Building2,
   FileText,
 } from "lucide-react";
 import {
@@ -33,7 +32,6 @@ interface StockInModalProps {
 interface StockInFormData {
   sku: string;
   qty: string;
-  warehouse: string;
   supplier: string;
   notes: string;
 }
@@ -46,16 +44,9 @@ const MOCK_PRODUCTS = [
   { sku: "MOTR-STP-17", name: "NEMA 17 Stepper Motor", unit: "units" },
 ];
 
-const WAREHOUSES = [
-  "Main Hub (WH-1)",
-  "East Annex (WH-2)",
-  "South Depot (WH-3)",
-];
-
 const INITIAL_FORM_DATA: StockInFormData = {
   sku: "",
   qty: "",
-  warehouse: "",
   supplier: "",
   notes: "",
 };
@@ -106,16 +97,16 @@ export function StockInModal({ children }: StockInModalProps) {
             /* ================= FORM VIEW ================= */
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-emerald-500/10 shadow-neo-sm">
-                    <ArrowDownToLine className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-emerald-100 shadow-hard-sm">
+                    <ArrowDownToLine className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <DialogTitle className="text-base font-bold text-foreground font-heading">
-                      {t.modals.stockIn.title}
+                    <DialogTitle className="text-lg font-bold text-ink uppercase tracking-wider font-sans">
+                      Barang Masuk (Beli)
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                      {t.modals.stockIn.subtitle}
+                    <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
+                      Catat stok dari supplier / kulakan
                     </DialogDescription>
                   </div>
                 </div>
@@ -125,16 +116,16 @@ export function StockInModal({ children }: StockInModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-product">{t.modals.product}</Label>
+                      <Label htmlFor="stockin-product" className="text-[10px] font-bold uppercase tracking-widest text-ink">Produk</Label>
                       <div className="relative">
                         <select
                           id="stockin-product"
-                          className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
+                          className="h-10 w-full rounded-none border-[3px] border-ink bg-white px-3 py-1.5 text-sm font-sans font-bold text-ink transition-shadow outline-none focus:shadow-hard-sm cursor-pointer"
                           required
                           value={formData.sku}
                           onChange={(e) => handleInputChange("sku", e.target.value)}
                         >
-                          <option value="">{t.modals.selectProduct}</option>
+                          <option value="">Pilih produk...</option>
                           {MOCK_PRODUCTS.map((p) => (
                             <option key={p.sku} value={p.sku}>
                               [{p.sku}] {p.name}
@@ -145,51 +136,37 @@ export function StockInModal({ children }: StockInModalProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockin-qty">{t.modals.quantity}</Label>
+                      <Label htmlFor="stockin-qty" className="text-[10px] font-bold uppercase tracking-widest text-ink">Jml Masuk (Pcs)</Label>
                       <Input
                         id="stockin-qty"
                         type="number"
                         min="1"
-                        placeholder={t.modals.enterQuantity}
+                        placeholder="0"
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="stockin-warehouse">{t.modals.warehouse}</Label>
-                      <select
-                        id="stockin-warehouse"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
-                        required
-                        value={formData.warehouse}
-                        onChange={(e) => handleInputChange("warehouse", e.target.value)}
-                      >
-                        <option value="">{t.modals.selectWarehouse}</option>
-                        {WAREHOUSES.map((wh) => (
-                          <option key={wh} value={wh}>{wh}</option>
-                        ))}
-                      </select>
-                    </div>
-
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-supplier">{t.modals.stockIn.supplierRefLabel}</Label>
+                      <Label htmlFor="stockin-supplier" className="text-[10px] font-bold uppercase tracking-widest text-ink">Batch / No. Nota / Supplier</Label>
                       <Input
                         id="stockin-supplier"
-                        placeholder={t.modals.stockIn.supplierRefPlaceholder}
+                        placeholder="Contoh: Batch 1, Nota 1234, Budi"
                         value={formData.supplier}
                         onChange={(e) => handleInputChange("supplier", e.target.value)}
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockin-notes">{t.modals.notes}</Label>
+                      <Label htmlFor="stockin-notes" className="text-[10px] font-bold uppercase tracking-widest text-ink">Catatan</Label>
                       <textarea
                         id="stockin-notes"
                         rows={2}
-                        placeholder={t.modals.notesOptional}
-                        className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
+                        placeholder="Opsional..."
+                        className="w-full rounded-none border-[3px] border-ink bg-white px-3 py-2 text-sm font-sans text-ink transition-shadow outline-none focus:shadow-hard-sm resize-none placeholder:text-ink/50"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
                       />
@@ -199,12 +176,12 @@ export function StockInModal({ children }: StockInModalProps) {
 
                 <DialogFooter>
                   <DialogClose
-                    render={<Button variant="outline" size="sm" type="button" />}
+                    render={<Button variant="outline" size="sm" type="button" className="btn-neo border-[3px]" />}
                   >
-                    {t.common.cancel}
+                    "Batal"
                   </DialogClose>
-                  <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white border-black btn-neo">
-                    {t.modals.stockIn.submit}
+                  <Button type="submit" size="sm" className="bg-emerald-400 hover:bg-emerald-500 text-ink border-[3px] border-ink shadow-hard-sm press">
+                    "Simpan Stok Masuk"
                   </Button>
                 </DialogFooter>
               </form>
@@ -215,8 +192,8 @@ export function StockInModal({ children }: StockInModalProps) {
               <div className="flex flex-col items-center text-center">
                 {/* Modern Animated Checkmark */}
                 <div className="relative mb-5 flex items-center justify-center">
-                  <div className="absolute h-24 w-24 rounded-full bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
-                  
+                  <div className="absolute h-24 w-24 rounded-none bg-emerald-500/15 animate-ring-pulse pointer-events-none" />
+
                   <div className="absolute -top-1.5 -right-2 text-emerald-500 animate-in fade-in zoom-in duration-500 delay-300">
                     <Sparkles className="h-4 w-4 fill-emerald-500/30" />
                   </div>
@@ -224,7 +201,7 @@ export function StockInModal({ children }: StockInModalProps) {
                     <Sparkles className="h-3 w-3 fill-primary/30" />
                   </div>
 
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-black bg-emerald-50 shadow-neo animate-check-pop">
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-none border-[3px] border-ink bg-emerald-50 shadow-hard-sm animate-check-pop">
                     <svg
                       className="h-12 w-12 text-emerald-600"
                       viewBox="0 0 52 52"
@@ -258,39 +235,35 @@ export function StockInModal({ children }: StockInModalProps) {
                 </div>
 
                 {/* Text Announcement */}
-                <DialogTitle className="text-xl font-bold font-heading text-foreground">
+                <DialogTitle className="text-xl font-bold font-sans uppercase tracking-widest text-ink">
                   {t.modals.stockIn.successTitle}
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
+                <DialogDescription className="mt-1 text-[10px] text-ink/60 max-w-xs font-mono uppercase tracking-widest">
                   {t.modals.stockIn.successSubtitle}
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
                 {submittedData && (
-                  <div className="mt-5 w-full rounded-lg border border-border bg-muted/40 p-4 text-left shadow-neo-sm animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150 space-y-2.5">
-                    <div className="flex items-start justify-between gap-3 border-b border-border/70 pb-2.5">
+                  <div className="mt-5 w-full border-[3px] border-ink bg-paper p-4 text-left shadow-hard-sm animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150 space-y-2.5">
+                    <div className="flex items-start justify-between gap-3 border-b-[2px] border-ink/20 pb-2.5">
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-sm border border-black bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-700 tracking-wider uppercase shadow-neo-sm">
+                          <span className="inline-flex items-center border-[3px] border-ink bg-emerald-400 px-2 py-0.5 font-mono text-[10px] font-bold text-ink tracking-wider uppercase">
                             {submittedData.sku || "N/A"}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono truncate">
-                            <Building2 className="h-3 w-3" />
-                            {submittedData.warehouse || t.modals.stockIn.mainWarehouse}
-                          </span>
                         </div>
-                        <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
+                        <p className="font-sans font-bold text-ink text-sm truncate pt-0.5 uppercase">
                           {matchedProduct?.name || t.modals.stockIn.selectedProduct}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-mono font-bold block">
+                        <span className="text-[10px] uppercase tracking-widest text-ink/60 font-mono font-bold block">
                           {t.modals.stockIn.stockAdded}
                         </span>
-                        <span className="font-mono text-base font-bold text-emerald-700">
+                        <span className="font-mono text-base font-bold text-ink">
                           +{submittedData.qty}{" "}
-                          <span className="text-xs font-normal text-muted-foreground">
+                          <span className="text-xs font-normal text-ink/60">
                             {matchedProduct?.unit || "unit"}
                           </span>
                         </span>
@@ -298,27 +271,30 @@ export function StockInModal({ children }: StockInModalProps) {
                     </div>
 
                     {submittedData.supplier && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
-                        <FileText className="h-3 w-3 text-foreground/60" />
-                        <span>{t.modals.stockIn.refSupplier}: <span className="font-semibold text-foreground">{submittedData.supplier}</span></span>
+                      <div className="flex items-center gap-1.5 text-[10px] text-ink/60 font-mono uppercase tracking-widest">
+                        <FileText className="h-3 w-3 text-ink/60" />
+                        <span>{t.modals.stockIn.refSupplier}: <span className="font-bold text-ink">{submittedData.supplier}</span></span>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="mt-6 flex w-full flex-col-reverse gap-2.5 sm:flex-row sm:justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="btn-neo flex-1 sm:flex-initial sm:px-6"
-                    onClick={() => handleOpenChange(false)}
+                <div className="mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+                  <DialogClose
+                    render={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="btn-neo flex-1 sm:flex-initial sm:px-6 border-[3px]"
+                      />
+                    }
                   >
                     {t.modals.finish}
-                  </Button>
+                  </DialogClose>
                   <Button
                     type="button"
-                    className="btn-neo-primary flex-1 sm:flex-initial sm:px-6 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-emerald-400 hover:bg-emerald-500 text-ink border-[3px] border-ink shadow-hard-sm press flex-1 sm:flex-initial sm:px-6 gap-1.5"
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />

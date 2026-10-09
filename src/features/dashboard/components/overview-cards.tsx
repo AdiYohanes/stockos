@@ -10,7 +10,6 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { OverviewMetric } from "../types";
@@ -64,43 +63,43 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
         const supportingText = getSupportingText(metric);
 
         return (
-          <Card
+          <div
             key={metric.id}
             className={cn(
-              "relative transition-all duration-150 hover:border-black/60 dark:hover:border-white/60 !p-4 !gap-2 flex flex-col justify-between h-full",
-              metric.variant === "destructive" && "border-destructive",
-              metric.variant === "warning" && "border-amber-500"
+              "relative bg-white dark:bg-black border-[3px] border-ink shadow-hard-sm p-4 sm:p-5 flex flex-col justify-between h-full transition-all duration-150 press",
+              metric.variant === "destructive" && "border-red-600 shadow-[4px_4px_0px_#dc2626]",
+              metric.variant === "warning" && "border-amber-500 shadow-[4px_4px_0px_#f59e0b]"
             )}
           >
             {/* Header: Label + Icon */}
             <div className="flex flex-row items-center justify-between gap-4">
-              <span className="font-heading text-sm font-bold text-muted-foreground uppercase tracking-tight truncate">
+              <span className="font-sans text-xs font-bold uppercase tracking-widest text-ink/80 truncate">
                 {label}
               </span>
-              <IconComponent className={cn("h-6 w-6 shrink-0", iconConfig.iconClass)} />
+              <IconComponent className={cn("h-5 w-5 shrink-0", iconConfig.iconClass)} />
             </div>
 
             {/* Metric Value + Trend */}
-            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mt-1">
-              <div className="font-heading text-3xl font-black tracking-tighter text-foreground">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mt-3">
+              <div className="font-display text-3xl font-[900] tracking-tighter text-ink">
                 {metric.value}
               </div>
               {metric.change && (
-                <div className="font-mono text-xs font-semibold shrink-0">
+                <div className="font-mono text-[10px] uppercase font-bold shrink-0">
                   {metric.trend === "up" && (
-                    <span className="flex items-center text-emerald-600 dark:text-emerald-400">
+                    <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40 px-1 border border-emerald-600">
                       <TrendingUp className="mr-1 h-3.5 w-3.5" />
                       {metric.change}
                     </span>
                   )}
                   {metric.trend === "down" && (
-                    <span className="flex items-center text-rose-600 dark:text-rose-400">
+                    <span className="flex items-center text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/40 px-1 border border-rose-600">
                       <TrendingDown className="mr-1 h-3.5 w-3.5" />
                       {metric.change}
                     </span>
                   )}
                   {metric.trend === "neutral" && (
-                    <span className="flex items-center text-amber-600 dark:text-amber-400">
+                    <span className="flex items-center text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/40 px-1 border border-amber-600">
                       <Minus className="mr-1 h-3.5 w-3.5" />
                       {metric.change}
                     </span>
@@ -111,11 +110,11 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
 
             {/* Supporting note */}
             {supportingText && (
-              <p className="text-xs text-muted-foreground font-medium truncate mt-1">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-ink/60 mt-2 truncate">
                 {supportingText}
               </p>
             )}
-          </Card>
+          </div>
         );
       })}
     </section>

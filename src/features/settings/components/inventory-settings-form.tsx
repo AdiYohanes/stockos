@@ -27,25 +27,25 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Thresholds & Default Units */}
-      <Card className="border-border shadow-none">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Boxes className="h-5 w-5 text-[#543afd]" /> Ambang Batas & Satuan Default
+      <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
+        <CardHeader className="border-b-[3px] border-ink pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+            <Boxes className="h-5 w-5 text-ink" /> Ambang Batas & Satuan Default
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
+          <CardDescription className="text-xs text-ink/60">
             Standar kuantitas minimum peringatan stok dan unit barang bawaan saat pembuatan produk baru.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-slate-700">
+              <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-ink font-bold">
                 Batas Minimum Stok Rendah (Default)
               </Label>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger className="cursor-help inline-flex items-center">
-                    <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+                    <HelpCircle className="h-3.5 w-3.5 text-ink/60" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
                     Jika stok fisik produk turun mencapai angka ini, produk akan ditandai berstatus &quot;LOW STOCK&quot;.
@@ -59,12 +59,12 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
               min={1}
               value={formData.defaultLowStockThreshold}
               onChange={(e) => handleChange("defaultLowStockThreshold", parseInt(e.target.value) || 0)}
-              className="h-9 font-mono text-xs focus-visible:ring-[#543afd]"
+              className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="defaultReorderQuantity" className="text-xs font-semibold text-slate-700">
+            <Label htmlFor="defaultReorderQuantity" className="text-xs font-semibold text-ink font-bold">
               Kuantitas Pemesanan Ulang Default (Reorder Batch)
             </Label>
             <Input
@@ -73,19 +73,19 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
               min={1}
               value={formData.defaultReorderQuantity}
               onChange={(e) => handleChange("defaultReorderQuantity", parseInt(e.target.value) || 0)}
-              className="h-9 font-mono text-xs focus-visible:ring-[#543afd]"
+              className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-ink font-bold">
               Satuan Pengukuran Utama (Default Unit of Measure)
             </Label>
             <Select
               value={formData.defaultUnit}
               onValueChange={(v) => handleChange("defaultUnit", (v || "Pcs") as DefaultUnit)}
             >
-              <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
+              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
                 <SelectValue placeholder="Pilih Satuan" />
               </SelectTrigger>
               <SelectContent>
@@ -102,25 +102,25 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
       </Card>
 
       {/* Accounting & Stock Policies */}
-      <Card className="border-border shadow-none">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <Calculator className="h-5 w-5 text-[#543afd]" /> Metode Valuasi & Kebijakan Stok
+      <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
+        <CardHeader className="border-b-[3px] border-ink pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+            <Calculator className="h-5 w-5 text-ink" /> Metode Valuasi & Kebijakan Stok
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
-            Kalkulasi nilai aset persediaan dan aturan toleransi saldo fisik di gudang.
+          <CardDescription className="text-xs text-ink/60">
+            Kalkulasi nilai aset persediaan dan aturan toleransi stok fisik di warung.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-ink font-bold">
               Metode Valuasi Persediaan (Inventory Accounting)
             </Label>
             <Select
               value={formData.valuationMethod}
               onValueChange={(v) => handleChange("valuationMethod", (v || "FIFO") as ValuationMethod)}
             >
-              <SelectTrigger className="h-9 text-xs focus:ring-[#543afd]">
+              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
                 <SelectValue placeholder="Pilih Metode Valuasi" />
               </SelectTrigger>
               <SelectContent>
@@ -129,18 +129,18 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
                 <SelectItem value="WEIGHTED_AVERAGE">Weighted Average (Rata-rata Tertimbang)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-ink/60">
               Metode standar untuk menghitung total nilai aset laporan pada HPP dan laporan persediaan.
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5 space-y-4">
+          <div className="rounded-none border-[3px] border-ink rounded-none bg-slate-50 p-3.5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-[#543afd]" /> Perubahan Otomatis Status Stok Habis
+                <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-ink" /> Perubahan Otomatis Status Stok Habis
                 </Label>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-ink/60">
                   Otomatis ubah status produk jadi &quot;OUT OF STOCK&quot; saat saldo mencapai 0.
                 </p>
               </div>
@@ -152,10 +152,10 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
 
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
                   <AlertTriangle className="h-4 w-4 text-amber-500" /> Izinkan Saldo Stok Negatif
                 </Label>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-ink/60">
                   Mengizinkan pengeluaran stok meskipun saldo kurang dari nol (Bisa menyebabkan mismatch fisik).
                 </p>
               </div>
@@ -167,10 +167,10 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
 
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-slate-800">
+                <Label className="text-xs font-bold text-ink font-bold">
                   Aktifkan Tracking Tanggal Kedaluwarsa (Batch Expiry)
                 </Label>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-ink/60">
                   Pencatatan lot batch dan peringatan masa kedaluwarsa item produk.
                 </p>
               </div>

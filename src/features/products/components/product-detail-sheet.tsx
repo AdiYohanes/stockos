@@ -5,7 +5,6 @@ import {
   X,
   Package,
   Layers,
-  Warehouse,
   Barcode,
   Truck,
   Calendar,
@@ -70,27 +69,27 @@ export function ProductDetailSheet({
       />
 
       {/* Slide-over Panel: 1px hairline separation, soft structural elevation */}
-      <div className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-border bg-card shadow-lg animate-in slide-in-from-right duration-300">
+      <div className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-ink bg-card shadow-hard-lg animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-border bg-slate-50/80 dark:bg-slate-900/60 p-4 sm:p-5">
+        <div className="flex items-start justify-between border-b border-ink bg-slate-50/80 dark:bg-slate-900/60 p-4 sm:p-5">
           <div className="space-y-1.5 min-w-0 pr-2">
             <div className="flex items-center gap-2 flex-wrap">
               <SkuBadge code={product.sku} />
               {product.status === "in_stock" && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-sans">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-none bg-emerald-600 shrink-0" />
                   <span>{t.products.inStock}</span>
                 </span>
               )}
               {product.status === "low_stock" && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-sans">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-none bg-amber-600 shrink-0" />
                   <span>{t.products.lowStock}</span>
                 </span>
               )}
               {product.status === "out_of_stock" && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-400 font-sans">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-none bg-rose-600 shrink-0" />
                   <span>{t.products.outOfStock}</span>
                 </span>
               )}
@@ -106,7 +105,7 @@ export function ProductDetailSheet({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground shrink-0 rounded-md"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground shrink-0 rounded-none"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
@@ -114,7 +113,7 @@ export function ProductDetailSheet({
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex border-b border-border bg-slate-50/40 dark:bg-slate-900/20 px-4 pt-1">
+        <div className="flex border-b border-ink bg-slate-50/40 dark:bg-slate-900/20 px-4 pt-1">
           <button
             type="button"
             onClick={() => setActiveTab("specs")}
@@ -148,7 +147,7 @@ export function ProductDetailSheet({
           {activeTab === "specs" ? (
             <>
               {/* Stock Gauge Container */}
-              <div className="rounded-md border border-border bg-slate-50/50 dark:bg-slate-900/30 p-4">
+              <div className="rounded-none border-[3px] border-ink bg-slate-50/50 dark:bg-slate-900/30 p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     {t.products.sheet.inventoryLevel}
@@ -170,11 +169,11 @@ export function ProductDetailSheet({
                 </div>
 
                 {/* Visual Bar */}
-                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-none bg-slate-200 dark:bg-slate-800">
                   <div
                     style={{ width: `${Math.max(product.currentStock > 0 ? 5 : 0, stockPercentage)}%` }}
                     className={cn(
-                      "h-full rounded-full transition-all duration-300",
+                      "h-full rounded-none transition-all duration-300",
                       product.status === "out_of_stock"
                         ? "bg-rose-600"
                         : product.status === "low_stock"
@@ -187,7 +186,7 @@ export function ProductDetailSheet({
 
               {/* Financials & Valuation */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-md border border-border bg-card p-3.5">
+                <div className="rounded-none border-[3px] border-ink bg-card p-3.5">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <DollarSign className="h-3.5 w-3.5" />
                     <span>{t.products.unitPrice}</span>
@@ -198,7 +197,7 @@ export function ProductDetailSheet({
                   <span className="text-[10px] text-muted-foreground font-sans">Per {product.unit}</span>
                 </div>
 
-                <div className="rounded-md border border-border bg-card p-3.5">
+                <div className="rounded-none border-[3px] border-ink bg-card p-3.5">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Package className="h-3.5 w-3.5" />
                     <span>{t.products.totalValue}</span>
@@ -211,8 +210,8 @@ export function ProductDetailSheet({
               </div>
 
               {/* Metadata Details Grid */}
-              <div className="rounded-md border border-border bg-card p-4 space-y-3">
-                <h4 className="font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
+              <div className="rounded-none border-[3px] border-ink bg-card p-4 space-y-3">
+                <h4 className="font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground border-b border-ink pb-2">
                   {t.products.sheet.itemSpecifications}
                 </h4>
 
@@ -222,13 +221,6 @@ export function ProductDetailSheet({
                       <Layers className="h-3 w-3" /> {t.common.category}
                     </span>
                     <p className="font-medium text-foreground mt-0.5">{product.category}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Warehouse className="h-3 w-3" /> {t.products.warehouseLocation}
-                    </span>
-                    <p className="font-medium text-foreground mt-0.5">{product.warehouse}</p>
                   </div>
 
                   <div>
@@ -263,7 +255,7 @@ export function ProductDetailSheet({
                 </div>
 
                 {product.description && (
-                  <div className="pt-2 border-t border-border/60">
+                  <div className="pt-2 border-t border-ink/60">
                     <span className="text-[11px] text-muted-foreground block font-sans">{t.products.description}</span>
                     <p className="text-xs text-foreground mt-1 leading-relaxed">
                       {product.description}
@@ -285,13 +277,13 @@ export function ProductDetailSheet({
                   return (
                     <div
                       key={log.id}
-                      className="rounded-md border border-border bg-card p-3 space-y-1.5"
+                      className="rounded-none border-[3px] border-ink bg-card p-3 space-y-1.5"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono tabular-nums text-[11px] font-medium uppercase tracking-wider",
+                              "inline-flex items-center gap-1 rounded-none border px-1.5 py-0.5 font-mono tabular-nums text-[11px] font-medium uppercase tracking-wider",
                               isIn
                                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400"
                                 : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-400"
@@ -321,7 +313,7 @@ export function ProductDetailSheet({
                         <p className="text-xs text-muted-foreground pl-0.5">{log.note}</p>
                       )}
 
-                      <div className="text-[10px] text-muted-foreground pl-0.5 pt-1 border-t border-border/40 flex items-center justify-between">
+                      <div className="text-[10px] text-muted-foreground pl-0.5 pt-1 border-t border-ink/40 flex items-center justify-between">
                         <span>{t.products.sheet.initiatedBy}: <strong className="font-medium text-foreground">{log.performedBy}</strong></span>
                       </div>
                     </div>
@@ -333,7 +325,7 @@ export function ProductDetailSheet({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between gap-2 border-t border-border bg-slate-50/80 dark:bg-slate-900/60 p-3.5 sm:p-4">
+        <div className="flex items-center justify-between gap-2 border-t border-ink bg-slate-50/80 dark:bg-slate-900/60 p-3.5 sm:p-4">
           <div className="flex items-center gap-2">
             <Button
               type="button"

@@ -12,7 +12,6 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MovementVelocityItem, MovementTrendPoint, VelocityTier } from "../types";
@@ -20,7 +19,7 @@ import type { MovementVelocityItem, MovementTrendPoint, VelocityTier } from "../
 interface MovementVelocityViewProps {
   velocityItems: MovementVelocityItem[];
   trends: MovementTrendPoint[];
-  onInspect: (id: string, type: "velocity" | "reorder" | "warehouse") => void;
+  onInspect: (id: string, type: "velocity" | "reorder") => void;
 }
 
 const emptySubscribe = () => () => {};
@@ -40,25 +39,25 @@ export function MovementVelocityView({
     switch (tier) {
       case "fast":
         return (
-          <span className="inline-flex items-center rounded-xs border border-black bg-[#dcfce7] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#15803d]">
+          <span className="inline-flex items-center rounded-none border-[3px] border-ink bg-[#dcfce7] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#15803d]">
             Fast Moving
           </span>
         );
       case "moderate":
         return (
-          <span className="inline-flex items-center rounded-xs border border-black bg-[#dbeafe] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#1d4ed8]">
+          <span className="inline-flex items-center rounded-none border-[3px] border-ink bg-[#dbeafe] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#1d4ed8]">
             Moderate
           </span>
         );
       case "slow":
         return (
-          <span className="inline-flex items-center rounded-xs border border-black bg-[#fef9c3] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#a16207]">
+          <span className="inline-flex items-center rounded-none border-[3px] border-ink bg-[#fef9c3] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#a16207]">
             Slow Moving
           </span>
         );
       case "dead":
         return (
-          <span className="inline-flex items-center rounded-xs border border-black bg-[#fee2e2] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#b91c1c]">
+          <span className="inline-flex items-center rounded-none border-[3px] border-ink bg-[#fee2e2] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#b91c1c]">
             Dead Stock
           </span>
         );
@@ -68,19 +67,19 @@ export function MovementVelocityView({
   return (
     <div className="space-y-6">
       {/* Stock Volume Flow Trend Chart */}
-      <Card className="border border-black bg-white shadow-neo-sm">
-        <CardHeader className="border-b border-border pb-3">
+      <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
+        <CardHeader className="border-b border-ink pb-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="font-heading text-base font-bold text-foreground">
               Inbound vs Outbound Stock Volume Flow (30-Day Trend)
             </CardTitle>
             <div className="flex items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#543afd]" />
+                <span className="h-3 w-3 rounded-none bg-[#543afd]" />
                 <span className="text-muted-foreground">Inbound (Stock In)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-xs bg-[#09090b]" />
+                <span className="h-3 w-3 rounded-none bg-[#09090b]" />
                 <span className="text-muted-foreground">Outbound (Stock Out)</span>
               </div>
             </div>
@@ -109,7 +108,7 @@ export function MovementVelocityView({
                       if (!active || !payload || !payload.length) return null;
                       const data = payload[0].payload;
                       return (
-                        <div className="rounded-md border border-black bg-white p-3 font-mono text-xs shadow-neo">
+                        <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{label}</p>
                           <div className="space-y-1">
                             <p className="text-[#543afd]">Stock In: +{formatNumber(data.stockIn)} units</p>
@@ -136,8 +135,8 @@ export function MovementVelocityView({
       </Card>
 
       {/* Movement Velocity Table */}
-      <Card className="border border-black bg-white shadow-neo-sm">
-        <CardHeader className="border-b border-border pb-3">
+      <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
+        <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
             Product Velocity & Movement Classification
           </CardTitle>
@@ -146,7 +145,7 @@ export function MovementVelocityView({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
-                <TableRow className="border-b border-border">
+                <TableRow className="border-b border-ink">
                   <TableHead className="font-mono text-xs font-bold text-foreground">SKU / Code</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground">Product Name</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground">Category</TableHead>
@@ -162,10 +161,10 @@ export function MovementVelocityView({
                   <TableRow
                     key={item.productId}
                     onClick={() => onInspect(item.productId, "velocity")}
-                    className="border-b border-border hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="border-b border-ink hover:bg-slate-50 cursor-pointer transition-colors"
                   >
                     <TableCell>
-                      <span className="inline-flex rounded-xs border border-black bg-[#f8f9fa] px-1.5 py-0.5 font-mono text-[11px] font-bold text-foreground">
+                      <span className="inline-flex rounded-none border-[3px] border-ink bg-[#f8f9fa] px-1.5 py-0.5 font-mono text-[11px] font-bold text-foreground">
                         {item.sku}
                       </span>
                     </TableCell>

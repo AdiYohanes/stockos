@@ -20,7 +20,7 @@ export function SettingsTabNav({
   teamCount,
   activeAlertsCount,
 }: SettingsTabNavProps) {
-  const { language, t } = useI18n();
+  const { t } = useI18n();
 
   const tabs: Array<{
     id: SettingsTab;
@@ -30,29 +30,29 @@ export function SettingsTabNav({
   }> = [
     {
       id: "company",
-      label: language === "id" ? "Profil Usaha" : "Store Profile",
+      label: t.settings.tabCompanyProfile,
       icon: Building2,
     },
     {
       id: "inventory",
-      label: language === "id" ? "Aturan Stok & Valuasi" : "Stock Rules & Valuation",
+      label: t.settings.tabStockRules,
       icon: Boxes,
     },
     {
       id: "notifications",
-      label: language === "id" ? "Notifikasi & Peringatan" : "Notifications & Alerts",
+      label: t.settings.tabNotificationsAlerts,
       icon: Bell,
-      badge: activeAlertsCount > 0 ? (language === "id" ? `${activeAlertsCount} Aktif` : `${activeAlertsCount} Active`) : undefined,
+      badge: activeAlertsCount > 0 ? `${activeAlertsCount} ${t.settings.activeStatus}` : undefined,
     },
     {
       id: "team",
-      label: language === "id" ? "Tim & Akses" : "Team & Access",
+      label: t.settings.tabTeamAccess,
       icon: Users,
-      badge: language === "id" ? `${teamCount} Anggota` : `${teamCount} Members`,
+      badge: `${teamCount} ${t.settings.membersCount}`,
     },
     {
       id: "system",
-      label: language === "id" ? "Sistem & Pemeliharaan" : "System & Maintenance",
+      label: t.settings.tabSystemMaintenance,
       icon: ShieldAlert,
     },
   ];
@@ -69,7 +69,7 @@ export function SettingsTabNav({
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex items-center gap-2 rounded-md px-3.5 py-2 font-mono text-xs font-semibold transition-all whitespace-nowrap",
+                "flex items-center gap-2 rounded-none px-3.5 py-2 font-mono text-xs font-semibold transition-all whitespace-nowrap",
                 isActive
                   ? "bg-[#543afd] text-white border-1.5 border-black shadow-neo-sm"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -80,9 +80,9 @@ export function SettingsTabNav({
               {tab.badge && (
                 <span
                   className={cn(
-                    "ml-1 inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold",
+                    "ml-1 inline-flex items-center rounded-none px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold",
                     isActive
-                      ? "bg-white text-[#543afd] border border-black"
+                      ? "bg-white text-[#543afd] border-[3px] border-ink"
                       : "bg-slate-200 text-slate-700"
                   )}
                 >

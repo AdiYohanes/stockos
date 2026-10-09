@@ -19,7 +19,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PRODUCT_CATEGORIES, PRODUCT_UNITS, WAREHOUSES } from "../mock-data";
+import { useI18n } from "@/lib/i18n/context";
+import { PRODUCT_CATEGORIES, PRODUCT_UNITS } from "../mock-data";
 import {
   EditProductInputSchema,
   type EditProductInput,
@@ -40,6 +41,7 @@ interface EditProductFormProps {
 }
 
 function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormProps) {
+  const { t } = useI18n();
   const {
     register,
     handleSubmit,
@@ -53,7 +55,6 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
       unit: product.unit,
       unitPrice: product.unitPrice ?? 0,
       minStock: product.minStock,
-      warehouse: product.warehouse,
       supplier: product.supplier || "",
       description: product.description || "",
     },
@@ -76,7 +77,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
         {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="edit-name">Product Name *</Label>
+            <Label htmlFor="edit-name">{t.products.form.nameLabel} *</Label>
             <Input
               id="edit-name"
               {...register("name")}
@@ -90,7 +91,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-sku">SKU Code *</Label>
+            <Label htmlFor="edit-sku">{t.products.form.skuLabel} *</Label>
             <div className="relative">
               <Input
                 id="edit-sku"
@@ -107,10 +108,10 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-category">Category *</Label>
+            <Label htmlFor="edit-category">{t.products.form.categoryLabel} *</Label>
             <select
               id="edit-category"
-              className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
+              className="h-9 w-full rounded-none border-[3px] border-ink input-focus bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
               {...register("category")}
             >
               {PRODUCT_CATEGORIES.map((cat) => (
@@ -127,10 +128,10 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-unit">Unit *</Label>
+            <Label htmlFor="edit-unit">{t.modals.addProduct.unitLabel} *</Label>
             <select
               id="edit-unit"
-              className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer font-mono"
+              className="h-9 w-full rounded-none border-[3px] border-ink input-focus bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer font-mono"
               {...register("unit")}
             >
               {PRODUCT_UNITS.map((u) => (
@@ -147,27 +148,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-warehouse">Warehouse *</Label>
-            <select
-              id="edit-warehouse"
-              className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-xs sm:text-sm text-foreground transition-colors outline-none hover:border-slate-400 focus:ring-1 focus:ring-slate-900 cursor-pointer"
-              {...register("warehouse")}
-            >
-              {WAREHOUSES.map((wh) => (
-                <option key={wh} value={wh}>
-                  {wh}
-                </option>
-              ))}
-            </select>
-            {errors.warehouse && (
-              <p className="text-[11px] font-medium text-destructive">
-                {errors.warehouse.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="edit-unit-price">Unit Price ($)</Label>
+            <Label htmlFor="edit-unit-price">{t.products.form.priceLabel}</Label>
             <div className="relative">
               <Input
                 id="edit-unit-price"
@@ -187,7 +168,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-min-stock">Min Stock Level *</Label>
+            <Label htmlFor="edit-min-stock">{t.products.form.minStockLabel} *</Label>
             <Input
               id="edit-min-stock"
               type="number"
@@ -203,7 +184,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="edit-supplier">Supplier</Label>
+            <Label htmlFor="edit-supplier">{t.products.form.supplierLabel}</Label>
             <Input
               id="edit-supplier"
               className="h-9 text-xs sm:text-sm"
@@ -212,7 +193,7 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
           </div>
 
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="edit-desc">Description</Label>
+            <Label htmlFor="edit-desc">{t.products.form.descLabel}</Label>
             <Input
               id="edit-desc"
               className="h-9 text-xs sm:text-sm"
@@ -222,14 +203,14 @@ function EditProductForm({ product, onClose, onUpdateProduct }: EditProductFormP
         </div>
       </DialogBody>
 
-      <DialogFooter className="mt-4 pt-3 border-t border-border">
+      <DialogFooter className="mt-4 pt-3 border-t border-ink">
         <DialogClose
           render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
         >
-          Cancel
+          {t.common.cancel}
         </DialogClose>
         <Button type="submit" size="sm" className="h-9 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
-          Save Changes
+          {t.common.save}
         </Button>
       </DialogFooter>
     </form>
@@ -242,6 +223,8 @@ export function EditProductModal({
   onOpenChange,
   onUpdateProduct,
 }: EditProductModalProps) {
+  const { t } = useI18n();
+
   if (!product) return null;
 
   return (
@@ -251,12 +234,12 @@ export function EditProductModal({
         <DialogPopup className="max-w-lg overflow-hidden">
           <DialogHeader>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-slate-100 dark:bg-slate-800 text-foreground">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-slate-100 dark:bg-slate-800 text-foreground">
                 <Edit2 className="h-4 w-4" />
               </div>
               <div>
                 <DialogTitle className="text-base font-semibold text-foreground font-sans">
-                  Edit Product
+                  {t.products.editProduct}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
                   Update inventory attributes and thresholds for {product.name}

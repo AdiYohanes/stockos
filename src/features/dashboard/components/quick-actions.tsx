@@ -5,11 +5,11 @@ import {
   PackagePlus,
   ArrowDownToLine,
   ArrowUpFromLine,
-  ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuickActionItem } from "../types";
 import { MOCK_QUICK_ACTIONS } from "../mock-data";
+import { useI18n } from "@/lib/i18n/context";
 
 interface QuickActionsProps {
   actions?: QuickActionItem[];
@@ -17,9 +17,11 @@ interface QuickActionsProps {
 
 export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps) {
   const [activeNotification, setActiveNotification] = React.useState<string | null>(null);
+  const { language } = useI18n();
 
   const handleActionClick = (title: string) => {
-    setActiveNotification(`${title} dijalankan (Placeholder)`);
+    const executedText = language === "id" ? "dijalankan (Placeholder)" : "executed (Placeholder)";
+    setActiveNotification(`${title} ${executedText}`);
     setTimeout(() => {
       setActiveNotification(null);
     }, 2500);
@@ -27,47 +29,51 @@ export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps
 
   return (
     <div className="relative">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-stretch">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 items-stretch">
         {actions.map((action) => {
           const iconConfig = getActionIcon(action.icon);
           const IconComponent = iconConfig.icon;
+
+          // quick translation for mock data
+          let localizedTitle = action.title;
+          let localizedDesc = action.description;
+          if (language === "en") {
+            if (action.id === "qa-1") { localizedTitle = "Add Product"; localizedDesc = "Register a new product to master data"; }
+            if (action.id === "qa-2") { localizedTitle = "Stock In"; localizedDesc = "Record stock receiving from supplier"; }
+            if (action.id === "qa-3") { localizedTitle = "Stock Out"; localizedDesc = "Record sales or manual deduction"; }
+          }
 
           return (
             <button
               key={action.id}
               type="button"
-              onClick={() => handleActionClick(action.title)}
-              className="group flex items-start gap-2.5 rounded-lg border border-border/70 bg-card p-2.5 text-left transition-all duration-200 ease-in-out hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] cursor-pointer h-full"
+              onClick={() => handleActionClick(localizedTitle)}
+              className="press group flex flex-col items-start gap-3 border-[3px] border-ink bg-white dark:bg-black p-3 text-left transition-all duration-150 shadow-hard-sm hover:bg-paper cursor-pointer h-full"
             >
               <div
                 className={cn(
-                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 transition-transform duration-200 group-hover:scale-110 mt-0.5",
+                  "flex h-8 w-8 shrink-0 items-center justify-center border-[3px] border-ink bg-white group-hover:bg-paper",
                   iconConfig.wrapperClass
                 )}
               >
-                <IconComponent className={cn("h-3.5 w-3.5", iconConfig.iconClass)} />
+                <IconComponent className={cn("h-4 w-4", iconConfig.iconClass)} />
               </div>
 
-              <div className="min-w-0 flex-1 flex flex-col justify-between h-full cursor-pointer">
+              <div className="min-w-0 flex-1 flex flex-col justify-between h-full cursor-pointer w-full">
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span
-                      className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors duration-200 truncate cursor-pointer"
-                      title={action.title}
+                      className="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-acid transition-colors duration-200 truncate cursor-pointer"
+                      title={localizedTitle}
                     >
-                      {action.title}
+                      {localizedTitle}
                     </span>
-                    {action.badge && (
-                      <span className="text-[9px] font-medium text-muted-foreground uppercase shrink-0">
-                        {action.badge}
-                      </span>
-                    )}
                   </div>
                   <p
-                    className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5 cursor-pointer"
-                    title={action.description}
+                    className="text-[10px] text-ink/60 font-mono uppercase tracking-widest line-clamp-2 mt-1 cursor-pointer"
+                    title={localizedDesc}
                   >
-                    {action.description}
+                    {localizedDesc}
                   </p>
                 </div>
               </div>
@@ -77,7 +83,7 @@ export function QuickActions({ actions = MOCK_QUICK_ACTIONS }: QuickActionsProps
       </div>
 
       {activeNotification && (
-        <div className="absolute right-2 -top-6 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-background/90 px-2 py-0.5 rounded-md border border-emerald-500/30 shadow-xs animate-in fade-in">
+        <div className="absolute right-2 -top-6 text-[10px] font-bold uppercase tracking-widest text-ink bg-emerald-100 px-2 py-1 border-[3px] border-ink shadow-hard-sm animate-in fade-in">
           {activeNotification}
         </div>
       )}
@@ -90,26 +96,20 @@ function getActionIcon(icon: QuickActionItem["icon"]) {
     case "plus":
       return {
         icon: PackagePlus,
-        wrapperClass: "bg-primary/10 text-primary ring-primary/20",
-        iconClass: "text-primary",
+        wrapperClass: "text-ink",
+        iconClass: "text-acid",
       };
     case "arrow-down":
       return {
         icon: ArrowDownToLine,
-        wrapperClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-emerald-500/20",
+        wrapperClass: "text-ink",
         iconClass: "text-emerald-600 dark:text-emerald-400",
       };
     case "arrow-up":
       return {
         icon: ArrowUpFromLine,
-        wrapperClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-amber-500/20",
+        wrapperClass: "text-ink",
         iconClass: "text-amber-600 dark:text-amber-400",
-      };
-    case "transfer":
-      return {
-        icon: ArrowLeftRight,
-        wrapperClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-blue-500/20",
-        iconClass: "text-blue-600 dark:text-blue-400",
       };
   }
 }

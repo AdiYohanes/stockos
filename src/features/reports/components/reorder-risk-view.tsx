@@ -6,12 +6,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import type { ReorderRiskItem, RiskUrgency } from "../types";
 
 interface ReorderRiskViewProps {
   reorderItems: ReorderRiskItem[];
-  onInspect: (id: string, type: "velocity" | "reorder" | "warehouse") => void;
+  onInspect: (id: string, type: "velocity" | "reorder") => void;
 }
 
 export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProps) {
@@ -19,21 +18,21 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
     switch (urgency) {
       case "critical":
         return (
-          <span className="inline-flex items-center gap-1 rounded-xs border border-black bg-[#fee2e2] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#b91c1c]">
+          <span className="inline-flex items-center gap-1 rounded-none border-[3px] border-ink bg-[#fee2e2] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#b91c1c]">
             <AlertTriangle className="h-3 w-3" />
             {days} Days Left
           </span>
         );
       case "warning":
         return (
-          <span className="inline-flex items-center gap-1 rounded-xs border border-black bg-[#fef9c3] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#a16207]">
+          <span className="inline-flex items-center gap-1 rounded-none border-[3px] border-ink bg-[#fef9c3] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#a16207]">
             <Clock className="h-3 w-3" />
             {days} Days Left
           </span>
         );
       case "optimal":
         return (
-          <span className="inline-flex items-center gap-1 rounded-xs border border-black bg-[#dcfce7] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#15803d]">
+          <span className="inline-flex items-center gap-1 rounded-none border-[3px] border-ink bg-[#dcfce7] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-[#15803d]">
             <CheckCircle2 className="h-3 w-3" />
             Optimal ({days}d)
           </span>
@@ -44,8 +43,8 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
   return (
     <div className="space-y-6">
       {/* Reorder Summary Header */}
-      <Card className="border border-black bg-white shadow-neo-sm">
-        <CardHeader className="border-b border-border pb-3">
+      <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
+        <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
             Stockout Risk & Reorder Capital Forecast
           </CardTitle>
@@ -54,7 +53,7 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
-                <TableRow className="border-b border-border">
+                <TableRow className="border-b border-ink">
                   <TableHead className="font-mono text-xs font-bold text-foreground">SKU</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground">Product & Supplier</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">Current Stock</TableHead>
@@ -70,10 +69,10 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
                   <TableRow
                     key={item.productId}
                     onClick={() => onInspect(item.productId, "reorder")}
-                    className="border-b border-border hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="border-b border-ink hover:bg-slate-50 cursor-pointer transition-colors"
                   >
                     <TableCell>
-                      <span className="inline-flex rounded-xs border border-black bg-[#f8f9fa] px-1.5 py-0.5 font-mono text-[11px] font-bold text-foreground">
+                      <span className="inline-flex rounded-none border-[3px] border-ink bg-[#f8f9fa] px-1.5 py-0.5 font-mono text-[11px] font-bold text-foreground">
                         {item.sku}
                       </span>
                     </TableCell>
@@ -105,7 +104,7 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
                         size="sm"
                         variant="outline"
                         onClick={() => alert(`Simulated Reorder Draft created for ${item.sku}`)}
-                        className="h-7 border border-black bg-white px-2 font-mono text-[10px] font-bold text-foreground shadow-neo-sm hover:bg-[#543afd] hover:text-white"
+                        className="h-7 border-[3px] border-ink bg-white px-2 font-mono text-[10px] font-bold text-foreground shadow-neo-sm hover:bg-[#543afd] hover:text-white"
                       >
                         <ShoppingCart className="mr-1 h-3 w-3" />
                         Reorder

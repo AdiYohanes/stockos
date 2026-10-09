@@ -57,7 +57,7 @@ function QuickMovementForm({
   const isIn = type === "in";
   const [quantity, setQuantity] = React.useState("10");
   const [reference, setReference] = React.useState(
-    isIn ? `PO-2026-REC` : `SO-2026-DISP`
+    isIn ? `IN-2026-REC` : `SO-2026-DISP`
   );
   const [note, setNote] = React.useState(
     isIn ? "Received inbound restock shipment." : "Outbound order dispatch."
@@ -78,24 +78,24 @@ function QuickMovementForm({
   return (
     <form onSubmit={handleSubmit}>
       <DialogBody className="space-y-3">
-        {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+        {error && <p role="alert" className="text-[10px] font-bold uppercase tracking-widest text-destructive">{error}</p>}
         {/* Product Info Card */}
-        <div className="rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 p-3 flex items-center justify-between">
+        <div className="border-[3px] border-ink bg-paper p-3 flex items-center justify-between shadow-hard-sm">
           <div className="min-w-0 pr-2 space-y-1">
             <SkuBadge code={product.sku} />
-            <p className="font-sans font-medium text-xs text-foreground truncate">
+            <p className="font-sans font-bold uppercase text-xs text-ink truncate">
               {product.name}
             </p>
           </div>
           <div className="text-right shrink-0 font-mono tabular-nums text-xs">
-            <span className="text-[10px] text-muted-foreground block font-sans">Current</span>
-            <strong>{product.currentStock} {product.unit}</strong>
+            <span className="text-[10px] text-ink/60 font-bold uppercase tracking-widest block font-sans">Current</span>
+            <strong className="text-ink text-sm">{product.currentStock} {product.unit}</strong>
           </div>
         </div>
 
         {/* Quantity */}
-        <div className="space-y-1">
-          <Label htmlFor="mov-qty">
+        <div className="space-y-1.5">
+          <Label htmlFor="mov-qty" className="text-[10px] font-bold uppercase tracking-widest text-ink">
             Quantity to {isIn ? "Add" : "Deduct"} ({product.unit}) *
           </Label>
           <Input
@@ -106,39 +106,39 @@ function QuickMovementForm({
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             required
-            className="h-9 font-mono tabular-nums text-sm font-semibold"
+            className="h-10 font-mono tabular-nums text-sm font-bold border-[3px] border-ink rounded-none bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow"
           />
         </div>
 
         {/* Reference */}
-        <div className="space-y-1">
-          <Label htmlFor="mov-ref">Reference Code *</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="mov-ref" className="text-[10px] font-bold uppercase tracking-widest text-ink">Reference Code *</Label>
           <Input
             id="mov-ref"
             value={reference}
             onChange={(e) => setReference(e.target.value)}
-            placeholder="e.g. PO-2026-101"
+            placeholder="e.g. IN-2026-101"
             required
-            className="h-9 font-mono tabular-nums uppercase text-xs sm:text-sm"
+            className="h-10 font-mono tabular-nums uppercase text-xs sm:text-sm border-[3px] border-ink rounded-none bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow"
           />
         </div>
 
         {/* Note */}
-        <div className="space-y-1">
-          <Label htmlFor="mov-note">Reason / Note</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="mov-note" className="text-[10px] font-bold uppercase tracking-widest text-ink">Reason / Note</Label>
           <Input
             id="mov-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Brief note..."
-            className="h-9 text-xs sm:text-sm"
+            className="h-10 text-xs sm:text-sm border-[3px] border-ink rounded-none bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow"
           />
         </div>
       </DialogBody>
 
-      <DialogFooter className="mt-4 pt-3 border-t border-border">
+      <DialogFooter className="mt-4 pt-3 border-t-[3px] border-ink">
         <DialogClose
-          render={<Button variant="outline" size="sm" type="button" className="h-9 text-xs hover:border-slate-400" />}
+          render={<Button variant="outline" size="sm" type="button" className="h-10 px-4 rounded-none border-[3px] border-ink text-[10px] font-bold uppercase tracking-widest text-ink bg-white shadow-hard-sm press" />}
         >
           Cancel
         </DialogClose>
@@ -146,13 +146,13 @@ function QuickMovementForm({
           type="submit"
           size="sm"
           className={cn(
-            "h-9 text-xs font-medium gap-1.5 text-white",
+            "h-10 px-4 rounded-none border-[3px] border-ink text-[10px] font-bold uppercase tracking-widest text-ink shadow-hard-sm press flex items-center gap-1.5",
             isIn
-              ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700"
-              : "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700"
+              ? "bg-emerald-400 hover:bg-emerald-500"
+              : "bg-rose-400 hover:bg-rose-500"
           )}
         >
-          {isIn ? <ArrowDownToLine className="h-3.5 w-3.5" /> : <ArrowUpFromLine className="h-3.5 w-3.5" />}
+          {isIn ? <ArrowDownToLine className="h-4 w-4" /> : <ArrowUpFromLine className="h-4 w-4" />}
           Confirm {isIn ? "Stock In" : "Stock Out"}
         </Button>
       </DialogFooter>
@@ -174,24 +174,24 @@ export function QuickMovementModal({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden">
+        <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink shadow-hard-lg bg-white">
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-md border shrink-0",
+                  "flex h-10 w-10 items-center justify-center border-[3px] border-ink shrink-0 shadow-hard-sm",
                   isIn
-                    ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
-                    : "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"
+                    ? "bg-emerald-100 text-emerald-600"
+                    : "bg-rose-100 text-rose-600"
                 )}
               >
-                {isIn ? <ArrowDownToLine className="h-4.5 w-4.5" /> : <ArrowUpFromLine className="h-4.5 w-4.5" />}
+                {isIn ? <ArrowDownToLine className="h-5 w-5" /> : <ArrowUpFromLine className="h-5 w-5" />}
               </div>
               <div>
-                <DialogTitle className="text-base font-semibold text-foreground font-sans">
+                <DialogTitle className="text-lg font-bold text-ink uppercase tracking-wider font-sans">
                   {isIn ? "Stock In (Receive Inventory)" : "Stock Out (Issue Inventory)"}
                 </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
+                <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
                   Record immediate inventory movement for this product
                 </DialogDescription>
               </div>

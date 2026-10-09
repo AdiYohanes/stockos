@@ -2,44 +2,42 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Button, type buttonVariants } from "@/components/ui/button";
-import type { VariantProps } from "class-variance-authority";
-import { logoutMockUser } from "@/features/auth/mock-auth";
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/features/auth/actions";
+import { useI18n } from "@/lib/i18n/context";
 
-export interface SignOutButtonProps
-  extends React.ComponentProps<typeof Button>,
-    VariantProps<typeof buttonVariants> {
-  redirectTo?: string;
-}
-
-export function SignOutButton({
-  children = "Sign out",
-  variant = "outline",
-  redirectTo = "/login",
-  onClick,
-  ...props
-}: SignOutButtonProps) {
+export function SignOutButton({ children, onClick, disabled, ...props }: React.ComponentProps<typeof Button>) {
   const router = useRouter();
-  const [isSigningOut, setIsSigningOut] = React.useState(false);
+  const { t } = useI18n();
+  const [pending, setPending] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
 
-  const handleSignOut: React.ComponentProps<typeof Button>["onClick"] = (e) => {
+  const handleSignOut: React.ComponentProps<typeof Button>["onClick"] = async (e) => {
     onClick?.(e);
-    if (e.defaultPrevented) return;
-
-    setIsSigningOut(true);
-    logoutMockUser();
-    router.push(redirectTo);
-    router.refresh();
-  };
+    if (e.defaultPrevented || pending) return;
+    setPending(true);
+    setFailed(false);
+    try {
+      const result = await signOut();
+      if (!result.ok) {
+        setFailed(true);
+        return;
+      }
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setFailed(true);
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <Button
-      variant={variant}
-      onClick={handleSignOut}
-      disabled={isSigningOut || props.disabled}
-      {...props}
-    >
-      {isSigningOut ? "Signing out..." : children}
-    </Button>
+    <div className="flex flex-col items-end gap-1">
+      <Button {...props} onClick={handleSignOut} disabled={pending || disabled}>
+        {pending ? t.common.loading : children ?? t.nav.logout}
+      </Button>
+      {failed && <p role="alert" className="max-w-48 text-xs text-destructive">{t.auth.logoutFailed}</p>}
+    </div>
   );
 }

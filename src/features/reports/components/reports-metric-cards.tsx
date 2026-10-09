@@ -3,8 +3,9 @@
 import * as React from "react";
 import { DollarSign, TrendingUp, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { ReportTab, ValuationSummary, ReorderRiskItem } from "../types";
 
 interface ReportsMetricCardsProps {
@@ -20,6 +21,7 @@ export function ReportsMetricCards({
   activeTab,
   onTabChange,
 }: ReportsMetricCardsProps) {
+  const { t } = useI18n();
   const criticalCount = reorderRiskList.filter((r) => r.urgency === "critical").length;
   const totalReorderCapital = reorderRiskList.reduce((acc, curr) => acc + curr.totalReorderCost, 0);
 
@@ -29,18 +31,18 @@ export function ReportsMetricCards({
       <Card
         onClick={() => onTabChange("valuation")}
         className={cn(
-          "cursor-pointer border border-black bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
+          "cursor-pointer border-[3px] border-ink bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
           activeTab === "valuation"
-            ? "shadow-neo-primary ring-1 ring-[#543afd]"
-            : "shadow-neo-sm hover:shadow-neo"
+            ? "shadow-hard border-acid"
+            : "shadow-hard-sm hover:shadow-hard"
         )}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Total Asset Value
+              {t.reports.totalAssetValue || "Total Asset Value"}
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#543afd] text-white shadow-neo-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-acid text-white shadow-hard-sm">
               <DollarSign className="h-4 w-4" />
             </div>
           </div>
@@ -50,7 +52,7 @@ export function ReportsMetricCards({
             </div>
             <div className="mt-1 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
               <span>Cost: {formatCurrency(valuationSummary.totalCost)}</span>
-              <span className="font-bold text-[#15803d]">
+              <span className="font-bold text-emerald-700">
                 Margin: {valuationSummary.marginPercent}%
               </span>
             </div>
@@ -62,10 +64,10 @@ export function ReportsMetricCards({
       <Card
         onClick={() => onTabChange("velocity")}
         className={cn(
-          "cursor-pointer border border-black bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
+          "cursor-pointer border-[3px] border-ink bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
           activeTab === "velocity"
-            ? "shadow-neo-primary ring-1 ring-[#543afd]"
-            : "shadow-neo-sm hover:shadow-neo"
+            ? "shadow-hard border-acid"
+            : "shadow-hard-sm hover:shadow-hard"
         )}
       >
         <CardContent className="p-4">
@@ -73,7 +75,7 @@ export function ReportsMetricCards({
             <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Movement Turnover
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#09090b] text-white shadow-neo-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-[#09090b] text-white shadow-hard-sm">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
@@ -83,7 +85,7 @@ export function ReportsMetricCards({
             </div>
             <div className="mt-1 flex items-center justify-between font-mono text-[11px]">
               <span className="text-muted-foreground">Flow Health</span>
-              <span className="inline-flex items-center rounded-xs bg-[#dcfce7] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#15803d]">
+              <span className="inline-flex items-center rounded-none bg-emerald-100 border border-emerald-700 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
                 High Velocity
               </span>
             </div>
@@ -95,10 +97,10 @@ export function ReportsMetricCards({
       <Card
         onClick={() => onTabChange("reorder")}
         className={cn(
-          "cursor-pointer border border-black bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
+          "cursor-pointer border-[3px] border-ink bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
           activeTab === "reorder"
-            ? "shadow-neo-primary ring-1 ring-[#543afd]"
-            : "shadow-neo-sm hover:shadow-neo"
+            ? "shadow-hard border-acid"
+            : "shadow-hard-sm hover:shadow-hard"
         )}
       >
         <CardContent className="p-4">
@@ -106,7 +108,7 @@ export function ReportsMetricCards({
             <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Reorder Capital Needed
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#fee2e2] text-[#b91c1c] shadow-neo-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-red-100 border border-red-700 text-red-700 shadow-hard-sm">
               <AlertTriangle className="h-4 w-4" />
             </div>
           </div>
@@ -116,7 +118,7 @@ export function ReportsMetricCards({
             </div>
             <div className="mt-1 flex items-center justify-between font-mono text-[11px]">
               <span className="text-muted-foreground">{reorderRiskList.length} SKUs Alert</span>
-              <span className="inline-flex items-center rounded-xs bg-[#fee2e2] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#b91c1c]">
+              <span className="inline-flex items-center rounded-none bg-red-100 border border-red-700 px-1.5 py-0.5 text-[10px] font-bold uppercase text-red-700">
                 {criticalCount} Critical
               </span>
             </div>
@@ -128,10 +130,10 @@ export function ReportsMetricCards({
       <Card
         onClick={() => onTabChange("performance")}
         className={cn(
-          "cursor-pointer border border-black bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
+          "cursor-pointer border-[3px] border-ink bg-white transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]",
           activeTab === "performance"
-            ? "shadow-neo-primary ring-1 ring-[#543afd]"
-            : "shadow-neo-sm hover:shadow-neo"
+            ? "shadow-hard border-acid"
+            : "shadow-hard-sm hover:shadow-hard"
         )}
       >
         <CardContent className="p-4">
@@ -139,7 +141,7 @@ export function ReportsMetricCards({
             <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Supplier On-Time Rate
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#dcfce7] text-[#15803d] shadow-neo-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-emerald-100 border border-emerald-700 text-emerald-700 shadow-hard-sm">
               <ShieldCheck className="h-4 w-4" />
             </div>
           </div>
@@ -148,8 +150,8 @@ export function ReportsMetricCards({
               96.4%
             </div>
             <div className="mt-1 flex items-center justify-between font-mono text-[11px]">
-              <span className="text-muted-foreground">3 Warehouses Active</span>
-              <span className="font-bold text-[#15803d]">Optimal</span>
+              <span className="text-muted-foreground">Supplier delivery summary</span>
+              <span className="font-bold text-emerald-700">Optimal</span>
             </div>
           </div>
         </CardContent>

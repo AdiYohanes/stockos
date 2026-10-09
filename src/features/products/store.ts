@@ -7,8 +7,8 @@ interface ProductsState {
   products: Product[];
 }
 
-type ProductInput = Omit<CreateProductInput, "unitPrice" | "initialStock" | "warehouse"> &
-  Partial<Pick<CreateProductInput, "unitPrice" | "initialStock" | "warehouse">>;
+type ProductInput = Omit<CreateProductInput, "unitPrice" | "initialStock"> &
+  Partial<Pick<CreateProductInput, "unitPrice" | "initialStock">>;
 
 interface ProductsActions {
   addProduct: (data: ProductInput) => Product;
@@ -34,12 +34,11 @@ export function createProductsStore() {
         ...data,
         unitPrice: data.unitPrice ?? 0,
         initialStock: data.initialStock ?? 0,
-        warehouse: data.warehouse ?? "Main Hub (WH-1)",
       });
       if (!parsed.success) throw new Error(parsed.error.issues[0].message);
       const input = parsed.data;
-      if (!input.name.trim() || !input.category.trim() || !input.unit.trim() || !input.warehouse.trim()) {
-        throw new Error("Name, category, unit, and warehouse are required.");
+      if (!input.name.trim() || !input.category.trim() || !input.unit.trim()) {
+        throw new Error("Name, category, and unit are required.");
       }
       if (input.sku.trim().length < 3) throw new Error("SKU must be at least 3 characters.");
       const now = new Date().toISOString();
@@ -52,7 +51,6 @@ export function createProductsStore() {
         unitPrice: input.unitPrice,
         currentStock: input.initialStock,
         minStock: input.minStock,
-        warehouse: input.warehouse,
         status: calculateStatus(input.initialStock, input.minStock),
         description: input.description ?? "",
         supplier: input.supplier || "Internal Supplier",
@@ -77,8 +75,8 @@ export function createProductsStore() {
       const parsed = ProductSchema.safeParse({ ...current, ...updates, id });
       if (!parsed.success) throw new Error(parsed.error.issues[0].message);
       const product = parsed.data;
-      if (!product.name.trim() || !product.category.trim() || !product.unit.trim() || !product.warehouse.trim()) {
-        throw new Error("Name, category, unit, and warehouse are required.");
+      if (!product.name.trim() || !product.category.trim() || !product.unit.trim()) {
+        throw new Error("Name, category, and unit are required.");
       }
       if (product.sku.trim().length < 3) throw new Error("SKU must be at least 3 characters.");
       const updated = { ...product, name: product.name.trim(), sku: product.sku.trim().toUpperCase(), status: calculateStatus(product.currentStock, product.minStock) };

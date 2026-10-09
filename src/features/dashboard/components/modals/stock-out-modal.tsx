@@ -111,15 +111,15 @@ export function StockOutModal({ children }: StockOutModalProps) {
             /* ================= FORM VIEW ================= */
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-amber-500/10 shadow-neo-sm">
-                    <ArrowUpFromLine className="h-4 w-4 text-amber-600" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-amber-100 shadow-hard-sm">
+                    <ArrowUpFromLine className="h-5 w-5 text-amber-600" />
                   </div>
                   <div>
-                    <DialogTitle className="text-base font-bold text-foreground font-heading">
+                    <DialogTitle className="text-lg font-bold text-ink uppercase tracking-wider font-sans">
                       {t.modals.stockOut.title}
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
+                    <DialogDescription className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
                       {t.modals.stockOut.subtitle}
                     </DialogDescription>
                   </div>
@@ -130,10 +130,10 @@ export function StockOutModal({ children }: StockOutModalProps) {
                 <DialogBody>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-product">{t.modals.product}</Label>
+                      <Label htmlFor="stockout-product" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.modals.product}</Label>
                       <select
                         id="stockout-product"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
+                        className="h-10 w-full rounded-none border-[3px] border-ink bg-white px-3 py-1.5 text-sm font-sans font-bold text-ink transition-shadow outline-none focus:shadow-hard-sm cursor-pointer"
                         required
                         value={formData.sku}
                         onChange={(e) => handleInputChange("sku", e.target.value)}
@@ -146,15 +146,15 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         ))}
                       </select>
                       {currentStock !== undefined && (
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-ink/60">
                           {t.modals.stockOut.currentStock}{" "}
-                          <span className="font-mono font-bold text-foreground">{currentStock}</span>
+                          <span className="font-bold text-ink bg-paper px-1 border border-ink/20">{currentStock}</span>
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-qty">{t.modals.quantity}</Label>
+                      <Label htmlFor="stockout-qty" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.modals.quantity}</Label>
                       <Input
                         id="stockout-qty"
                         type="number"
@@ -164,14 +164,15 @@ export function StockOutModal({ children }: StockOutModalProps) {
                         required
                         value={formData.qty}
                         onChange={(e) => handleInputChange("qty", e.target.value)}
+                        className="font-mono rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="stockout-reason">{t.modals.stockOut.reasonLabel}</Label>
+                      <Label htmlFor="stockout-reason" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.modals.stockOut.reasonLabel}</Label>
                       <select
                         id="stockout-reason"
-                        className="h-9 w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] cursor-pointer"
+                        className="h-10 w-full rounded-none border-[3px] border-ink bg-white px-3 py-1.5 text-sm font-sans font-bold text-ink transition-shadow outline-none focus:shadow-hard-sm cursor-pointer"
                         required
                         value={formData.reason}
                         onChange={(e) => handleInputChange("reason", e.target.value)}
@@ -184,22 +185,23 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-ref">{t.modals.stockOut.orderRefLabel}</Label>
+                      <Label htmlFor="stockout-ref" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.modals.stockOut.orderRefLabel}</Label>
                       <Input
                         id="stockout-ref"
                         placeholder={t.modals.stockOut.orderRefPlaceholder}
                         value={formData.ref}
                         onChange={(e) => handleInputChange("ref", e.target.value)}
+                        className="rounded-none border-[3px] border-ink bg-white shadow-none focus-visible:shadow-hard-sm transition-shadow h-10"
                       />
                     </div>
 
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="stockout-notes">{t.modals.notes}</Label>
+                      <Label htmlFor="stockout-notes" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.modals.notes}</Label>
                       <textarea
                         id="stockout-notes"
                         rows={2}
                         placeholder={t.modals.notesOptional}
-                        className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground transition-all outline-none focus:border-black focus:shadow-[2px_2px_0px_#543afd] resize-none placeholder:text-muted-foreground"
+                        className="w-full rounded-none border-[3px] border-ink bg-white px-3 py-2 text-sm font-sans text-ink transition-shadow outline-none focus:shadow-hard-sm resize-none placeholder:text-ink/50"
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
                       />
@@ -209,11 +211,11 @@ export function StockOutModal({ children }: StockOutModalProps) {
 
                 <DialogFooter>
                   <DialogClose
-                    render={<Button variant="outline" size="sm" type="button" />}
+                    render={<Button variant="outline" size="sm" type="button" className="btn-neo border-[3px]" />}
                   >
                     {t.common.cancel}
                   </DialogClose>
-                  <Button type="submit" size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-black btn-neo">
+                  <Button type="submit" size="sm" className="bg-amber-400 hover:bg-amber-500 text-ink border-[3px] border-ink shadow-hard-sm press">
                     {t.modals.stockOut.submit}
                   </Button>
                 </DialogFooter>
@@ -225,8 +227,8 @@ export function StockOutModal({ children }: StockOutModalProps) {
               <div className="flex flex-col items-center text-center">
                 {/* Modern Animated Checkmark with Amber Accent */}
                 <div className="relative mb-5 flex items-center justify-center">
-                  <div className="absolute h-24 w-24 rounded-full bg-amber-500/15 animate-ring-pulse pointer-events-none" />
-                  
+                  <div className="absolute h-24 w-24 rounded-none bg-amber-500/15 animate-ring-pulse pointer-events-none" />
+
                   <div className="absolute -top-1.5 -right-2 text-amber-500 animate-in fade-in zoom-in duration-500 delay-300">
                     <Sparkles className="h-4 w-4 fill-amber-500/30" />
                   </div>
@@ -234,7 +236,7 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     <Sparkles className="h-3 w-3 fill-emerald-500/30" />
                   </div>
 
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-black bg-amber-50 shadow-neo animate-check-pop">
+                  <div className="relative flex h-20 w-20 items-center justify-center rounded-none border-[3px] border-ink bg-amber-50 shadow-hard-sm animate-check-pop">
                     <svg
                       className="h-12 w-12 text-amber-600"
                       viewBox="0 0 52 52"
@@ -268,39 +270,39 @@ export function StockOutModal({ children }: StockOutModalProps) {
                 </div>
 
                 {/* Text Announcement */}
-                <DialogTitle className="text-xl font-bold font-heading text-foreground">
+                <DialogTitle className="text-xl font-bold font-sans uppercase tracking-widest text-ink">
                   {t.modals.stockOut.successTitle}
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-xs text-muted-foreground max-w-xs font-sans">
+                <DialogDescription className="mt-1 text-[10px] text-ink/60 max-w-xs font-mono uppercase tracking-widest">
                   {t.modals.stockOut.successSubtitle}
                 </DialogDescription>
 
                 {/* Summary Preview Card */}
                 {submittedData && (
-                  <div className="mt-5 w-full rounded-lg border border-border bg-muted/40 p-4 text-left shadow-neo-sm animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150 space-y-2.5">
-                    <div className="flex items-start justify-between gap-3 border-b border-border/70 pb-2.5">
+                  <div className="mt-5 w-full border-[3px] border-ink bg-paper p-4 text-left shadow-hard-sm animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150 space-y-2.5">
+                    <div className="flex items-start justify-between gap-3 border-b-[2px] border-ink/20 pb-2.5">
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-sm border border-black bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] font-bold text-amber-700 tracking-wider uppercase shadow-neo-sm">
+                          <span className="inline-flex items-center border-[3px] border-ink bg-amber-400 px-2 py-0.5 font-mono text-[10px] font-bold text-ink tracking-wider uppercase">
                             {submittedData.sku || "N/A"}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono truncate">
+                          <span className="inline-flex items-center gap-1 text-[10px] text-ink/60 font-mono truncate uppercase tracking-widest">
                             <Tag className="h-3 w-3" />
                             {matchedReason || t.modals.stockOut.reasonLabel}
                           </span>
                         </div>
-                        <p className="font-heading font-semibold text-foreground text-sm truncate pt-0.5">
+                        <p className="font-sans font-bold text-ink text-sm truncate pt-0.5 uppercase">
                           {matchedProduct?.name || t.modals.stockIn.selectedProduct}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="text-[10px] uppercase tracking-wider text-amber-600 font-mono font-bold block">
+                        <span className="text-[10px] uppercase tracking-widest text-ink/60 font-mono font-bold block">
                           {t.modals.stockOut.stockDeducted}
                         </span>
-                        <span className="font-mono text-base font-bold text-amber-700">
+                        <span className="font-mono text-base font-bold text-ink">
                           -{submittedData.qty}{" "}
-                          <span className="text-xs font-normal text-muted-foreground">
+                          <span className="text-xs font-normal text-ink/60">
                             {matchedProduct?.unit || "unit"}
                           </span>
                         </span>
@@ -308,27 +310,30 @@ export function StockOutModal({ children }: StockOutModalProps) {
                     </div>
 
                     {submittedData.ref && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
-                        <FileText className="h-3 w-3 text-foreground/60" />
-                        <span>Ref ID: <span className="font-semibold text-foreground">{submittedData.ref}</span></span>
+                      <div className="flex items-center gap-1.5 text-[10px] text-ink/60 font-mono uppercase tracking-widest">
+                        <FileText className="h-3 w-3 text-ink/60" />
+                        <span>Ref ID: <span className="font-bold text-ink">{submittedData.ref}</span></span>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="mt-6 flex w-full flex-col-reverse gap-2.5 sm:flex-row sm:justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="btn-neo flex-1 sm:flex-initial sm:px-6"
-                    onClick={() => handleOpenChange(false)}
+                <div className="mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+                  <DialogClose
+                    render={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="btn-neo flex-1 sm:flex-initial sm:px-6 border-[3px]"
+                      />
+                    }
                   >
                     {t.modals.finish}
-                  </Button>
+                  </DialogClose>
                   <Button
                     type="button"
-                    className="btn-neo-primary flex-1 sm:flex-initial sm:px-6 gap-1.5 bg-amber-600 hover:bg-amber-700"
+                    className="bg-amber-400 hover:bg-amber-500 text-ink border-[3px] border-ink shadow-hard-sm press flex-1 sm:flex-initial sm:px-6 gap-1.5"
                     onClick={handleRecordAnother}
                   >
                     <Plus className="h-4 w-4" />

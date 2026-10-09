@@ -7,7 +7,6 @@ export interface ProductFilterState {
   searchQuery: string;
   category: string; // 'all' or specific category
   status: "all" | import("./schemas/product.schema").ProductStatus;
-  warehouse: string; // 'all' or specific warehouse
   sortField: ProductSortField;
   sortOrder: ProductSortOrder;
   page: number;

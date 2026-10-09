@@ -51,7 +51,6 @@ export interface UseInventoryReturn {
   setItemToAdjust: (item: InventoryItem | null) => void;
   setItemToMove: (payload: { item: InventoryItem | null; type: "in" | "out" | null }) => void;
   setSearchQuery: (query: string) => void;
-  setWarehouse: (warehouse: string) => void;
   setStatus: (status: "all" | StockStatus) => void;
   setMovementType: (type: "all" | MovementType) => void;
   setCategory: (category: string) => void;
@@ -79,7 +78,6 @@ export interface UseInventoryReturn {
 const INITIAL_FILTER_STATE: InventoryFilterState = {
   tab: "stock_levels",
   searchQuery: "",
-  warehouse: "all",
   status: "all",
   movementType: "all",
   category: "all",
@@ -197,10 +195,6 @@ export function useInventory(): UseInventoryReturn {
         }
       }
 
-      if (filterState.warehouse !== "all" && item.warehouse !== filterState.warehouse) {
-        return false;
-      }
-
       if (filterState.status !== "all" && item.status !== filterState.status) {
         return false;
       }
@@ -272,10 +266,6 @@ export function useInventory(): UseInventoryReturn {
         }
       }
 
-      if (filterState.warehouse !== "all" && mov.warehouse !== filterState.warehouse) {
-        return false;
-      }
-
       if (filterState.movementType !== "all" && mov.type !== filterState.movementType) {
         return false;
       }
@@ -295,7 +285,6 @@ export function useInventory(): UseInventoryReturn {
 
   const hasActiveFilters =
     filterState.searchQuery !== "" ||
-    filterState.warehouse !== "all" ||
     filterState.status !== "all" ||
     filterState.movementType !== "all" ||
     filterState.category !== "all";
@@ -313,10 +302,6 @@ export function useInventory(): UseInventoryReturn {
 
   const setSearchQuery = (query: string) => {
     setFilterState((prev) => ({ ...prev, searchQuery: query, page: 1 }));
-  };
-
-  const setWarehouse = (warehouse: string) => {
-    setFilterState((prev) => ({ ...prev, warehouse, page: 1 }));
   };
 
   const setStatus = (status: "all" | StockStatus) => {
@@ -349,7 +334,6 @@ export function useInventory(): UseInventoryReturn {
     setFilterState((prev) => ({
       ...prev,
       searchQuery: "",
-      warehouse: "all",
       status: "all",
       movementType: "all",
       category: "all",
@@ -389,7 +373,6 @@ export function useInventory(): UseInventoryReturn {
     setItemToAdjust,
     setItemToMove,
     setSearchQuery,
-    setWarehouse,
     setStatus,
     setMovementType,
     setCategory,

@@ -25,7 +25,7 @@ export type ProductCategory = z.infer<typeof ProductCategorySchema>;
 
 export const ProductMovementLogSchema = z.object({
   id: z.string(),
-  type: z.enum(["in", "out", "adjustment", "transfer"]),
+  type: z.enum(["in", "out", "adjustment"]),
   quantity: z.number(),
   reference: z.string(),
   timestamp: z.string(),
@@ -43,10 +43,12 @@ export const ProductSchema = z.object({
   minStock: z.number().int().nonnegative("Min threshold cannot be negative"),
   unit: z.string().min(1, "Unit is required"),
   unitPrice: z.number().nonnegative("Unit price cannot be negative"),
-  warehouse: z.string().min(1, "Warehouse is required"),
   status: ProductStatusSchema,
   barcode: z.string().optional(),
-  supplier: z.string().optional(),
+  supplier: z.string().min(1, "Supplier is required"),
+  cartons: z.number().int().nonnegative().optional(),
+  totalPurchasePrice: z.number().nonnegative().optional(),
+  unitPurchasePrice: z.number().nonnegative().optional(),
   description: z.string().optional(),
   lastRestocked: z.string().optional(),
   createdAt: z.string(),
@@ -63,8 +65,11 @@ export const CreateProductInputSchema = z.object({
   unitPrice: z.number().nonnegative("Unit price cannot be negative"),
   initialStock: z.number().int().nonnegative("Initial stock cannot be negative"),
   minStock: z.number().int().nonnegative("Min threshold cannot be negative"),
-  warehouse: z.string().min(1, "Warehouse is required"),
-  supplier: z.string().optional(),
+  supplier: z.string().min(1, "Supplier is required"),
+  cartons: z.number().int().nonnegative().optional(),
+  totalPurchasePrice: z.number().nonnegative().optional(),
+  unitPurchasePrice: z.number().nonnegative().optional(),
+  barcode: z.string().optional(),
   description: z.string().optional(),
 });
 export type CreateProductInput = z.infer<typeof CreateProductInputSchema>;
@@ -76,8 +81,8 @@ export const EditProductInputSchema = z.object({
   unitPrice: z.number().nonnegative("Unit price cannot be negative"),
   minStock: z.number().int().nonnegative("Min threshold cannot be negative"),
   unit: z.string().min(1, "Unit is required"),
-  warehouse: z.string().min(1, "Warehouse is required"),
+  supplier: z.string().min(1, "Supplier is required"),
+  barcode: z.string().optional(),
   description: z.string().optional(),
-  supplier: z.string().optional(),
 });
 export type EditProductInput = z.infer<typeof EditProductInputSchema>;

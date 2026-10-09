@@ -61,8 +61,8 @@ export function ProductsMetrics({
   ];
 
   return (
-    <div className="grid grid-cols-2 divide-y border border-border bg-card rounded-md overflow-hidden sm:grid-cols-2 sm:divide-y-0 sm:divide-x lg:grid-cols-4">
-      {items.map((item, index) => {
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
+      {items.map((item) => {
         const isSelected = selectedStatus === item.id;
         const Icon = item.icon;
 
@@ -72,32 +72,43 @@ export function ProductsMetrics({
             type="button"
             onClick={() => onSelectStatus && onSelectStatus(item.id)}
             className={cn(
-              "group relative flex flex-col justify-between p-3.5 sm:p-4 text-left transition-colors cursor-pointer",
-              index === 1 && "sm:border-r lg:border-r-0",
+              "press group relative flex flex-col justify-between p-4 sm:p-5 text-left transition-colors cursor-pointer border-[3px] border-ink shadow-hard-sm",
               isSelected
-                ? "bg-slate-50 dark:bg-slate-900/60 ring-1 ring-inset ring-slate-900/10 dark:ring-slate-100/20"
-                : "hover:bg-slate-50/60 dark:hover:bg-slate-900/30"
+                ? "bg-ink text-paper"
+                : "bg-white dark:bg-black text-ink hover:bg-paper"
             )}
           >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center justify-between gap-2 w-full mb-3">
+              <div className="flex items-center gap-2 min-w-0">
                 {item.statusDot && (
-                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.statusDot)} />
+                  <span className={cn("w-2 h-2 shrink-0 border-[1.5px] border-ink", item.statusDot)} />
                 )}
-                <span className="font-sans text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
+                <span className={cn(
+                  "font-sans text-xs font-bold uppercase tracking-widest truncate",
+                  isSelected ? "text-paper opacity-80" : "text-ink opacity-80"
+                )}>
                   {item.title}
                 </span>
               </div>
-              <Icon className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 group-hover:text-muted-foreground transition-colors" />
+              <Icon className={cn(
+                "h-4 w-4 shrink-0 transition-colors",
+                isSelected ? "text-paper opacity-80" : "text-ink opacity-60 group-hover:opacity-100"
+              )} />
             </div>
 
-            <div className="mt-2 flex items-baseline justify-between gap-2">
-              <span className="font-mono tabular-nums text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+            <div className="mt-1 flex items-baseline justify-between gap-2">
+              <span className={cn(
+                "font-display tabular-nums text-2xl sm:text-3xl font-[900] tracking-tight",
+                isSelected ? "text-paper" : "text-ink"
+              )}>
                 {item.value}
               </span>
             </div>
 
-            <p className="mt-1 text-[11px] font-mono tabular-nums text-muted-foreground truncate">
+            <p className={cn(
+              "mt-2 text-[10px] font-mono tabular-nums uppercase truncate",
+              isSelected ? "text-paper opacity-70" : "text-ink opacity-60"
+            )}>
               {item.meta}
             </p>
           </button>

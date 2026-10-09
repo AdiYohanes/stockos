@@ -62,8 +62,6 @@ function StockAdjustmentForm({
   const [newStockStr, setNewStockStr] = React.useState<string>(
     activeItem ? activeItem.currentStock.toString() : "0"
   );
-  const [reason, setReason] = React.useState<AdjustmentReason>("cycle_count");
-  const [reference, setReference] = React.useState<string>("ADJ-AUDIT");
   const [note, setNote] = React.useState<string>("");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -76,7 +74,7 @@ function StockAdjustmentForm({
     setError(null);
 
     if (!Number.isSafeInteger(newStockNum) || newStockNum < 0) {
-      setError("Please enter a valid non-negative physical stock count.");
+      setError("Masukkan jumlah fisik yang benar (tidak boleh minus).");
       return;
     }
 
@@ -86,17 +84,13 @@ function StockAdjustmentForm({
     }
 
     if (delta === 0) {
-      setError("The new stock quantity is identical to the current stock. No adjustment needed.");
-      return;
-    }
-
-    if (!reference.trim()) {
-      setError("Please specify an adjustment reference code.");
+      setError("Stok fisik sama dengan sistem. Tidak ada selisih.");
       return;
     }
 
     try {
-      onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+      const autoRef = `SO-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000)}`;
+      onSubmit(activeItem.id, newStockNum, "cycle_count", autoRef, note.trim() || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to adjust stock");
     }
@@ -108,15 +102,15 @@ function StockAdjustmentForm({
         {/* 1. Item Selection */}
         <div className="space-y-1.5">
           <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Select Inventory Item
+            Pilih Barang
           </Label>
           {initialItem ? (
-            <div className="p-3 rounded-md border border-border bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+            <div className="p-3 rounded-none border-[3px] border-ink bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
               <div className="flex flex-col gap-1 min-w-0 pr-2">
                 <SkuBadge code={initialItem.sku} />
                 <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
                 <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                  Location: {initialItem.warehouse} • Bin {initialItem.locationBin}
+                  Shelf: {initialItem.locationBin}
                 </span>
               </div>
               <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
@@ -133,7 +127,7 @@ function StockAdjustmentForm({
                 const nextItem = allItems.find((i) => i.id === e.target.value);
                 if (nextItem) setNewStockStr(nextItem.currentStock.toString());
               }}
-              className="w-full h-9 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
+              className="w-full h-9 rounded-none border-[3px] border-ink bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -145,10 +139,10 @@ function StockAdjustmentForm({
         </div>
 
         {/* 2. Current vs New Stock Comparison & Delta */}
-        <div className="grid grid-cols-2 gap-3 p-3 rounded-md bg-slate-50/60 dark:bg-slate-900/40 border border-border">
+        <div className="grid grid-cols-2 gap-3 p-3 rounded-none bg-slate-50/60 dark:bg-slate-900/40 border-[3px] border-ink">
           <div>
             <span className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Current On-Hand
+              Stok Sistem Saat Ini
             </span>
             <span className="font-mono tabular-nums text-lg font-semibold text-foreground">
               {currentStock} <span className="text-xs font-normal text-muted-foreground font-sans">{activeItem?.unit}</span>
@@ -157,7 +151,7 @@ function StockAdjustmentForm({
 
           <div>
             <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Actual Physical Count *
+              Stok Fisik Asli (Real) *
             </Label>
             <Input
               id="newStock"
@@ -165,19 +159,19 @@ function StockAdjustmentForm({
               min="0"
               value={newStockStr}
               onChange={(e) => setNewStockStr(e.target.value)}
-              className="h-8 text-xs font-mono tabular-nums font-semibold bg-background border-border focus:border-slate-900"
+              className="h-8 text-xs font-mono tabular-nums font-semibold bg-background border-ink focus:border-slate-900"
             />
           </div>
 
           {/* Delta feedback */}
-          <div className="col-span-2 pt-2 border-t border-border flex items-center justify-between text-xs font-mono tabular-nums">
-            <span className="text-muted-foreground font-sans">Calculated Adjustment:</span>
+          <div className="col-span-2 pt-2 border-t border-ink flex items-center justify-between text-xs font-mono tabular-nums">
+            <span className="text-muted-foreground font-sans">Selisih (Adjustment):</span>
             <span
               className={cn(
-                "font-medium px-2 py-0.5 rounded-sm border",
+                "font-medium px-2 py-0.5 rounded-none border",
                 delta > 0 && "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
                 delta < 0 && "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-                delta === 0 && "bg-slate-100 text-slate-700 border-border dark:bg-slate-800 dark:text-slate-300"
+                delta === 0 && "bg-slate-100 text-slate-700 border-ink dark:bg-slate-800 dark:text-slate-300"
               )}
             >
               {delta > 0 ? `+${delta}` : delta} {activeItem?.unit || "units"}
@@ -185,54 +179,18 @@ function StockAdjustmentForm({
           </div>
         </div>
 
-        {/* 3. Reason Code & Reference */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="reasonSelect" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Adjustment Reason
-            </Label>
-            <select
-              id="reasonSelect"
-              value={reason}
-              onChange={(e) => setReason(e.target.value as AdjustmentReason)}
-              className="w-full h-9 rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
-            >
-              <option value="cycle_count">Cycle Count Audit</option>
-              <option value="damaged_goods">Damaged Goods</option>
-              <option value="expired">Expired / Obsolete</option>
-              <option value="theft_loss">Discrepancy / Loss</option>
-              <option value="supplier_return">Supplier Return</option>
-              <option value="correction">Correction Entry</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="adjReference" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              Reference Code *
-            </Label>
-            <Input
-              id="adjReference"
-              type="text"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              required
-              className="h-9 text-xs font-mono tabular-nums uppercase border-border focus:border-slate-900"
-            />
-          </div>
-        </div>
-
-        {/* 4. Notes */}
-        <div className="space-y-1.5">
+        {/* 3. Notes */}
+        <div className="space-y-1.5 mt-2">
           <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Audit Note / Justification
+            Catatan Opname
           </Label>
           <Input
             id="adjNote"
             type="text"
-            placeholder="e.g. Annual physical count variance in shelf A-02"
+            placeholder="Keterangan / alasan selisih (opsional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-border focus:border-slate-900"
+            className="h-9 text-xs border-ink focus:border-slate-900"
           />
         </div>
 
@@ -240,7 +198,7 @@ function StockAdjustmentForm({
         {error && (
           <div
             role="alert"
-            className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
+            className="rounded-none bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
           >
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
@@ -249,9 +207,9 @@ function StockAdjustmentForm({
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="mt-4 pt-3 border-t border-border">
+      <DialogFooter className="mt-4 pt-3 border-t border-ink">
         <DialogClose
-          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-border hover:border-slate-400" />}
+          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-ink hover:border-slate-400" />}
         >
           Cancel
         </DialogClose>
@@ -260,7 +218,7 @@ function StockAdjustmentForm({
           size="sm"
           className="h-9 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
         >
-          Apply Adjustment
+          Simpan Stok Opname
         </Button>
       </DialogFooter>
     </form>
@@ -285,10 +243,10 @@ export function StockAdjustmentModal({
           <DialogHeader>
             <DialogTitle className="font-sans text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <span>Stock Adjustment & Audit</span>
+              <span>Stok Opname (Penyesuaian)</span>
             </DialogTitle>
             <DialogDescription className="font-mono tabular-nums text-xs uppercase tracking-wider text-muted-foreground">
-              Reconcile physical stock count with audit reason codes
+              Samakan stok fisik asli dengan sistem
             </DialogDescription>
           </DialogHeader>
 

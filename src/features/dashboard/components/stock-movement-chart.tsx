@@ -17,8 +17,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -53,46 +51,46 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
   const total = data.stockIn + data.stockOut;
 
   return (
-    <div className="rounded-md border border-black bg-white p-3 text-foreground shadow-neo min-w-[170px]">
-      <div className="flex items-center justify-between border-b border-border pb-1.5 mb-2">
-        <span className="font-mono text-xs font-bold text-foreground flex items-center gap-1">
-          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+    <div className="border-[3px] border-ink bg-white p-3 text-ink shadow-hard-sm min-w-[170px]">
+      <div className="flex items-center justify-between border-b-[2px] border-ink pb-2 mb-2">
+        <span className="font-mono text-xs font-bold text-ink flex items-center gap-1 uppercase">
+          <Calendar className="h-3.5 w-3.5 text-ink/70" />
           {label}
         </span>
-        <span className="font-mono text-[11px] text-muted-foreground font-medium">
+        <span className="font-mono text-[10px] text-ink/60 font-bold uppercase tracking-widest">
           Total: {formatNumber(total)}
         </span>
       </div>
 
-      <div className="space-y-1.5 text-xs font-mono">
+      <div className="space-y-2 text-xs font-mono">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-[#543afd] shrink-0" />
-            <span className="text-muted-foreground font-medium">{t.dashboard.stockIn}</span>
+          <div className="flex items-center gap-1.5 uppercase tracking-widest text-[10px] font-bold">
+            <span className="h-2 w-2 bg-acid border border-ink shrink-0" />
+            <span className="text-ink/80">{t.dashboard.stockIn}</span>
           </div>
-          <span className="font-bold text-[#543afd]">
+          <span className="font-bold text-acid text-[11px]">
             +{formatNumber(data.stockIn)}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-xs bg-[#09090b] shrink-0" />
-            <span className="text-muted-foreground font-medium">{t.dashboard.stockOut}</span>
+          <div className="flex items-center gap-1.5 uppercase tracking-widest text-[10px] font-bold">
+            <span className="h-2 w-2 bg-ink shrink-0" />
+            <span className="text-ink/80">{t.dashboard.stockOut}</span>
           </div>
-          <span className="font-bold text-[#09090b]">
+          <span className="font-bold text-ink text-[11px]">
             -{formatNumber(data.stockOut)}
           </span>
         </div>
 
-        <div className="pt-1.5 mt-1 border-t border-border flex items-center justify-between gap-4">
-          <span className="text-muted-foreground font-medium">{t.dashboard.netFlow}</span>
+        <div className="pt-2 mt-2 border-t-[2px] border-ink flex items-center justify-between gap-4">
+          <span className="text-ink/80 font-bold uppercase text-[10px] tracking-widest">{t.dashboard.netFlow}</span>
           <span
             className={cn(
-              "font-bold text-xs px-1.5 py-0.2 rounded-sm border border-black",
+              "font-bold text-[10px] px-1.5 py-0.5 border-[3px] border-ink uppercase",
               net >= 0
-                ? "bg-[#dcfce7] text-[#15803d]"
-                : "bg-[#fee2e2] text-[#b91c1c]"
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-red-100 text-red-800"
             )}
           >
             {net >= 0 ? "+" : ""}
@@ -131,35 +129,35 @@ export function StockMovementChart() {
   }, [currentData]);
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
-      <CardHeader className="pb-3 pt-4 px-4 sm:px-5 space-y-3 shrink-0">
+    <div className="flex flex-col h-full overflow-hidden bg-white border-[3px] border-ink shadow-hard-sm">
+      <div className="pb-3 pt-5 px-5 space-y-4 shrink-0">
         {/* Header row: Title + Timeframe Selector + Net Badge */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-black bg-[#ede9fe] text-[#543afd] shadow-neo-sm">
-              <Activity className="h-4 w-4" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-acid/10 text-acid shadow-hard-sm">
+              <Activity className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-foreground">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-ink font-sans">
                 {t.dashboard.stockMovement}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              </h3>
+              <p className="text-[10px] text-ink/60 font-mono uppercase tracking-widest mt-0.5">
                 {t.dashboard.stockMovementSubtitle}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto max-w-full">
             {/* Timeframe switch */}
-            <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
+            <div className="flex items-center border-[3px] border-ink bg-paper p-0.5 shadow-hard-sm">
               <button
                 type="button"
                 onClick={() => setTimeframe("7d")}
                 className={cn(
-                  "rounded-sm px-2.5 py-1 font-mono text-xs font-bold transition-all cursor-pointer",
+                  "px-3 py-1 font-mono text-[10px] font-bold transition-all cursor-pointer uppercase",
                   timeframe === "7d"
-                    ? "bg-white text-foreground border border-black shadow-neo-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-ink text-paper"
+                    : "text-ink hover:bg-ink/10"
                 )}
               >
                 {t.dashboard.days7}
@@ -168,10 +166,10 @@ export function StockMovementChart() {
                 type="button"
                 onClick={() => setTimeframe("30d")}
                 className={cn(
-                  "rounded-sm px-2.5 py-1 font-mono text-xs font-bold transition-all cursor-pointer",
+                  "px-3 py-1 font-mono text-[10px] font-bold transition-all cursor-pointer uppercase",
                   timeframe === "30d"
-                    ? "bg-white text-foreground border border-black shadow-neo-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-ink text-paper"
+                    : "text-ink hover:bg-ink/10"
                 )}
               >
                 {t.dashboard.days30}
@@ -179,68 +177,71 @@ export function StockMovementChart() {
             </div>
 
             {/* Net Badge */}
-            <Badge
-              variant={currentData.netChange >= 0 ? "success" : "destructive"}
+            <span
+              className={cn(
+                "px-2 py-1 font-mono text-[10px] font-bold uppercase border-[3px] border-ink",
+                currentData.netChange >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+              )}
             >
               {t.dashboard.net}: {currentData.netChange >= 0 ? "+" : ""}
               {formatNumber(currentData.netChange)}
-            </Badge>
+            </span>
           </div>
         </div>
 
         {/* Informative Summary Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-border">
-          <div className="flex items-center gap-2 rounded-md bg-slate-50 border border-border p-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-[#ede9fe] text-[#543afd]">
-              <ArrowDownToLine className="h-3.5 w-3.5" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t-[3px] border-ink">
+          <div className="flex items-center gap-2 border-[3px] border-ink bg-paper p-2 press cursor-pointer hover:bg-white transition-colors">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-acid/10 text-acid border border-ink">
+              <ArrowDownToLine className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">{t.dashboard.totalIn}</div>
-              <div className="font-mono text-xs font-bold text-[#543afd] truncate">
+              <div className="font-sans text-[10px] uppercase font-bold text-ink/70">{t.dashboard.totalIn}</div>
+              <div className="font-display text-lg font-bold text-acid truncate">
                 +{formatNumber(currentData.totalIn)}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-md bg-slate-50 border border-border p-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-slate-200 text-[#09090b]">
-              <ArrowUpFromLine className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 border-[3px] border-ink bg-paper p-2 press cursor-pointer hover:bg-white transition-colors">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-ink/10 text-ink border border-ink">
+              <ArrowUpFromLine className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">{t.dashboard.totalOut}</div>
-              <div className="font-mono text-xs font-bold text-[#09090b] truncate">
+              <div className="font-sans text-[10px] uppercase font-bold text-ink/70">{t.dashboard.totalOut}</div>
+              <div className="font-display text-lg font-bold text-ink truncate">
                 -{formatNumber(currentData.totalOut)}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-md bg-slate-50 border border-border p-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary">
-              <TrendingUp className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 border-[3px] border-ink bg-paper p-2 press cursor-pointer hover:bg-white transition-colors">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-emerald-100 text-emerald-700 border border-ink">
+              <TrendingUp className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">{t.dashboard.peakPeriod}</div>
-              <div className="font-mono text-xs font-bold text-foreground truncate">
+              <div className="font-sans text-[10px] uppercase font-bold text-ink/70">{t.dashboard.peakPeriod}</div>
+              <div className="font-display text-lg font-bold text-ink truncate">
                 {peakItem?.period || "-"}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-md bg-slate-50 border border-border p-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground">
-              <Activity className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 border-[3px] border-ink bg-paper p-2 press cursor-pointer hover:bg-white transition-colors">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-white text-ink border border-ink">
+              <Activity className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase font-semibold text-muted-foreground">{t.dashboard.dailyAverage}</div>
-              <div className="font-mono text-xs font-bold text-foreground truncate">
+              <div className="font-sans text-[10px] uppercase font-bold text-ink/70">{t.dashboard.dailyAverage}</div>
+              <div className="font-display text-lg font-bold text-ink truncate">
                 {formatNumber(avgMovement)}
               </div>
             </div>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="px-3 sm:px-4 pb-4 pt-1 flex-1 flex flex-col min-h-0">
+      <div className="px-5 pb-5 pt-3 flex-1 flex flex-col min-h-0">
         {/* Recharts Bar Chart */}
         <div className="flex-1 w-full min-h-[224px]">
           {mounted ? (
@@ -308,23 +309,23 @@ export function StockMovementChart() {
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-none border-2 border-primary border-t-transparent" />
             </div>
           )}
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 pt-2 font-mono text-[11px] font-semibold text-muted-foreground shrink-0 mt-auto">
+        <div className="flex items-center justify-center gap-6 pt-3 font-mono text-[10px] uppercase font-bold tracking-widest text-ink/70 shrink-0 mt-auto border-t-[3px] border-ink">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-xs border border-black bg-[#543afd]" />
-            <span className="text-foreground">{t.dashboard.stockInbound}</span>
+            <span className="h-3 w-3 border border-ink bg-[#543afd]" />
+            <span className="text-ink">{t.dashboard.stockInbound}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-xs border border-black bg-[#09090b]" />
-            <span className="text-foreground">{t.dashboard.stockOutbound}</span>
+            <span className="h-3 w-3 border border-ink bg-[#09090b]" />
+            <span className="text-ink">{t.dashboard.stockOutbound}</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

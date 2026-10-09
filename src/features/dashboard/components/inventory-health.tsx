@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, AlertTriangle, XCircle, HeartPulse } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { HeartPulse } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { InventoryHealthData } from "../types";
@@ -11,36 +10,40 @@ import { MOCK_INVENTORY_HEALTH } from "../mock-data";
 
 interface InventoryHealthProps {
   data?: InventoryHealthData;
+  className?: string;
 }
 
-export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealthProps) {
+export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: InventoryHealthProps) {
   const { t } = useI18n();
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden">
-      <CardHeader className="pb-2 pt-4 px-4 sm:px-5 space-y-2">
+    <div className={cn("flex flex-col shrink-0 bg-white border-[3px] border-ink shadow-hard-sm", className)}>
+      <div className="pb-3 pt-5 px-5 space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-black bg-[#dcfce7] text-[#15803d] shadow-neo-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-emerald-100 text-emerald-700 shadow-hard-sm">
               <HeartPulse className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-foreground">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-ink font-sans">
                 {t.dashboard.inventoryHealthTitle}
-              </CardTitle>
+              </h3>
             </div>
           </div>
-          <Badge
-            variant={data.healthScore >= 80 ? "success" : "warning"}
+          <span
+            className={cn(
+              "px-2 py-1 font-mono text-[10px] font-bold uppercase border-[3px] border-ink",
+              data.healthScore >= 80 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+            )}
           >
             {data.healthScore}% {t.dashboard.optimal}
-          </Badge>
+          </span>
         </div>
 
         {/* Visual Multi-Segment Bar */}
-        <div className="space-y-1 pt-1">
+        <div className="space-y-1 pt-2">
           <div
-            className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100 border border-border"
+            className="flex h-3 w-full overflow-hidden bg-paper border-[3px] border-ink"
             role="progressbar"
             aria-valuenow={data.healthy.percentage}
             aria-valuemin={0}
@@ -49,12 +52,12 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
           >
             <div
               style={{ width: `${data.healthy.percentage}%` }}
-              className="h-full bg-emerald-500 transition-all duration-300"
+              className="h-full bg-emerald-500 transition-all duration-300 border-r border-ink"
               title={`${t.dashboard.healthy}: ${data.healthy.percentage}%`}
             />
             <div
               style={{ width: `${data.lowStock.percentage}%` }}
-              className="h-full bg-amber-500 transition-all duration-300"
+              className="h-full bg-amber-500 transition-all duration-300 border-r border-ink"
               title={`${t.dashboard.lowStock}: ${data.lowStock.percentage}%`}
             />
             <div
@@ -64,45 +67,45 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH }: InventoryHealt
             />
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-1.5 px-4 sm:px-5 pb-4 pt-1 font-mono">
+      <div className="space-y-2 px-5 pb-5 pt-2 font-mono">
         {/* Healthy row */}
-        <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
+        <div className="flex items-center justify-between border-[3px] border-ink bg-paper px-3 py-2 text-xs transition-colors hover:bg-white press cursor-pointer">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <span className="font-sans font-semibold text-foreground">{t.dashboard.healthy}</span>
-            <span className="text-[11px] text-muted-foreground">({data.healthy.percentage}%)</span>
+            <span className="w-2 h-2 bg-emerald-500 border border-ink shrink-0" />
+            <span className="font-sans font-bold uppercase text-ink text-[10px] tracking-widest">{t.dashboard.healthy}</span>
+            <span className="text-[10px] text-ink/60">({data.healthy.percentage}%)</span>
           </div>
-          <span className="font-bold text-foreground text-xs">
+          <span className="font-bold text-ink text-xs">
             ${formatNumber(data.healthy.value)}
           </span>
         </div>
 
         {/* Low Stock row */}
-        <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
+        <div className="flex items-center justify-between border-[3px] border-ink bg-paper px-3 py-2 text-xs transition-colors hover:bg-white press cursor-pointer">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-            <span className="font-sans font-semibold text-foreground">{t.dashboard.lowStock}</span>
-            <span className="text-[11px] text-muted-foreground">({data.lowStock.percentage}%)</span>
+            <span className="w-2 h-2 bg-amber-500 border border-ink shrink-0" />
+            <span className="font-sans font-bold uppercase text-ink text-[10px] tracking-widest">{t.dashboard.lowStock}</span>
+            <span className="text-[10px] text-ink/60">({data.lowStock.percentage}%)</span>
           </div>
-          <span className="font-bold text-foreground text-xs">
+          <span className="font-bold text-ink text-xs">
             ${formatNumber(data.lowStock.value)}
           </span>
         </div>
 
         {/* Out of Stock row */}
-        <div className="flex items-center justify-between rounded-md border border-border bg-slate-50/50 px-3 py-2 text-xs transition-colors hover:bg-slate-100/60">
+        <div className="flex items-center justify-between border-[3px] border-ink bg-paper px-3 py-2 text-xs transition-colors hover:bg-white press cursor-pointer">
           <div className="flex items-center gap-2">
-            <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
-            <span className="font-sans font-semibold text-foreground">{t.dashboard.outOfStock}</span>
-            <span className="text-[11px] text-muted-foreground">({data.outOfStock.percentage}%)</span>
+            <span className="w-2 h-2 bg-rose-500 border border-ink shrink-0" />
+            <span className="font-sans font-bold uppercase text-ink text-[10px] tracking-widest">{t.dashboard.outOfStock}</span>
+            <span className="text-[10px] text-ink/60">({data.outOfStock.percentage}%)</span>
           </div>
-          <span className="font-bold text-destructive text-xs">
+          <span className="font-bold text-red-600 text-xs">
             ${formatNumber(data.outOfStock.value)}
           </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

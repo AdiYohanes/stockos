@@ -1,0 +1,66 @@
+project_id = "stockos-auth"
+
+[api]
+enabled = true
+port = 55431
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+auto_expose_new_tables = false
+
+[db]
+port = 55432
+shadow_port = 55430
+major_version = 17
+
+[db.seed]
+enabled = false
+
+[studio]
+enabled = false
+port = 55433
+
+[local_smtp]
+enabled = true
+port = 55434
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/confirm"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = false
+enable_anonymous_sign_ins = false
+minimum_password_length = 12
+
+[auth.email]
+# Keep email/password provider enabled; auth.enable_signup=false closes public registration.
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+max_frequency = "1s"
+otp_expiry = 3600
+
+[auth.email.template.invite]
+subject = "StockOS — verifikasi pemilik"
+content_path = "./supabase/templates/invite.html"
+
+[auth.rate_limit]
+email_sent = 30
+
+[realtime]
+enabled = false
+
+[storage]
+enabled = false
+
+[storage.vector]
+enabled = false
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false

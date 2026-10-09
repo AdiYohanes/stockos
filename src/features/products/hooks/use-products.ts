@@ -30,24 +30,12 @@ export interface UseProductsReturn {
   setSearchQuery: (query: string) => void;
   setCategory: (category: string) => void;
   setStatus: (status: "all" | ProductStatus) => void;
-  setWarehouse: (warehouse: string) => void;
   setSorting: (field: ProductSortField) => void;
   setPage: (page: number) => void;
   resetFilters: () => void;
 
   // CRUD actions
-  addProduct: (productData: {
-    name: string;
-    sku: string;
-    category: string;
-    unit: string;
-    unitPrice?: number;
-    initialStock?: number;
-    minStock: number;
-    warehouse?: string;
-    description?: string;
-    supplier?: string;
-  }) => Product;
+  addProduct: (productData: import("../schemas/product.schema").CreateProductInput) => Product;
   updateProduct: (id: string, updates: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
   recordMovement: (
@@ -63,7 +51,6 @@ const INITIAL_FILTER_STATE: ProductFilterState = {
   searchQuery: "",
   category: "all",
   status: "all",
-  warehouse: "all",
   sortField: "name",
   sortOrder: "asc",
   page: 1,
@@ -150,11 +137,6 @@ export function useProducts(): UseProductsReturn {
         return false;
       }
 
-      // 4. Warehouse filter
-      if (filterState.warehouse !== "all" && item.warehouse !== filterState.warehouse) {
-        return false;
-      }
-
       return true;
     });
   }, [products, filterState]);
@@ -207,8 +189,7 @@ export function useProducts(): UseProductsReturn {
   const hasActiveFilters =
     filterState.searchQuery !== "" ||
     filterState.category !== "all" ||
-    filterState.status !== "all" ||
-    filterState.warehouse !== "all";
+    filterState.status !== "all";
 
   // Filter setters
   const setSearchQuery = (query: string) => {
@@ -223,17 +204,13 @@ export function useProducts(): UseProductsReturn {
     setFilterState((prev) => ({ ...prev, status, page: 1 }));
   };
 
-  const setWarehouse = (warehouse: string) => {
-    setFilterState((prev) => ({ ...prev, warehouse, page: 1 }));
-  };
-
   const setSorting = (field: ProductSortField) => {
     setFilterState((prev) => {
       if (prev.sortField === field) {
         return {
           ...prev,
           sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
-          page: 1,
+      page: 1,
         };
       }
       return {
@@ -255,8 +232,7 @@ export function useProducts(): UseProductsReturn {
       searchQuery: "",
       category: "all",
       status: "all",
-      warehouse: "all",
-      page: 1,
+          page: 1,
     }));
   };
 
@@ -279,7 +255,6 @@ export function useProducts(): UseProductsReturn {
     setSearchQuery,
     setCategory,
     setStatus,
-    setWarehouse,
     setSorting,
     setPage,
     resetFilters,
