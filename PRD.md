@@ -2,11 +2,9 @@
 
 ## 1. Product Overview
 
-StockOS is a lightweight stock management web application designed to help small businesses manage products, inventory levels, and stock activity through a simple modern interface.
+StockOS is a lightweight stock management web application for one small shop (warung). It helps owners and staff manage products, stock levels, and daily stock movements through a simple interface.
 
-The product sits between a basic inventory tracker and a traditional ERP.
-
-StockOS should provide the operational visibility businesses need without introducing unnecessary ERP complexity.
+All stock belongs to one shop. Warehouses, multiple locations, inter-warehouse transfers, and purchase orders are outside product scope. Incoming goods are recorded directly as stock-in movements with receipt references, without a purchasing lifecycle.
 
 ---
 
@@ -34,10 +32,8 @@ Users should be able to quickly answer questions such as:
 
 Initial target users:
 
-- Small business owners
-- Small warehouse operators
-- Retail businesses
-- Small internal operations teams
+- Owners of a single small shop or warung
+- Shop staff receiving goods, recording sales-related stock out, and counting stock
 
 Initial product scope should prioritize simple operational workflows rather than enterprise ERP requirements.
 
@@ -172,7 +168,8 @@ The following are not part of the current frontend phase unless explicitly reque
 - General ledger
 - Purchasing workflow
 - Sales order management
-- Complex warehouse management
+- Warehouse management, multiple locations, and stock transfers
+- Purchase orders and purchasing lifecycle
 - Multi-company ERP
 - Advanced forecasting
 - Enterprise approval workflows
@@ -263,16 +260,13 @@ A successful frontend foundation should demonstrate:
 
 Possible future capabilities may include:
 
-- Suppliers
-- Purchase orders
-- Warehouses
-- Multiple locations
 - Sales integration
 - Barcode support
-- Inventory valuation
-- Reporting
-- Roles and permissions
-- Notifications
+- Production-backed inventory valuation and reporting
+- Enforced roles and permissions
+- Real notifications
+
+Warehouses, multiple locations, transfers, and purchase orders are not an approved roadmap; adding them requires an explicit scope change.
 
 These are future considerations and should not automatically be treated as approved MVP requirements.
 
@@ -290,5 +284,12 @@ Implemented:
 - Mock authentication
 - Protected dashboard area
 - Dashboard UI
+- Product catalog, add/edit/delete, and stock-in/out flows
+- Brief success animation only after successful product creation
+- Single-shop inventory levels, adjustments, and movement history
+- Mock reports for valuation, movement, restock risk, and supplier deliveries
+- Settings UI with browser-local preferences and mock team roles
 
-Backend and persistent data are not yet implemented.
+Active dashboard navigation: Dashboard, Products, Inventory, Reports, Settings. No warehouse or purchase-order module.
+
+Backend and database persistence are not yet implemented. Product and inventory collections are independent session-scoped mocks; dashboard and report analytics remain fixtures. Settings preferences alone use browser-local storage.
