@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 1 — single-owner setup, invitation/email verification, initial password setup, login, resend, and logout. Explicit approval received 2026-10-09; isolated local Supabase only. Other features remain frontend mocks.
+Implementation: Backend Foundation ticket 2 — private stock schema, product lifecycle and stock/modal RPCs, bounded reads, and real PostgreSQL/Auth contract proof. Explicit approval received 2026-10-09; isolated local Supabase only. Ticket 1 owner auth remains implemented; domain UI/Server Actions, reports/settings and recovery remain outside ticket 2.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -62,7 +62,7 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 
 ## In Progress
 
-- Backend Foundation Ticket 1 completed and verified against local Supabase. Full recovery, Gate A stock transactions and persistence, external SMTP deliverability proof, cloud provisioning, and production deployment remain pending separate approval gates.
+- Backend Foundation tickets 1 and 2 are verified against isolated local Supabase. UI/Server Action integration, full recovery, reports/settings persistence, external SMTP deliverability, cloud provisioning, and production deployment remain pending separate approval gates.
 - Final verification of ESLint warning cleanup on legacy frontend files remains pending.
 
 ## Backend Foundation — Ticket 1 Auth (2026-10-09)
@@ -75,6 +75,18 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Mock authentication removed; session client uses HttpOnly/SameSite cookies.
 - [x] Verified via isolated Supabase PostgreSQL RPCs (`node scripts/check-owner-auth.mjs` PASS) and Playwright browser smoke tests (`scripts/test-login.py` PASS, `scripts/test-shop-scope.py` PASS).
 - [x] TypeScript check (`tsc --noEmit`) and Next.js build (`next build`) pass with 0 errors.
+
+## Backend Foundation — Ticket 2 Stock RPC (2026-10-09)
+
+- Private `products`, `inventory_events`, `administrative_events`, and durable successful `mutation_requests`; native bounds, references, RLS, restrictive table/helper grants, fixed-search-path owner RPCs.
+- Product create/opening, metadata edit, archive/reactivation; exact receipt/sold/opname/modal costing, revision conflicts, linked evidence, canonical retry results, request-first locks, and atomic rollback. Product/history reads are bounded and return decimal/revision strings.
+- `node scripts/check-stock-foundation.mjs <dedicated-status.json>` passes against disposable `stockos-stock-proof` (API 55541, DB 55542, Mailpit 55544). Coverage includes exact spec examples/final-unit residual, free goods/cartons, lifecycle, stale revisions/replays, concurrent oversell/same-request/SKU/archive-receipt races, strict inputs, pagination, OTP/unbound/expired/revoked access, grants, and injected evidence failure with successful retry. Captured fixture data cleared after tests; original `stockos-auth` resource untouched.
+- Auth baseline GRANT typo corrected without adding an endpoint. Supabase reset to auth migration followed by `migration up` passes; full clean migration reset and subsequent RPC checks pass on empty dedicated fixture only.
+- Existing `check-owner-auth.mjs` passes when its fixed fixture identity/ports are adapted in memory to the dedicated stock proof resource; provider signup remains disabled.
+- `node scripts/check-domain-stores.cjs` (includes `test-schemas.ts`), `node scripts/check-dashboard-metrics.cjs`, `npx tsc --noEmit --pretty false`, `npm run build`, focused zero-warning script ESLint, and `git diff --check` pass.
+- Full `npm run lint` fails on unrelated existing frontend: four unescaped quotes in dashboard `stock-in-modal.tsx:181,184`, effect state copies in `inventory-header.tsx:25` and `products-toolbar.tsx:41`; 10 existing warnings. These files remain outside ticket 2.
+- Two-axis code review completed against ticket 2 scope. No confirmed standard/spec defects remain; spec suggestions for omitted unit/minStock conflict with the required-input contract, and settings evidence belongs to a later approved slice. Operation branching/replay duplication retained instead of adding speculative abstractions. Review follow-up tightened native success/count null checks and fixture ownership; affected checks pass again.
+- Browser smoke not rerun: no UI integration or UI changes in this ticket. Reports/settings/recovery/cloud/real-shop readiness are not delivered.
 
 ## Next
 

@@ -6,11 +6,11 @@ Version: `0.x`
 
 Current architecture phase:
 
-**Backend Foundation ticket 1 active (single-owner authentication); remaining domain features are frontend mocks**
+**Backend Foundation ticket 2 active (local database and stock/modal RPC proof); domain UI remains mocked**
 
-Implementation approval received 2026-10-09 for isolated local Supabase auth/bootstrap only. Invitation-mode setup omits password until verified invitation landing; public provider signup stays disabled. Full recovery, stock transactions, persistent domain integration, external SMTP proof, cloud provisioning, and deployment remain pending and outside this ticket.
+Implementation approval received 2026-10-09 for isolated local Supabase auth/bootstrap only. Invitation-mode setup omits password until verified invitation landing; public provider signup stays disabled. Ticket 2 approval received 2026-10-09 for isolated private product/evidence/retry schema, owner-checked lifecycle and stock/modal RPCs, bounded reads, and real contract tests. Exact arithmetic and transactions remain PostgreSQL-owned. Full recovery, UI/Server Action integration, reports/settings persistence, external SMTP proof, cloud provisioning, and deployment remain outside this ticket.
 
-Backend target confirmed 2026-10-09: Next.js Server Components/Server Actions, Supabase PostgreSQL/Auth, and Vercel. `docs/BACKEND_PLAN.md` defines delivery/proof gates; `docs/DATABASE.md` and `docs/API_CONTRACT.md` define schema and operation contracts. This target is not implemented; separate implementation permission remains required.
+Backend target confirmed 2026-10-09: Next.js Server Components/Server Actions, Supabase PostgreSQL/Auth, and Vercel. `docs/BACKEND_PLAN.md` defines delivery/proof gates; `docs/DATABASE.md` and `docs/API_CONTRACT.md` define schema and operation contracts. Local auth and ticket 2 database/RPC foundations are implemented and tested; remaining integration and deployment require separate approval.
 
 This document describes the current frontend architecture and establishes boundaries that should make future backend integration easier.
 
@@ -250,7 +250,7 @@ Avoid turning entire pages into Client Components simply because one small inter
 
 Current ownership:
 
-- Server state where possible; authentication remains server-owned through the existing mock auth boundary.
+- Server state where possible; authentication is server-owned through session-scoped Supabase and live owner RPC checks.
 - URL state for shareable filters/search when appropriate.
 - Local React state for filters, sorting, pagination, modal visibility, selected entity IDs, form drafts, and feedback.
 - Zustand vanilla stores for session-scoped mutable mock collections: products and inventory only.
@@ -283,7 +283,7 @@ Reusable visual primitives should use established design tokens.
 
 # 11. Data Model
 
-Target database design is finalized for the agreed scope in `docs/DATABASE.md`: singleton shop/owner setup, products with authoritative quantity/cost balance, append-only inventory/administrative evidence, and durable mutation retry results. No database has been provisioned or schema implemented.
+Target database design is finalized for the agreed scope in `docs/DATABASE.md`. Local migrations implement singleton shop/owner setup plus private products, inventory/administrative evidence, and durable successful mutation retry results. Owner RPCs own exact costing, request-first locking, revisions, atomic evidence, and bounded reads. Real isolated PostgreSQL/Auth checks prove this boundary; feature UI still uses independent mocks. No cloud database is provisioned.
 
 Frontend types represent UI requirements and should not automatically become database schemas.
 
@@ -411,7 +411,7 @@ Documentation only, currently authorized. Target design confirmed; `docs/BACKEND
 
 ### Phase 1 — Backend Foundation
 
-Started for ticket 1 authentication only after explicit implementation approval. No domain persistence or production-readiness claim; further slices require their own approval.
+Tickets 1 (local owner authentication) and 2 (local private stock database/RPC proof) are authorized and implemented. Domain UI integration and production readiness are not delivered; further slices require their own approval.
 
 Will implement the approved design for:
 

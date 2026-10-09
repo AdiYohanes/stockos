@@ -151,7 +151,7 @@ Shared settings contain shop profile, IANA timezone (`Asia/Jakarta`, `Asia/Makas
 
 ## 5. Frontend Phase Scope
 
-Backend Foundation ticket 1 is approved for single-owner setup, invitation/email verification, initial password setup, login, resend, and logout using isolated local Supabase. Required auth code, dependencies, local resources, and bootstrap migrations are authorized. Other features remain Frontend Foundation mocks; full recovery, domain persistence, cloud provisioning, deployment, and real-shop use require separate approval.
+Backend Foundation ticket 1 is approved for single-owner setup, invitation/email verification, initial password setup, login, resend, and logout using isolated local Supabase. Required auth code, dependencies, local resources, and bootstrap migrations are authorized. Ticket 2 approved 2026-10-09 for isolated local product/stock schema, transactional lifecycle/stock/modal RPCs, bounded reads, and contract proof. Other features remain Frontend Foundation mocks; UI/Server Action integration, full recovery, reports/settings persistence, cloud provisioning, deployment, and real-shop use require separate approval.
 
 Frontend objectives:
 
@@ -288,12 +288,13 @@ These are future considerations and should not automatically be treated as appro
 
 Current development phase:
 
-**Backend Foundation ticket 1 active — single-owner auth; remaining features are frontend mocks**
+**Backend Foundation ticket 2 active — local database and stock/modal RPC proof; feature UI remains mocked**
 
 Implemented:
 
 - Authentication UI
-- Mock authentication
+- Local Supabase single-owner authentication
+- Local private product/stock database, lifecycle/stock/modal RPCs, and bounded reads; not wired into feature UI
 - Protected dashboard area
 - Dashboard UI
 - Product catalog, add/edit/delete, and stock-in/out flows
@@ -304,7 +305,7 @@ Implemented:
 
 Active dashboard navigation: Dashboard, Products, Inventory, Reports, Settings. No warehouse or purchase-order module.
 
-Backend and database persistence are not yet implemented. Product and inventory collections are independent session-scoped mocks; dashboard and report analytics remain fixtures. Settings preferences alone use browser-local storage.
+Local owner auth and ticket 2 product/stock database/RPC foundations are implemented and tested in isolated Supabase. Product and inventory UI collections remain independent session-scoped mocks; dashboard and report analytics remain fixtures. Settings preferences alone use browser-local storage. UI persistence integration and production deployment are not delivered.
 
 ## 13. Backend Preparation — Documentation Only
 

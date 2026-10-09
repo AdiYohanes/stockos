@@ -21,7 +21,7 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 1, single-owner authentication only**
+**Implementation phase: Backend Foundation — ticket 2, local database and stock/modal RPC proof**
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 
@@ -29,7 +29,7 @@ Explicit implementation approval received 2026-10-09 for secret-protected owner 
 
 Backend target is confirmed for one owner/warung, Supabase PostgreSQL/Auth, Next.js Server Components/Server Actions, and Vercel. Documentation/specification preparation and GitHub issue publication are authorized, not implementation. Read `docs/BACKEND_PLAN.md` for gates, `docs/DATABASE.md` for constraints/transactions, `docs/API_CONTRACT.md` for operation boundaries, `docs/FULLSTACK_SPEC.md` for acceptance/testing, and `GLOSSARY.md` for domain terms. Distinguish approved target from actual mock runtime.
 
-Backend application code, migrations, authentication, infrastructure, and dependencies are permitted only within the explicitly approved ticket 1 scope above. All other backend work requires separate explicit approval. Existing frontend verification gaps remain open.
+Ticket 2 implementation approved 2026-10-09: private products, inventory/administrative evidence, durable mutation requests, owner-checked product lifecycle and stock/modal RPCs, bounded product/history reads, and real isolated local Supabase contract tests. Local disposable proof resources and the minimum auth migration replay fix are authorized. UI/Server Action integration, password recovery, reports/settings persistence, cloud provisioning, deployment, and real-shop use are not authorized. Existing frontend verification gaps remain open.
 
 Current implemented scope:
 
@@ -38,9 +38,10 @@ Current implemented scope:
 - Feature flows
 - Responsive behavior
 - Mock data
-- Local Supabase owner authentication (ticket 1); provider/application verification in progress
+- Local Supabase owner authentication (ticket 1)
+- Local private product/stock schema and owner-checked lifecycle/stock/modal RPCs (ticket 2); domain UI still uses mocks
 
-Product/inventory/report persistence and production readiness are not implemented. Authentication no longer uses mock cookies; other feature data remains mocked.
+Product/inventory/report UI persistence integration and production readiness are not implemented. Local stock database/RPC persistence is isolated proof only. Authentication no longer uses mock cookies; other feature UI data remains mocked.
 
 Do not move into backend implementation unless explicitly requested.
 
@@ -315,7 +316,7 @@ Do not treat temporary frontend types as final database models.
 
 ## Authentication
 
-Authentication is currently development-only and mocked.
+Authentication uses isolated local Supabase (ticket 1), not mock cookies. Remaining feature UI data is mocked; production auth/deployment is not authorized.
 
 Keep authentication logic isolated inside the established authentication feature.
 
