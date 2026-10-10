@@ -38,6 +38,11 @@ import {
   LowStockReportInputSchema,
   ExportReportInputSchema,
 } from "../src/features/reports/schemas/reports-rpc.schema";
+import {
+  ShopSettingsDtoSchema,
+  GetShopSettingsInputSchema,
+  UpdateShopSettingsInputSchema,
+} from "../src/features/settings/schemas/settings-rpc.schema";
 
 // Reports RPC schema validations
 assert.ok(ValuationReportInputSchema.safeParse({}).success);
@@ -55,4 +60,42 @@ assert.ok(ExportReportInputSchema.safeParse({ kind: "valuation" }).success);
 assert.ok(ExportReportInputSchema.safeParse({ kind: "movements", startDate: "2026-09-01", endDate: "2026-10-01" }).success);
 assert.equal(ExportReportInputSchema.safeParse({ kind: "unsupported" }).success, false);
 
-console.log("PASS: Products and stock movements work without warehouses or purchase orders.");
+// Settings RPC schema validations (Ticket 6)
+assert.ok(GetShopSettingsInputSchema.safeParse({}).success);
+assert.equal(GetShopSettingsInputSchema.safeParse({ unknownKey: "val" }).success, false);
+
+const validSettingsDto = {
+  name: "Warung Berkah",
+  ownerName: "Pemilik Warung",
+  address: "Jl. Sudirman No. 12",
+  phone: "08123456789",
+  timezone: "Asia/Jakarta",
+  defaultUnit: "Pcs",
+  defaultMinStock: 15,
+  version: "1",
+  createdAt: "2026-10-10T00:00:00Z",
+  updatedAt: "2026-10-10T00:00:00Z",
+};
+assert.ok(ShopSettingsDtoSchema.safeParse(validSettingsDto).success);
+assert.ok(ShopSettingsDtoSchema.safeParse({ ...validSettingsDto, address: null, phone: null }).success);
+assert.equal(ShopSettingsDtoSchema.safeParse({ ...validSettingsDto, version: 0 }).success, false);
+assert.equal(ShopSettingsDtoSchema.safeParse({ ...validSettingsDto, timezone: "America/New_York" }).success, false);
+
+const validUpdateInput = {
+  requestId: "123e4567-e89b-12d3-a456-426614174000",
+  expectedVersion: 1,
+  name: "Warung Berkah Updated",
+  ownerName: "Budi Santoso",
+  address: null,
+  phone: "081234567890",
+  timezone: "Asia/Jakarta",
+  defaultUnit: "Pcs",
+  defaultMinStock: 20,
+};
+assert.ok(UpdateShopSettingsInputSchema.safeParse(validUpdateInput).success);
+assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, requestId: "not-a-uuid" }).success, false);
+assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, expectedVersion: 0 }).success, false);
+assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, defaultMinStock: -1 }).success, false);
+assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, unknownField: true }).success, false);
+
+console.log("PASS: Products, stock movements, reports, and settings schemas validated.");

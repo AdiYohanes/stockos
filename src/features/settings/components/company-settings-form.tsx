@@ -1,22 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { CompanySettings, CurrencyCode } from "../types";
+import { CompanySettings, TimezoneCode } from "../types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Globe, CreditCard, Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Building2, Globe, Mail, Phone, MapPin, User, ShieldCheck, Coins } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 
 interface CompanySettingsFormProps {
   initialValues: CompanySettings;
+  ownerEmail?: string;
   onChange: (updated: Partial<CompanySettings>) => void;
 }
 
-export function CompanySettingsForm({ initialValues, onChange }: CompanySettingsFormProps) {
-  const { language, t } = useI18n();
+export function CompanySettingsForm({ initialValues, ownerEmail, onChange }: CompanySettingsFormProps) {
+  const { t } = useI18n();
   const [formData, setFormData] = React.useState<CompanySettings>(initialValues);
 
   const handleChange = (field: keyof CompanySettings, value: string) => {
@@ -25,25 +27,19 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
     onChange(next);
   };
 
-  const handleCurrencyChange = (val: string | null) => {
-    const code = ((val as string) || "IDR") as CurrencyCode;
-    const symbols: Record<CurrencyCode, string> = {
-      IDR: "Rp",
-      USD: "$",
-      EUR: "€",
-      SGD: "S$",
-    };
-    const next = { ...formData, currency: code, currencySymbol: symbols[code] || "Rp" };
+  const handleTimezoneChange = (val: string | null) => {
+    const nextTz = (val as TimezoneCode) || "Asia/Jakarta";
+    const next = { ...formData, timezone: nextTz };
     setFormData(next);
     onChange(next);
   };
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      {/* Basic Company Info */}
+      {/* Business Identity */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink">
             <Building2 className="h-5 w-5 text-ink" /> {t.settings.businessIdentity}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
@@ -52,62 +48,70 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
-            <Label htmlFor="companyName" className="text-xs font-semibold text-ink font-bold">
-              {t.settings.storeName}
+            <Label htmlFor="companyName" className="text-xs font-semibold text-ink">
+              {t.settings.storeName} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="companyName"
-              value={formData.companyName}
-              onChange={(e) => handleChange("companyName", e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
               placeholder={t.settings.companyNamePlaceholder}
+              maxLength={120}
               className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="taxId" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
-              <CreditCard className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none" /> NPWP / Tax Registration ID
+            <Label htmlFor="ownerName" className="flex items-center gap-1 text-xs font-semibold text-ink">
+              <User className="h-3.5 w-3.5 text-ink/60" /> {t.settings.fullName} <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="taxId"
-              value={formData.taxId}
-              onChange={(e) => handleChange("taxId", e.target.value)}
-              placeholder="01.234.567.8-012.000"
+              id="ownerName"
+              value={formData.ownerName}
+              onChange={(e) => handleChange("ownerName", e.target.value)}
+              placeholder="Nama Lengkap Pemilik"
+              maxLength={120}
+              className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
+            />
+          </div>
+
+          {ownerEmail && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="ownerEmail" className="flex items-center gap-1 text-xs font-semibold text-ink">
+                  <Mail className="h-3.5 w-3.5 text-ink/60" /> {t.settings.officialEmail}
+                </Label>
+                <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono font-semibold">
+                  <ShieldCheck className="h-3 w-3 mr-1 text-emerald-700" /> Terverifikasi
+                </Badge>
+              </div>
+              <Input
+                id="ownerEmail"
+                type="email"
+                value={ownerEmail}
+                readOnly
+                disabled
+                className="h-9 text-xs font-mono bg-slate-100 text-slate-700 border-[3px] border-ink rounded-none cursor-not-allowed"
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="phone" className="flex items-center gap-1 text-xs font-semibold text-ink">
+              <Phone className="h-3.5 w-3.5 text-ink/60" /> {t.settings.phoneNumber}
+            </Label>
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              placeholder="+62 812 3456 7890"
+              maxLength={40}
               className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="officialEmail" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
-                <Mail className="h-3.5 w-3.5 text-ink/60" /> {t.settings.officialEmail}
-              </Label>
-              <Input
-                id="officialEmail"
-                type="email"
-                value={formData.officialEmail}
-                onChange={(e) => handleChange("officialEmail", e.target.value)}
-                placeholder="ops@company.com"
-                className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="phone" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
-                <Phone className="h-3.5 w-3.5 text-ink/60" /> {t.settings.phoneNumber}
-              </Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                placeholder="+62 21 5550 123"
-                className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
-              />
-            </div>
-          </div>
-
           <div className="space-y-1.5">
-            <Label htmlFor="address" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
+            <Label htmlFor="address" className="flex items-center gap-1 text-xs font-semibold text-ink">
               <MapPin className="h-3.5 w-3.5 text-ink/60" /> {t.settings.operationalAddress}
             </Label>
             <Textarea
@@ -115,6 +119,7 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
               rows={3}
+              maxLength={500}
               placeholder={t.settings.addressPlaceholder}
               className="text-xs resize-none input-focus border-[3px] border-ink rounded-none"
             />
@@ -122,10 +127,10 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
         </CardContent>
       </Card>
 
-      {/* Regional & Financial Preferences */}
+      {/* Regional & Operational Standards */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink">
             <Globe className="h-5 w-5 text-ink" /> {t.settings.localizationFinancial}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
@@ -134,68 +139,54 @@ export function CompanySettingsForm({ initialValues, onChange }: CompanySettings
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-ink font-bold">
-              {t.settings.currency}
+            <Label className="text-xs font-semibold text-ink">
+              {t.settings.timezone} <span className="text-red-500">*</span>
             </Label>
-            <Select value={formData.currency} onValueChange={handleCurrencyChange}>
-              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder={t.settings.selectCurrencyPlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IDR">IDR - Rupiah Indonesia (Rp)</SelectItem>
-                <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
-                <SelectItem value="EUR">EUR - Euro (€)</SelectItem>
-                <SelectItem value="SGD">SGD - Singapore Dollar (S$)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-[11px] text-ink/60">
-              {t.settings.currencyDesc}
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-ink font-bold">
-              {t.settings.timezone}
-            </Label>
-            <Select value={formData.timezone} onValueChange={(v) => handleChange("timezone", (v as string) || "Asia/Jakarta (WIB)")}>
+            <Select value={formData.timezone} onValueChange={handleTimezoneChange}>
               <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
                 <SelectValue placeholder={t.settings.selectTimezonePlaceholder} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Asia/Jakarta (WIB)">WIB - Asia/Jakarta (UTC+7)</SelectItem>
-                <SelectItem value="Asia/Makassar (WITA)">WITA - Asia/Makassar (UTC+8)</SelectItem>
-                <SelectItem value="Asia/Jayapura (WIT)">WIT - Asia/Jayapura (UTC+9)</SelectItem>
+                <SelectItem value="Asia/Jakarta">WIB — Asia/Jakarta (UTC+7)</SelectItem>
+                <SelectItem value="Asia/Makassar">WITA — Asia/Makassar (UTC+8)</SelectItem>
+                <SelectItem value="Asia/Jayapura">WIT — Asia/Jayapura (UTC+9)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-[11px] text-ink/60">
+              Digunakan untuk batas pergantian hari kalender laporan dan bukti transaksi.
+            </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-ink font-bold">
-              {t.settings.reportDateFormat}
-            </Label>
-            <Select value={formData.dateFormat} onValueChange={(v) => handleChange("dateFormat", (v as string) || "DD/MM/YYYY")}>
-              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder={t.settings.selectDateFormatPlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY ({t.settings.exampleFormat}: 31/12/2026)</SelectItem>
-                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD ({t.settings.exampleFormat}: 2026-12-31)</SelectItem>
-                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY ({t.settings.exampleFormat}: 12/31/2026)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="rounded-none border-[3px] border-ink bg-slate-50 p-4 space-y-3.5">
+            <div className="flex items-start gap-2.5">
+              <Coins className="h-4 w-4 text-[#543afd] shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-ink">Mata Uang Operasional</span>
+                  <Badge className="bg-slate-200 text-ink border-black text-[10px] font-mono">
+                    IDR (Rp)
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-ink/60 mt-0.5 leading-relaxed">
+                  Standar invariant: seluruh nilai harga beli, harga jual, dan modal dicatat dalam Rupiah bulat tanpa desimal mata uang.
+                </p>
+              </div>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="operatingHours" className="flex items-center gap-1 text-xs font-semibold text-ink font-bold">
-              <Clock className="h-3.5 w-3.5 text-ink/60" /> {t.settings.shopOperatingHours}
-            </Label>
-            <Input
-              id="operatingHours"
-              value={formData.operatingHours}
-              onChange={(e) => handleChange("operatingHours", e.target.value)}
-              placeholder="08:00 - 17:00 WIB"
-              className="h-9 text-xs input-focus border-[3px] border-ink rounded-none"
-            />
+            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-ink">Cakupan Warung Tunggal</span>
+                  <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono">
+                    Single Owner
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-ink/60 mt-0.5 leading-relaxed">
+                  Satu warung, satu pemilik terverifikasi. Tidak menggunakan multi-cabang atau hierarki staf perusahaan.
+                </p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

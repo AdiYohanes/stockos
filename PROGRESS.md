@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 5 — persistent local Reports integration (valuation, movement audit, low-stock deficit alerts, safe RFC 4180 CSV export, removed unsupported supplier performance tab), and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, 3, and 4 remain implemented. Dashboard/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 6 — persistent local Settings integration (singleton store profile, creation defaults, monotonic version optimistic concurrency control, client UUID idempotency via mutation_requests, administrative audit trail with nullable product_id, and warung scope enforcement). Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, 3, 4, and 5 remain implemented. Dashboard/recovery/cloud/deployment and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -131,7 +131,19 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Slide-over inspection sheet wired to live entity selections with reactive derived state.
 - [x] Verified via `scripts/test-reports.py` against Edge headless: owner setup, product creation, movements/opname recordings, RPC output validation, browser navigation across all tabs, search/category filtering, and RFC 4180 export modal confirmation.
 - [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/reports`).
-- [x] Dashboard and Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+- [x] Dashboard remains mocked; Settings connected to persistent backend in Ticket 6. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 6 Settings Integration (2026-10-10)
+
+- [x] Connected Settings frontend (`/settings`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_get_shop_settings`, `stockos_update_shop_settings`).
+- [x] Server-authoritative reads via Next.js App Router Server Component (`src/app/(dashboard)/settings/page.tsx`) with verified owner session enforcement.
+- [x] Migration `20261010020000_settings_persistence.sql`: alters `mutation_requests` to support `update_shop_settings`, alters `administrative_events` to make `product_id` nullable and support `settings_updated`, creates singleton DTO and RPC functions with optimistic concurrency control (`expectedVersion`) and SHA-256 idempotency caching.
+- [x] Optimistic Concurrency Control (OCC): Monotonic `version` checking prevents lost updates across tabs/sessions, surfacing clear conflict warnings while preserving the owner's modified form draft.
+- [x] Client UUID idempotency: Client-generated UUID `requestId` returns cached results on replay without duplicate administrative audit logging.
+- [x] Administrative audit trail: State transitions logged in `stockos_private.administrative_events` capturing before/after snapshots.
+- [x] Warung scope enforcement (Stories 38–39): Removed unsupported mock team management and notification simulation tabs, removed fake accounting toggles (FIFO/LIFO, multi-currency, negative stock, batch expiry), and ensured system reset returns creation defaults without wiping operational product or stock data.
+- [x] Suite passes: `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/settings`), focused ESLint on Settings PASS (0 errors, 0 warnings).
+- [x] Dashboard UI data remains mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
 
 ## Next
 

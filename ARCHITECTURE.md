@@ -265,7 +265,7 @@ Products and Inventory still use independent feature fixtures and identifiers. T
 
 Stock belongs to one shop: product, inventory, movement, and report types have no warehouse field or warehouse filter. Current mock movement types are stock in, stock out, and adjustment (`in/out/adjustment`). The target contracts distinguish opening, receipt, sold, opname, and cost_adjustment; migrate deliberately rather than treat the mock enum as the persistent model. Warehouse/purchase-order routes, modules, provider stores, and transfer controls are removed; stock receipts need no purchase order.
 
-Settings use local React drafts and browser-local storage, not a production persistence layer. Legacy warehouse-manager settings are mapped to the store-manager role on load. The existing i18n context remains separate. Do not introduce more shared stores without demonstrated shared-client-state needs.
+Settings connect to persistent PostgreSQL singleton (`stockos_private.shop_settings`) via owner-checked RPCs (`stockos_get_shop_settings`, `stockos_update_shop_settings`), with monotonic optimistic concurrency control (`version`), idempotency via `mutation_requests`, administrative audit trails (`administrative_events`), and warung scope enforcement (removal of team/notification mock tabs, safe defaults reset without deleting operational data). The existing i18n context remains separate. Do not introduce more shared stores without demonstrated shared-client-state needs.
 
 ---
 

@@ -21,9 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 5, local Reports integration**
+**Implementation phase: Backend Foundation — ticket 6, local Settings integration**
 
-Ticket 5 implementation approved 2026-10-10: persistent Reports reads (`stockos_get_valuation_report`, `stockos_get_movement_report`, `stockos_get_low_stock_report`), authoritative Server Components and Server Actions, RFC 4180 CSV export with formula injection neutralization, removal of unsupported supplier performance tab, and live browser proof against isolated local Supabase. Dashboard/Settings remain mocked. Cloud, deployment, and real-shop use remain outside this slice.
+Ticket 6 implementation approved 2026-10-10: persistent Settings reads and updates (`stockos_get_shop_settings`, `stockos_update_shop_settings`), authoritative Server Components and Server Actions, optimistic concurrency control via monotonic `version` check, client UUID idempotency via `mutation_requests`, administrative audit trail in `administrative_events` with nullable `product_id`, and warung scope enforcement (removal of team and notification mock tabs and fake accounting toggles, and safe defaults reset without deleting operational data). Dashboard remains mocked. Cloud, deployment, and real-shop use remain outside this slice.
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 
@@ -45,8 +45,9 @@ Current implemented scope:
 - Local Products persistent backend integration (ticket 3)
 - Local Inventory persistent backend integration (ticket 4)
 - Local Reports persistent backend integration (ticket 5)
+- Local Settings persistent backend integration (ticket 6)
 
-Dashboard and Settings UI data remain mocked. Authentication, products, inventory, and reports use local Supabase PostgreSQL; production readiness/deployment is not implemented.
+Dashboard UI data remains mocked. Authentication, products, inventory, reports, and settings use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 
 Do not move into backend implementation unless explicitly requested.
 

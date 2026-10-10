@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings } from "lucide-react";
+import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
@@ -10,6 +10,8 @@ interface SettingsHeaderProps {
   hasUnsavedChanges: boolean;
   lastSavedMessage: string | null;
   updatedAt: string;
+  version?: string;
+  isSaving?: boolean;
   onSave: () => void;
   onResetModalOpen: () => void;
 }
@@ -18,6 +20,8 @@ export function SettingsHeader({
   hasUnsavedChanges,
   lastSavedMessage,
   updatedAt,
+  version,
+  isSaving = false,
   onSave,
   onResetModalOpen,
 }: SettingsHeaderProps) {
@@ -54,6 +58,14 @@ export function SettingsHeader({
               >
                 {t.settings.badgeText}
               </Badge>
+              {version && (
+                <Badge
+                  variant="outline"
+                  className="border-black bg-slate-200 font-mono text-[12px] text-slate-800"
+                >
+                  Rev {version}
+                </Badge>
+              )}
               {hasUnsavedChanges && (
                 <Badge className="animate-pulse border-black bg-amber-400 font-mono text-[13px] uppercase tracking-wider text-black shadow-neo-sm">
                   <AlertCircle className="mr-1 h-3.5 w-3.5" />{" "}
@@ -72,7 +84,8 @@ export function SettingsHeader({
             variant="outline"
             size="sm"
             onClick={onResetModalOpen}
-            className="h-9 border-black font-mono text-xs font-semibold text-slate-700 hover:bg-red-50 hover:text-red-700 active:translate-y-px"
+            disabled={isSaving}
+            className="h-9 border-black font-mono text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-800 active:translate-y-px"
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{" "}
             {t.settings.resetSystemData}
@@ -81,10 +94,11 @@ export function SettingsHeader({
           <Button
             size="sm"
             onClick={onSave}
-            disabled={!hasUnsavedChanges}
+            disabled={!hasUnsavedChanges || isSaving}
             className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0] active:translate-y-px disabled:opacity-50 disabled:shadow-none"
           >
-            <Save className="mr-1.5 h-3.5 w-3.5" /> {t.settings.saveChanges}
+            <Save className={`mr-1.5 h-3.5 w-3.5 ${isSaving ? "animate-spin" : ""}`} />{" "}
+            {isSaving ? "Menyimpan..." : t.settings.saveChanges}
           </Button>
         </div>
       </div>
@@ -106,8 +120,9 @@ export function SettingsHeader({
             <span>{lastSavedMessage}</span>
           </div>
         ) : (
-          <span className="text-[11px] text-slate-500">
-            {t.settings.devModeText}
+          <span className="text-[11px] text-slate-600 flex items-center gap-1.5">
+            <Database className="h-3.5 w-3.5 text-[#543afd]" />
+            Tersimpan di Supabase PostgreSQL
           </span>
         )}
       </div>

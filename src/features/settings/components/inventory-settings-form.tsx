@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { InventorySettings, ValuationMethod, DefaultUnit } from "../types";
+import { InventorySettings } from "../types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Boxes, Calculator, AlertTriangle, ShieldCheck, HelpCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Boxes, Calculator, ShieldCheck, AlertCircle, HelpCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -28,21 +28,21 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      {/* Thresholds & Default Units */}
+      {/* Defaults for New Products */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink">
             <Boxes className="h-5 w-5 text-ink" /> {t.settings.thresholdAndDefaultUnit}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
-            {t.settings.thresholdDesc}
+            Nilai bawaan yang diterapkan pada pembuatan produk baru. Mengubah standar ini tidak akan mengubah produk yang sudah tersimpan.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-ink font-bold">
-                {t.settings.defaultLowStock}
+              <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-ink">
+                {t.settings.defaultLowStock} <span className="text-red-500">*</span>
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -58,128 +58,120 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
             <Input
               id="defaultLowStockThreshold"
               type="number"
-              min={1}
-              value={formData.defaultLowStockThreshold}
-              onChange={(e) => handleChange("defaultLowStockThreshold", parseInt(e.target.value) || 0)}
+              min={0}
+              max={1000000000}
+              value={formData.defaultMinStock}
+              onChange={(e) => handleChange("defaultMinStock", Math.max(0, parseInt(e.target.value) || 0))}
               className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
+            <p className="text-[11px] text-ink/60">
+              Ambang batas bawaan saat mendaftarkan barang baru (misal: 15 {formData.defaultUnit}).
+            </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="defaultReorderQuantity" className="text-xs font-semibold text-ink font-bold">
-              {t.settings.defaultReorderQty}
+            <Label className="text-xs font-semibold text-ink">
+              {t.settings.defaultUnitMeasure} <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="defaultReorderQuantity"
-              type="number"
-              min={1}
-              value={formData.defaultReorderQuantity}
-              onChange={(e) => handleChange("defaultReorderQuantity", parseInt(e.target.value) || 0)}
-              className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
-            />
+            <div className="flex gap-2">
+              <Select
+                value={["Pcs", "Kg", "Box", "Liter", "Pack", "Roll", "Bungkus", "Botol"].includes(formData.defaultUnit) ? formData.defaultUnit : "custom"}
+                onValueChange={(v) => {
+                  if (v && v !== "custom") handleChange("defaultUnit", v);
+                }}
+              >
+                <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none w-[160px] shrink-0">
+                  <SelectValue placeholder={t.settings.selectUnit} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pcs">Pcs (Satuan)</SelectItem>
+                  <SelectItem value="Kg">Kg (Kilogram)</SelectItem>
+                  <SelectItem value="Box">Box (Karton)</SelectItem>
+                  <SelectItem value="Bungkus">Bungkus</SelectItem>
+                  <SelectItem value="Botol">Botol</SelectItem>
+                  <SelectItem value="Liter">Liter</SelectItem>
+                  <SelectItem value="Pack">Pack</SelectItem>
+                  <SelectItem value="Roll">Roll</SelectItem>
+                  <SelectItem value="custom">Lainnya...</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                value={formData.defaultUnit}
+                onChange={(e) => handleChange("defaultUnit", e.target.value)}
+                placeholder="Nama satuan (mis. Pcs)"
+                maxLength={30}
+                className="h-9 text-xs input-focus border-[3px] border-ink rounded-none font-mono"
+              />
+            </div>
+            <p className="text-[11px] text-ink/60">
+              Satuan dasar barang tidak dapat diubah setelah produk memiliki riwayat pergerakan stok.
+            </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-ink font-bold">
-              {t.settings.defaultUnitMeasure}
-            </Label>
-            <Select
-              value={formData.defaultUnit}
-              onValueChange={(v) => handleChange("defaultUnit", (v || "Pcs") as DefaultUnit)}
-            >
-              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder={t.settings.selectUnit} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Pcs">Pcs (Pieces)</SelectItem>
-                <SelectItem value="Kg">Kg (Kilogram)</SelectItem>
-                <SelectItem value="Box">Box (Karton / Dus)</SelectItem>
-                <SelectItem value="Liter">Liter (Cairan)</SelectItem>
-                <SelectItem value="Pack">Pack (Kemasan)</SelectItem>
-                <SelectItem value="Roll">Roll (Gulungan)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="rounded-none border border-amber-200 bg-amber-50/60 p-3 flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-900 leading-relaxed">
+              <strong>Prinsip Integritas Data:</strong> Mengubah satuan atau ambang batas di sini tidak mengubah riwayat mutasi stok lama atau produk yang sudah ada di katalog.
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Accounting & Stock Policies */}
+      {/* Invariant Accounting & Operational Policies */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-ink">
             <Calculator className="h-5 w-5 text-ink" /> {t.settings.valMethodAndPolicies}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
-            {t.settings.valMethodDesc}
+            Kebijakan operasional dan akuntansi persediaan yang berlaku secara invariant di seluruh modul StockOS.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5 pt-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-ink font-bold">
-              {t.settings.inventoryAccounting}
-            </Label>
-            <Select
-              value={formData.valuationMethod}
-              onValueChange={(v) => handleChange("valuationMethod", (v || "FIFO") as ValuationMethod)}
-            >
-              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder={t.settings.selectValMethod} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="FIFO">FIFO (First-In, First-Out)</SelectItem>
-                <SelectItem value="LIFO">LIFO (Last-In, First-Out)</SelectItem>
-                <SelectItem value="WEIGHTED_AVERAGE">Weighted Average (Rata-rata Tertimbang)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-[11px] text-ink/60">
-              {t.settings.valMethodExplanation}
-            </p>
-          </div>
-
-          <div className="rounded-none border-[3px] border-ink rounded-none bg-slate-50 p-3.5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-ink" /> {t.settings.autoOutofStock}
-                </Label>
-                <p className="text-[11px] text-ink/60">
-                  {t.settings.autoOutofStockDesc}
+        <CardContent className="space-y-4 pt-4">
+          <div className="rounded-none border-[3px] border-ink bg-slate-50 p-4 space-y-3.5">
+            <div className="flex items-start gap-2.5">
+              <Calculator className="h-4 w-4 text-[#543afd] shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-ink">Metode Valuasi HPP</span>
+                  <Badge className="bg-purple-100 text-purple-900 border-purple-300 text-[10px] font-mono">
+                    Rata-Rata Tertimbang
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-ink/60 mt-0.5 leading-relaxed">
+                  Modal dihitung secara presisi dari nota penerimaan riil. Stok keluar mengurangi modal secara proporsional tanpa asumsi FIFO/LIFO artifisial.
                 </p>
               </div>
-              <Switch
-                checked={formData.autoOutofStock}
-                onCheckedChange={(checked) => handleChange("autoOutofStock", checked)}
-              />
             </div>
 
-            <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" /> {t.settings.allowNegativeStock}
-                </Label>
-                <p className="text-[11px] text-ink/60">
-                  {t.settings.allowNegativeStockDesc}
+            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-ink">Integritas Saldo Fisik</span>
+                  <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono">
+                    Non-Negatif
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-ink/60 mt-0.5 leading-relaxed">
+                  Sistem menolak pengeluaran stok yang melebihi saldo fisik tersedia. Tidak ada saldo negatif atau penjualan fiktif tanpa stok.
                 </p>
               </div>
-              <Switch
-                checked={formData.allowNegativeStock}
-                onCheckedChange={(checked) => handleChange("allowNegativeStock", checked)}
-              />
             </div>
 
-            <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-xs font-bold text-ink font-bold">
-                  {t.settings.enableExpiryTracking}
-                </Label>
-                <p className="text-[11px] text-ink/60">
-                  {t.settings.enableExpiryTrackingDesc}
+            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
+              <Boxes className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-ink">Stok Opname & Koreksi</span>
+                  <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-[10px] font-mono">
+                    Audit Terikat
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-ink/60 mt-0.5 leading-relaxed">
+                  Perbedaan stok fisik dicatat melalui Stok Opname. Jika ditemukan barang saat saldo nol, total modal beli wajib diisi agar nilai aset tetap dapat dipertanggungjawabkan.
                 </p>
               </div>
-              <Switch
-                checked={formData.enableExpiryTracking}
-                onCheckedChange={(checked) => handleChange("enableExpiryTracking", checked)}
-              />
             </div>
           </div>
         </CardContent>
