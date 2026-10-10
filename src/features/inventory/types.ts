@@ -42,6 +42,7 @@ export interface InventoryItem {
   unitPrice?: number; // Harga jual satuan
   status: StockStatus;
   lastMovementAt: string;
+  stockVersion?: string;
   movementLogs?: StockMovement[];
 }
 

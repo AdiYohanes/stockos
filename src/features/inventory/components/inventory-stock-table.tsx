@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { InventoryFilterState, InventoryItem } from "../types";
 
 interface InventoryStockTableProps {
@@ -27,6 +28,7 @@ export function InventoryStockTable({
   onSelectItem,
   onAdjustItem,
 }: InventoryStockTableProps) {
+  const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(totalCount / filterState.pageSize));
   const startIndex = (filterState.page - 1) * filterState.pageSize + 1;
   const endIndex = Math.min(filterState.page * filterState.pageSize, totalCount);
@@ -37,19 +39,19 @@ export function InventoryStockTable({
       case "overstocked":
         return (
           <span className="bg-acid border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
-            Optimal
+            {t.inventory.inStock}
           </span>
         );
       case "low_stock":
         return (
           <span className="bg-orange-400 border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
-            Low Stock
+            {t.inventory.lowStock}
           </span>
         );
       case "out_of_stock":
         return (
           <span className="bg-ink text-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
-            Critical
+            {t.inventory.outOfStock}
           </span>
         );
       default:
@@ -78,12 +80,12 @@ export function InventoryStockTable({
         <table className="w-full min-w-[1000px] text-left">
           <thead className="bg-paper border-b-[3px] border-ink font-mono text-[10px] uppercase tracking-widest">
             <tr>
-              <th className="px-5 py-4">SKU</th>
-              <th className="px-5 py-4">Product Name</th>
-              <th className="px-5 py-4 text-right">Current Stock</th>
-              <th className="px-5 py-4 text-right">Harga (Beli / Jual)</th>
-              <th className="px-5 py-4">Status</th>
-              <th className="px-5 py-4 text-right">Actions</th>
+              <th className="px-5 py-4">{t.inventory.colSku}</th>
+              <th className="px-5 py-4">{t.inventory.colProductLocation}</th>
+              <th className="px-5 py-4 text-right">{t.inventory.colOnHand}</th>
+              <th className="px-5 py-4 text-right">{t.inventory.min}</th>
+              <th className="px-5 py-4">{t.inventory.colStockHealth}</th>
+              <th className="px-5 py-4 text-right">{t.inventory.colActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y-[2px] divide-black/10">
@@ -92,17 +94,17 @@ export function InventoryStockTable({
                 <td colSpan={6} className="py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p className="font-display font-bold uppercase text-ink text-lg mt-4">
-                      No matching items
+                      {t.inventory.noMatchingItems}
                     </p>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 max-w-sm">
-                      Try adjusting your search or filters
+                      {t.inventory.noMatchingItemsDesc}
                     </p>
                     {hasActiveFilters && (
                       <button
                         onClick={onResetFilters}
                         className="mt-4 press bg-acid border-[3px] border-ink shadow-hard-sm px-4 py-2 font-display font-bold uppercase text-xs"
                       >
-                        Clear Filters
+                        {t.inventory.clearAllFilters}
                       </button>
                     )}
                   </div>
@@ -142,20 +144,20 @@ export function InventoryStockTable({
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => onAdjustItem(item)}
-                        title="Adjust Stock"
+                        title={t.inventory.adjustStock}
                         className="press w-8 h-8 bg-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center text-ink"
                       >
                         <Icon icon="ph:pencil-simple-bold" className="text-lg" />
                       </button>
                       <button
                         onClick={() => onSelectItem(item)}
-                        title="View Details"
+                        title={t.common.details}
                         className="press w-8 h-8 bg-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center text-ink"
                       >
                         <Icon icon="ph:eye-bold" className="text-lg" />
                       </button>
                       <button
-                        title="Delete"
+                        title={t.common.delete}
                         className="press w-8 h-8 bg-ink text-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center"
                       >
                         <Icon icon="ph:trash-bold" className="text-lg" />
@@ -172,7 +174,7 @@ export function InventoryStockTable({
       {totalCount > 0 && (
         <div className="border-t-[3px] border-ink bg-paper p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 text-ink">
-            Showing {startIndex}-{endIndex} of {totalCount.toLocaleString("id-ID")} items
+            {t.inventory.showing} {startIndex}-{endIndex} {t.inventory.of} {totalCount.toLocaleString("id-ID")} {t.common.items}
           </span>
           <div className="flex items-center gap-2 text-ink">
             <button
@@ -180,7 +182,7 @@ export function InventoryStockTable({
               disabled={filterState.page <= 1}
               className="press px-3 py-2 bg-white border-[3px] border-ink shadow-hard-sm font-mono text-[10px] uppercase font-bold disabled:opacity-50"
             >
-              Previous
+              {t.inventory.prev}
             </button>
 
             {/* Simulated Pagination Numbers for visual match with draft */}
@@ -229,7 +231,7 @@ export function InventoryStockTable({
               disabled={filterState.page >= totalPages}
               className="press px-3 py-2 bg-white border-[3px] border-ink shadow-hard-sm font-mono text-[10px] uppercase font-bold disabled:opacity-50"
             >
-              Next
+              {t.inventory.next}
             </button>
           </div>
         </div>

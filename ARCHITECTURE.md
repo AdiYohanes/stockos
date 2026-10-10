@@ -252,10 +252,10 @@ Avoid turning entire pages into Client Components simply because one small inter
 
 Current ownership:
 
-- Server state where possible; authentication is server-owned through session-scoped Supabase and live owner RPC checks.
-- URL state for shareable filters/search when appropriate.
-- Local React state for filters, sorting, pagination, modal visibility, selected entity IDs, form drafts, and feedback.
-- Zustand vanilla stores for session-scoped mutable mock collections: products and inventory only.
+- Server state where possible; authentication is server-owned through session-scoped Supabase and live owner RPC checks. Products and Inventory are server-owned through Server Components and Server Actions calling PostgreSQL RPCs (`stockos_list_products`, `stockos_list_inventory_events`, lifecycle, and stock/opname RPCs).
+- URL state for shareable filters/search when appropriate (`search`, `category`, `status`, `tab`, `sort`, `page`, etc.).
+- Local React state for modal visibility, selected entity IDs, form drafts, and optimistic feedback.
+- Zustand vanilla stores: retained in `store.ts` for isolated unit/regression test contracts; UI features Products and Inventory now read directly from server props.
 
 Each feature owns its `store.ts`, state/actions, validation, and mock seeds. Existing feature hooks subscribe through narrow selectors and compose local UI state with derived metrics. Business mutations live in named store actions, not component setters. Related data and audit logs update atomically; rejected actions throw errors without modifying state, and forms display errors without closing.
 

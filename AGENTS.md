@@ -21,9 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 3, local Products integration**
+**Implementation phase: Backend Foundation — ticket 4, local Inventory integration**
 
-Ticket 3 implementation approved 2026-10-10: persistent Products reads/create/metadata/archive/reactivation, opening stock, receipt/restock and sold-only Stock Out through existing owner RPCs; minimum owner-checked catalog metrics/text suggestions and isolated server/browser proof. Inventory remains explicitly demo; Dashboard/Reports/Settings remain mocked. UI opname/modal correction, recovery, cloud, deployment, and real-shop use remain outside this slice.
+Ticket 4 implementation approved 2026-10-10: persistent Inventory reads/filters, movement audit trail, physical Stok Opname reconciliation, carton Stock In, sold-only Stock Out, and live detail movement logs through existing owner RPCs; isolated server/browser proof. Dashboard/Reports/Settings remain mocked. Cloud, deployment, and real-shop use remain outside this slice.
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 
@@ -41,9 +41,11 @@ Current implemented scope:
 - Responsive behavior
 - Mock data
 - Local Supabase owner authentication (ticket 1)
-- Local private product/stock schema and owner-checked lifecycle/stock/modal RPCs (ticket 2); domain UI still uses mocks
+- Local private product/stock schema and owner-checked lifecycle/stock/modal RPCs (ticket 2)
+- Local Products persistent backend integration (ticket 3)
+- Local Inventory persistent backend integration (ticket 4)
 
-Product/inventory/report UI persistence integration and production readiness are not implemented. Local stock database/RPC persistence is isolated proof only. Authentication no longer uses mock cookies; other feature UI data remains mocked.
+Dashboard/Reports/Settings UI data remains mocked. Authentication, products, and inventory use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 
 Do not move into backend implementation unless explicitly requested.
 

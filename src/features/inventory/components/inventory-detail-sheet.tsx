@@ -14,7 +14,10 @@ import {
 } from "lucide-react";
 import { SkuBadge } from "@/components/shared/sku-badge";
 import { cn } from "@/lib/utils";
-import type { InventoryItem } from "../types";
+import { useI18n } from "@/lib/i18n/context";
+import { listInventoryEventsAction } from "../actions";
+import { mapEventToStockMovement } from "../adapters";
+import type { InventoryItem, StockMovement } from "../types";
 
 interface InventoryDetailSheetProps {
   item: InventoryItem | null;
@@ -31,6 +34,35 @@ export function InventoryDetailSheet({
   onAdjustStock,
   onQuickMove,
 }: InventoryDetailSheetProps) {
+  const { t } = useI18n();
+  const [events, setEvents] = React.useState<StockMovement[]>(item?.movementLogs || []);
+  const [loadingEvents, setLoadingEvents] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!item?.id || !open) return;
+    let active = true;
+    setLoadingEvents(true);
+    listInventoryEventsAction({ productId: item.id, pageSize: 25 })
+      .then((result) => {
+        if (!active) return;
+        if (result.ok && result.data) {
+          setEvents(result.data.items.map(mapEventToStockMovement));
+        } else {
+          setEvents(item.movementLogs || []);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setEvents(item.movementLogs || []);
+      })
+      .finally(() => {
+        if (active) setLoadingEvents(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [item?.id, open, item?.movementLogs]);
+
   // Close on Escape
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -97,7 +129,7 @@ export function InventoryDetailSheet({
               className="flex-1 flex justify-center items-center h-10 gap-1.5 border-[3px] border-ink text-emerald-800 bg-emerald-100 hover:bg-emerald-200 text-[10px] font-bold uppercase tracking-widest shadow-hard-sm press"
             >
               <Plus className="h-4 w-4" />
-              <span>Stock In</span>
+              <span>{t.inventory.stockInType}</span>
             </button>
 
             <button
@@ -107,7 +139,7 @@ export function InventoryDetailSheet({
               className="flex-1 flex justify-center items-center h-10 gap-1.5 border-[3px] border-ink text-rose-800 bg-rose-100 hover:bg-rose-200 text-[10px] font-bold uppercase tracking-widest shadow-hard-sm press disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Minus className="h-4 w-4" />
-              <span>Stock Out</span>
+              <span>{t.inventory.stockOutType}</span>
             </button>
 
             <button
@@ -116,7 +148,7 @@ export function InventoryDetailSheet({
               className="flex-1 flex justify-center items-center h-10 gap-1.5 border-[3px] border-ink bg-white text-ink hover:bg-paper text-[10px] font-bold uppercase tracking-widest shadow-hard-sm press"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span>Adjust</span>
+              <span>{t.inventory.adjustStock}</span>
             </button>
           </div>
 
@@ -124,10 +156,10 @@ export function InventoryDetailSheet({
           <div className="border-[3px] border-ink bg-paper p-4 space-y-3 shadow-hard-sm">
             <div className="flex items-center justify-between">
               <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink/80">
-                Stock Health Gauge
+                {t.inventory.stockHealthGauge}
               </span>
               <span className="font-mono tabular-nums text-[10px] font-bold text-ink bg-white border border-ink/20 px-1">
-                {stockRatio}% of Max Cap
+                {stockRatio}% {t.inventory.ofMaxCap}
               </span>
             </div>
 
@@ -148,7 +180,7 @@ export function InventoryDetailSheet({
             {/* Stock Metric Grid */}
             <div className="grid grid-cols-3 gap-3 pt-3 border-t-[2px] border-ink/20">
               <div className="text-center p-2 bg-white border-[3px] border-ink shadow-neo-sm">
-                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">On Hand</div>
+                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">{t.inventory.onHand}</div>
                 <div className="font-mono tabular-nums text-lg font-bold text-ink my-1">
                   {item.currentStock}
                 </div>
@@ -156,7 +188,7 @@ export function InventoryDetailSheet({
               </div>
 
               <div className="text-center p-2 bg-white border-[3px] border-ink shadow-neo-sm">
-                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">Reserved</div>
+                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">{t.inventory.reserved}</div>
                 <div className="font-mono tabular-nums text-lg font-bold text-amber-600 my-1">
                   {item.reservedStock}
                 </div>
@@ -164,7 +196,7 @@ export function InventoryDetailSheet({
               </div>
 
               <div className="text-center p-2 bg-white border-[3px] border-ink shadow-neo-sm">
-                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">Available</div>
+                <div className="font-sans text-[10px] font-bold text-ink uppercase tracking-widest">{t.inventory.available}</div>
                 <div
                   className={cn(
                     "font-mono tabular-nums text-lg font-bold my-1",
@@ -182,22 +214,22 @@ export function InventoryDetailSheet({
           <div className="border-[3px] border-ink bg-white p-4 space-y-4 shadow-hard-sm">
             <h3 className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink flex items-center gap-2">
               <MapPin className="h-4 w-4 text-ink bg-acid/10 p-0.5 border border-ink" />
-              <span>Shelf & Stock Details</span>
+              <span>{t.inventory.storageBin}</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">Storage Bin</span>
+                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">{t.inventory.storageBin}</span>
                 <span className="font-mono tabular-nums font-bold text-ink bg-paper px-1 border border-ink/20">
                   {item.locationBin}
                 </span>
               </div>
               <div>
-                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">Min Reorder Threshold</span>
+                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">{t.inventory.minReorderThreshold}</span>
                 <span className="font-mono tabular-nums font-bold text-amber-600">{item.minStock} {item.unit}</span>
               </div>
               <div>
-                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">Max Storage Capacity</span>
+                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">{t.inventory.maxStorageCapacity}</span>
                 <span className="font-mono tabular-nums font-bold text-ink">{item.maxStock} {item.unit}</span>
               </div>
             </div>
@@ -207,16 +239,16 @@ export function InventoryDetailSheet({
           <div className="border-[3px] border-ink bg-white p-4 space-y-4 shadow-hard-sm">
             <h3 className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-ink bg-emerald-100 p-0.5 border border-ink" />
-              <span>Valuation & Unit Economics</span>
+              <span>{t.inventory.valuationUnitEconomics}</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">Unit Cost</span>
+                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">{t.inventory.unitCost}</span>
                 <span className="font-mono tabular-nums font-bold text-ink bg-paper px-1 border border-ink/20">{formatCurrency(item.unitCost)}</span>
               </div>
               <div>
-                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">Total Stock Valuation</span>
+                <span className="text-ink/60 block text-[10px] font-bold uppercase tracking-widest mb-1">{t.inventory.totalStockValuation}</span>
                 <span className="font-mono tabular-nums font-bold text-ink bg-paper px-1 border border-ink/20">{formatCurrency(totalValue)}</span>
               </div>
             </div>
@@ -226,12 +258,18 @@ export function InventoryDetailSheet({
           <div className="space-y-3">
             <h3 className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink flex items-center gap-2">
               <History className="h-4 w-4 text-ink bg-blue-100 p-0.5 border border-ink" />
-              <span>Recent Movement Timeline</span>
+              <span>{t.inventory.recentMovementTimeline}</span>
             </h3>
 
-            {item.movementLogs && item.movementLogs.length > 0 ? (
+            {loadingEvents ? (
+              <div className="text-center py-6 border-[3px] border-dashed border-ink/40 bg-paper">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-ink/60 font-mono">
+                  {t.common.loading}...
+                </p>
+              </div>
+            ) : events.length > 0 ? (
               <div className="divide-y-[2px] divide-ink/20 border-[3px] border-ink bg-white overflow-hidden shadow-hard-sm">
-                {item.movementLogs.map((log) => (
+                {events.map((log) => (
                   <div key={log.id} className="p-3 text-xs flex flex-col gap-2 hover:bg-paper transition-colors">
                     <div className="flex items-center justify-between">
                       <span className="font-mono tabular-nums font-bold text-[10px] uppercase text-ink bg-acid/10 px-1 border border-ink/20">
@@ -260,7 +298,7 @@ export function InventoryDetailSheet({
                         )}
                       </div>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-ink/80 font-mono">
-                        by {log.performedBy}
+                        {t.inventory.by} {log.performedBy}
                       </span>
                     </div>
                     {log.note && (
@@ -274,7 +312,7 @@ export function InventoryDetailSheet({
             ) : (
               <div className="text-center py-6 border-[3px] border-dashed border-ink/40 bg-paper">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-ink/60 font-mono">
-                  No movement logs recorded yet for this item.
+                  {t.inventory.noMovementLogs}
                 </p>
               </div>
             )}
@@ -284,14 +322,14 @@ export function InventoryDetailSheet({
         {/* Footer */}
         <div className="border-t-[3px] border-ink p-3.5 sm:p-4 bg-paper flex items-center justify-between">
           <span className="font-mono tabular-nums text-[10px] font-bold uppercase tracking-widest text-ink/60">
-            Last updated: {item.lastMovementAt}
+            {t.inventory.lastUpdated} {item.lastMovementAt}
           </span>
           <button
             type="button"
             onClick={onClose}
             className="h-10 px-4 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-ink bg-white border-[3px] border-ink shadow-hard-sm press"
           >
-            Close
+            {t.common.close}
           </button>
         </div>
       </div>

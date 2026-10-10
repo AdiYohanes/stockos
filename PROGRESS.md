@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 3 — persistent local Products integration (catalog/detail/lifecycle, opening stock, receipts/restock, sold-only Stock Out), minimal catalog reads, and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1/2 remain implemented. Inventory stays explicitly demo; Dashboard/Reports/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 4 — persistent local Inventory integration (stock levels, movement audit trail, server-authoritative URL state, physical Stok Opname reconciliation, carton Stock In, sold-only Stock Out, live detail movement history), and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, and 3 remain implemented. Dashboard/Reports/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -104,7 +104,22 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Mutation resilience: client-generated UUID, frozen request payload, exact requestId retry on uncertain network failures; conflicts preserve drafts and require review.
 - [x] Verified via `scripts/test-products.py` against Edge headless: real pointer clicks, login, creation, opening valuation, page reload/new session persistence, carton restock, sold movements, price edit without valuation change, two-session conflict review, lost-response retry/replay, detail sheet focus trap/Escape, desktop (1440px) and mobile (390px) responsive layout with no horizontal overflow, and fixture cleanup.
 - [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit --pretty false` PASS, `npm run build` PASS, focused ESLint on Products PASS (0 errors, 0 warnings), `git diff --check` PASS.
-- [x] Inventory UI remains mock with an explicit demo banner; Dashboard/Reports/Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+- [x] Products UI connected to persistent backend; Inventory UI moved to persistent backend in Ticket 4.
+
+## Backend Foundation — Ticket 4 Inventory Integration (2026-10-10)
+
+- [x] Connected Inventory frontend (`/inventory`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_list_products`, `stockos_list_inventory_events`, `stockos_record_stock_in`, `stockos_record_stock_out`, `stockos_record_opname`, `stockos_adjust_inventory_cost`, `stockos_product_metrics`, `stockos_text_suggestions`).
+- [x] Server-authoritative reads using URL search parameters (`tab`, `q`, `category`, `status`, `type`, `sort`, `order`, `page`, `pageSize`) via Next.js App Router Server Component (`src/app/(dashboard)/inventory/page.tsx`).
+- [x] Removed demo notice banner (`inventoryDemo`) from inventory header.
+- [x] Physical Stok Opname (`stockos_record_opname`) in `stock-adjustment-modal.tsx` with physical count verification, calculated delta feedback, zero-diff evidence retention, whole-IDR `foundPurchaseTotal` requirement when prior stock was zero, and `expectedStockVersion` concurrency checks.
+- [x] Stock In (`stockos_record_stock_in`) in `stock-movement-modal.tsx` supporting carton mode (`cartonCount * unitsPerCarton`), whole-IDR `purchaseTotal`, free goods handling (0 IDR), and note/reference tracking.
+- [x] Sold-only Stock Out (`stockos_record_stock_out`) in `stock-movement-modal.tsx` with positive integer quantity and reference.
+- [x] Movement audit trail tab (`inventory-movements-table.tsx`) reading server-paginated `stockos_list_inventory_events` with type/date filters and pagination.
+- [x] Item detail sheet (`inventory-detail-sheet.tsx`) fetching live item-specific event logs via `listInventoryEventsAction({ productId })`.
+- [x] Preserved `store.ts` and `mock-data.ts` to satisfy regression check scripts (`check-domain-stores.cjs`).
+- [x] Verified via `scripts/test-inventory.py` against Edge headless: real pointer clicks, login, persistent catalog balances, physical count opname discrepancy (+2 Pcs), carton stock in (+10 Pcs), sold stock out (-5 Pcs), movements audit trail with live transaction references, detail sheet live history, mobile (390px) and desktop (1440px) responsive layout with no horizontal overflow, and clean fixture cleanup.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/inventory`).
+- [x] Dashboard/Reports/Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
 
 ## Next
 

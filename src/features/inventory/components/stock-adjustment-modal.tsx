@@ -19,103 +19,128 @@ import { Label } from "@/components/ui/label";
 import { SkuBadge } from "@/components/shared/sku-badge";
 import { SlidersHorizontal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { AdjustmentReason, InventoryItem } from "../types";
+import { useI18n } from "@/lib/i18n/context";
+import { recordOpnameAction } from "../actions";
+import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
+import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
+import type { InventoryItem } from "../types";
 
 export interface StockAdjustmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetItem: InventoryItem | null;
   allItems: InventoryItem[];
-  onAdjustStock: (
-    itemId: string,
-    newStock: number,
-    reason: AdjustmentReason,
-    reference: string,
-    note?: string
-  ) => void;
+  rawProducts?: ProductDto[];
+  onCommitted?: OnProductCommitted;
 }
 
 interface FormInnerProps {
   initialItem: InventoryItem | null;
   allItems: InventoryItem[];
-  onSubmit: (
-    itemId: string,
-    newStock: number,
-    reason: AdjustmentReason,
-    reference: string,
-    note?: string
-  ) => void;
-  onCancel: () => void;
+  rawProducts: ProductDto[];
+  onClose: () => void;
+  onCommitted?: OnProductCommitted;
 }
 
 function StockAdjustmentForm({
   initialItem,
   allItems,
-  onSubmit,
-  onCancel,
+  rawProducts,
+  onClose,
+  onCommitted,
 }: FormInnerProps) {
+  const { t } = useI18n();
+  const c = t.products.persistent;
+
   const [selectedItemId, setSelectedItemId] = React.useState<string>(
     initialItem ? initialItem.id : allItems[0]?.id || ""
   );
   const activeItem = allItems.find((i) => i.id === selectedItemId) || initialItem;
+  const activeProduct = rawProducts.find((p) => p.id === selectedItemId);
 
   const [newStockStr, setNewStockStr] = React.useState<string>(
     activeItem ? activeItem.currentStock.toString() : "0"
   );
+  const [foundCost, setFoundCost] = React.useState<string>("0");
   const [note, setNote] = React.useState<string>("");
-  const [error, setError] = React.useState<string | null>(null);
+
+  const submission = useProductSubmission(recordOpnameAction, async (product) => {
+    if (onCommitted) await onCommitted(product);
+    onClose();
+  });
 
   const currentStock = activeItem ? activeItem.currentStock : 0;
   const newStockNum = newStockStr.trim() ? Number(newStockStr) : NaN;
   const delta = isNaN(newStockNum) ? 0 : newStockNum - currentStock;
+  const isFoundGoods = currentStock === 0 && newStockNum > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    if (submission.blocked) return;
 
-    if (!Number.isSafeInteger(newStockNum) || newStockNum < 0) {
-      setError("Masukkan jumlah fisik yang benar (tidak boleh minus).");
+    if (!Number.isSafeInteger(newStockNum) || newStockNum < 0 || newStockNum > 1_000_000_000) {
+      submission.reportError("Please enter a valid physical count (0 to 1,000,000,000).");
       return;
     }
 
     if (!activeItem) {
-      setError("Please select an item.");
+      submission.reportError("Please select an item.");
       return;
     }
 
-    if (delta === 0) {
-      setError("Stok fisik sama dengan sistem. Tidak ada selisih.");
+    if (isFoundGoods && (!/^[0-9]{1,13}$/.test(foundCost.trim()) || BigInt(foundCost.trim()) > BigInt("1000000000000"))) {
+      submission.reportError("Purchase total is required for found goods after zero balance (0 to 1,000,000,000,000 IDR).");
       return;
     }
 
-    try {
-      const autoRef = `SO-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000)}`;
-      onSubmit(activeItem.id, newStockNum, "cycle_count", autoRef, note.trim() || undefined);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to adjust stock");
-    }
+    const version = activeProduct?.stockVersion || activeItem.stockVersion || "0";
+
+    submission.submit({
+      productId: activeItem.id,
+      expectedStockVersion: String(version),
+      countedQuantity: newStockNum,
+      note: note.trim() || null,
+      ...(isFoundGoods ? { foundPurchaseTotal: foundCost.trim() } : {}),
+    });
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <DialogBody className="space-y-4">
+      <DialogHeader className="border-b-[3px] border-ink p-4 bg-paper">
+        <DialogTitle className="flex items-center gap-2 font-display text-lg font-bold uppercase tracking-tight text-ink">
+          <SlidersHorizontal className="h-5 w-5" />
+          <span>{t.inventory.stockAdjustmentAudit}</span>
+        </DialogTitle>
+        <DialogDescription className="font-mono text-xs text-ink/60">
+          {t.inventory.stockAdjustmentAuditDesc}
+        </DialogDescription>
+      </DialogHeader>
+
+      <DialogBody className="space-y-4 p-4 max-h-[65vh] overflow-y-auto">
+        {submission.error && (
+          <div role="alert" className="rounded-none bg-rose-50 border border-rose-300 p-2.5 text-xs text-rose-700 font-sans flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{submission.error}</span>
+          </div>
+        )}
+
         {/* 1. Item Selection */}
         <div className="space-y-1.5">
-          <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Pilih Barang
+          <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-ink/70">
+            {t.inventory.selectInventoryItem}
           </Label>
           {initialItem ? (
-            <div className="p-3 rounded-none border-[3px] border-ink bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+            <div className="p-3 border-[3px] border-ink bg-paper text-xs flex items-center justify-between">
               <div className="flex flex-col gap-1 min-w-0 pr-2">
                 <SkuBadge code={initialItem.sku} />
-                <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
-                <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                  Shelf: {initialItem.locationBin}
+                <span className="font-sans font-bold text-ink truncate">{initialItem.name}</span>
+                <span className="font-mono text-[10px] text-ink/60">
+                  {t.inventory.storageBin}: {initialItem.locationBin}
                 </span>
               </div>
-              <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
+              <span className="font-mono text-xs font-bold text-ink shrink-0 text-right">
                 {initialItem.currentStock} {initialItem.unit}
-                <span className="block text-[10px] font-sans text-muted-foreground font-normal">on hand</span>
+                <span className="block text-[10px] font-sans text-ink/60 font-normal">{t.inventory.onHandLabel}</span>
               </span>
             </div>
           ) : (
@@ -127,7 +152,8 @@ function StockAdjustmentForm({
                 const nextItem = allItems.find((i) => i.id === e.target.value);
                 if (nextItem) setNewStockStr(nextItem.currentStock.toString());
               }}
-              className="w-full h-9 rounded-none border-[3px] border-ink bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
+              disabled={submission.blocked}
+              className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -139,39 +165,43 @@ function StockAdjustmentForm({
         </div>
 
         {/* 2. Current vs New Stock Comparison & Delta */}
-        <div className="grid grid-cols-2 gap-3 p-3 rounded-none bg-slate-50/60 dark:bg-slate-900/40 border-[3px] border-ink">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-paper border-[3px] border-ink">
           <div>
-            <span className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Stok Sistem Saat Ini
+            <span className="text-[11px] font-mono uppercase text-ink/70 block">
+              {t.inventory.currentOnHand}
             </span>
-            <span className="font-mono tabular-nums text-lg font-semibold text-foreground">
-              {currentStock} <span className="text-xs font-normal text-muted-foreground font-sans">{activeItem?.unit}</span>
+            <span className="font-mono text-lg font-bold text-ink">
+              {currentStock} <span className="text-xs font-normal text-ink/60 font-sans">{activeItem?.unit}</span>
             </span>
           </div>
 
           <div>
-            <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Stok Fisik Asli (Real) *
+            <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-ink/70 block">
+              {t.inventory.actualPhysicalCount} *
             </Label>
             <Input
               id="newStock"
               type="number"
               min="0"
+              max={1_000_000_000}
+              step={1}
+              required
+              disabled={submission.blocked}
               value={newStockStr}
               onChange={(e) => setNewStockStr(e.target.value)}
-              className="h-8 text-xs font-mono tabular-nums font-semibold bg-background border-ink focus:border-slate-900"
+              className="h-8 text-xs font-mono font-bold bg-white border-ink"
             />
           </div>
 
           {/* Delta feedback */}
-          <div className="col-span-2 pt-2 border-t border-ink flex items-center justify-between text-xs font-mono tabular-nums">
-            <span className="text-muted-foreground font-sans">Selisih (Adjustment):</span>
+          <div className="col-span-2 pt-2 border-t border-ink/20 flex items-center justify-between text-xs font-mono">
+            <span className="text-ink/70 font-sans">{t.inventory.calculatedAdjustment}</span>
             <span
               className={cn(
-                "font-medium px-2 py-0.5 rounded-none border",
-                delta > 0 && "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-                delta < 0 && "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-                delta === 0 && "bg-slate-100 text-slate-700 border-ink dark:bg-slate-800 dark:text-slate-300"
+                "font-bold px-2 py-0.5 border-[2px] border-ink",
+                delta > 0 && "bg-emerald-100 text-emerald-900",
+                delta < 0 && "bg-rose-100 text-rose-900",
+                delta === 0 && "bg-white text-ink"
               )}
             >
               {delta > 0 ? `+${delta}` : delta} {activeItem?.unit || "units"}
@@ -179,47 +209,85 @@ function StockAdjustmentForm({
           </div>
         </div>
 
+        {/* Zero difference informational note */}
+        {delta === 0 && (
+          <p className="text-[11px] font-mono text-ink/70 bg-paper p-2 border border-ink/20">
+            Physical count matches system stock. Verification will be recorded as evidence without stock change.
+          </p>
+        )}
+
+        {/* Found goods purchase total input */}
+        {isFoundGoods && (
+          <div className="space-y-1.5 p-3 bg-amber-50 border-[2px] border-ink">
+            <Label htmlFor="foundCost" className="text-xs font-bold text-ink block">
+              Purchase Total for Found Goods (IDR) *
+            </Label>
+            <Input
+              id="foundCost"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{1,13}"
+              maxLength={13}
+              required
+              disabled={submission.blocked}
+              placeholder="0"
+              value={foundCost}
+              onChange={(e) => setFoundCost(e.target.value)}
+              className="h-8 text-xs font-mono bg-white border-ink"
+            />
+            <p className="text-[10px] text-ink/70 font-mono">
+              Purchase total required when recording found stock after a zero balance. Enter 0 for free goods.
+            </p>
+          </div>
+        )}
+
         {/* 3. Notes */}
-        <div className="space-y-1.5 mt-2">
-          <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Catatan Opname
+        <div className="space-y-1.5">
+          <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-ink/70">
+            {t.inventory.auditNote}
           </Label>
           <Input
             id="adjNote"
             type="text"
-            placeholder="Keterangan / alasan selisih (opsional)"
+            maxLength={1000}
+            disabled={submission.blocked}
+            placeholder={t.modals?.notesOptional || "Optional notes..."}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-ink focus:border-slate-900"
+            className="h-9 text-xs border-ink bg-white"
           />
         </div>
-
-        {/* Error message */}
-        {error && (
-          <div
-            role="alert"
-            className="rounded-none bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
-          >
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="mt-4 pt-3 border-t border-ink">
-        <DialogClose
-          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-ink hover:border-slate-400" />}
-        >
-          Cancel
-        </DialogClose>
+      <DialogFooter className="border-t-[3px] border-ink p-4 flex justify-end gap-2 bg-paper">
         <Button
-          type="submit"
-          size="sm"
-          className="h-9 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+          type="button"
+          variant="outline"
+          disabled={submission.blocked}
+          onClick={onClose}
+          className="border-[3px] border-ink shadow-hard-sm"
         >
-          Simpan Stok Opname
+          {t.common.cancel}
         </Button>
+        {submission.uncertain || submission.refreshFailed ? (
+          <Button
+            type="button"
+            disabled={submission.pending}
+            onClick={submission.retry}
+            className="bg-acid text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
+          >
+            {c.retry}
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={submission.pending}
+            className="bg-acid hover:bg-acid/90 text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
+          >
+            {submission.pending ? c.pending : t.inventory.applyAdjustment}
+          </Button>
+        )}
       </DialogFooter>
     </form>
   );
@@ -230,38 +298,22 @@ export function StockAdjustmentModal({
   onOpenChange,
   targetItem,
   allItems,
-  onAdjustStock,
+  rawProducts = [],
+  onCommitted,
 }: StockAdjustmentModalProps) {
-  // Keyed form pattern for React 19 safety
-  const formKey = `${targetItem?.id || "general"}-${open}`;
-
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="font-sans text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <span>Stok Opname (Penyesuaian)</span>
-            </DialogTitle>
-            <DialogDescription className="font-mono tabular-nums text-xs uppercase tracking-wider text-muted-foreground">
-              Samakan stok fisik asli dengan sistem
-            </DialogDescription>
-          </DialogHeader>
-
-          {open && (
-            <StockAdjustmentForm
-              key={formKey}
-              initialItem={targetItem}
-              allItems={allItems}
-              onSubmit={(itemId, newStock, reason, ref, note) => {
-                onAdjustStock(itemId, newStock, reason, ref, note);
-                onOpenChange(false);
-              }}
-              onCancel={() => onOpenChange(false)}
-            />
-          )}
+        <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
+          <StockAdjustmentForm
+            key={targetItem?.id || "new-adjust"}
+            initialItem={targetItem}
+            allItems={allItems}
+            rawProducts={rawProducts}
+            onClose={() => onOpenChange(false)}
+            onCommitted={onCommitted}
+          />
         </DialogPopup>
       </DialogPortal>
     </DialogRoot>
