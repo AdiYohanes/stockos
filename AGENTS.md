@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 7, local Dashboard integration**
+**Implementation phase: Backend Foundation — ticket 8, local password recovery**
+
+Ticket 8 implementation approved 2026-10-10: provider-verified owner recovery, session-bound invitation/recovery purpose checks, password completion, global owner-session revocation, and real isolated local Auth/browser proof. Recovery requires fresh password login after completion. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Ticket 7 implementation approved 2026-10-10: persistent Dashboard reads (`stockos_get_dashboard`), authoritative Server Components, glossary-defined Potensi Pendapatan and Potensi Laba Kotor, live inventory health distributions, bounded attention items, 7d/30d movement activity, and quick actions wired to persistent mutation modals with optimistic refresh. Cloud, deployment, and real-shop use remain outside this slice.
 
@@ -47,6 +49,7 @@ Current implemented scope:
 - Local Reports persistent backend integration (ticket 5)
 - Local Settings persistent backend integration (ticket 6)
 - Local Dashboard persistent backend integration (ticket 7)
+- Local owner password recovery with all-session revocation (ticket 8)
 
 Authentication, products, inventory, reports, settings, and dashboard use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 

@@ -2,10 +2,18 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn } from "@/features/auth/actions";
 import { useI18n } from "@/lib/i18n/context";
+
+function AuthLinkHint() {
+  const searchParams = useSearchParams();
+  const { t } = useI18n();
+  const auth = searchParams.get("auth");
+  const hint = auth === "invalid-recovery" ? t.auth.invalidRecovery : auth === "invalid-invitation" ? t.auth.invitationExpired : null;
+  return hint ? <p role="alert" className="border-[3px] border-ink p-3 text-sm text-destructive">{hint}</p> : null;
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,6 +52,7 @@ export function LoginForm() {
           <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">{t.auth.loginTitle}</h1>
           <p className="text-sm leading-relaxed">{t.auth.loginSubtitle}</p>
         </div>
+        <React.Suspense fallback={null}><AuthLinkHint /></React.Suspense>
         {message && <p role="alert" className="border-[3px] border-ink p-3 text-sm text-destructive">{message}</p>}
         <form onSubmit={handleSubmit} aria-busy={pending} className="space-y-4">
           <div className="space-y-1.5">
@@ -70,7 +79,10 @@ export function LoginForm() {
             {pending ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{t.common.loading}</> : <>{t.auth.signInButton}<ArrowRight className="h-4 w-4" aria-hidden="true" /></>}
           </button>
         </form>
-        <Link href="/signup" className="inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">{t.auth.setupTitle}</Link>
+        <div className="flex flex-wrap items-center justify-between gap-x-4">
+          <Link href="/reset" className="inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">{t.auth.forgotPassword}</Link>
+          <Link href="/signup" className="inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">{t.auth.setupTitle}</Link>
+        </div>
       </div>
       <div aria-hidden="true" className="border-t-[3px] border-ink bg-primary px-6 py-3 font-mono text-xs font-bold text-primary-foreground">/ LOGIN</div>
     </div>

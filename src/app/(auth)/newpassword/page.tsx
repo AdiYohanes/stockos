@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NewPasswordForm } from "@/features/auth/components/new-password-form";
-import { getOwnerInvitation } from "@/features/auth/server";
+import { getOwnerInvitation, getOwnerRecovery } from "@/features/auth/server";
 
 export const metadata: Metadata = {
   title: "Set new password",
@@ -9,7 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default async function NewPasswordPage() {
+  const recovery = await getOwnerRecovery();
+  if (recovery) return <NewPasswordForm mode="recovery" />;
   const invitation = await getOwnerInvitation();
-  if (!invitation) redirect("/login?auth=invalid-invitation");
-  return <NewPasswordForm />;
+  if (!invitation) redirect("/login?auth=invalid-recovery");
+  return <NewPasswordForm mode="invite" />;
 }

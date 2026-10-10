@@ -4,11 +4,14 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
-import { completeOwnerPassword } from "@/features/auth/actions";
+import { completeOwnerPassword, resetPassword } from "@/features/auth/actions";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 
-export function NewPasswordForm() {
+const subscribe = () => () => {};
+
+export function NewPasswordForm({ mode = "invite" }: { mode?: "invite" | "recovery" }) {
+  const hydrated = React.useSyncExternalStore(subscribe, () => true, () => false);
   const { t } = useI18n();
   const router = useRouter();
   const [password, setPassword] = React.useState("");
@@ -20,10 +23,11 @@ export function NewPasswordForm() {
   const [completed, setCompleted] = React.useState(false);
   const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const [errors, setErrors] = React.useState<{ password?: string; confirmPassword?: string }>({});
+  const linkRequired = errorCode === "UNAUTHENTICATED" || (mode === "recovery" && errorCode === "RECOVERY_INCOMPLETE");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (requestInFlight.current || completed || errorCode === "UNAUTHENTICATED") return;
+    if (requestInFlight.current || completed || linkRequired) return;
     const nextErrors: typeof errors = {};
     if (password.length < 12 || password.length > 128) nextErrors.password = t.auth.passwordBounds;
     if (confirmPassword.length < 12 || confirmPassword.length > 128) nextErrors.confirmPassword = t.auth.passwordBounds;
@@ -38,7 +42,9 @@ export function NewPasswordForm() {
     setErrorCode(null);
     let destination: string | null = null;
     try {
-      const result = await completeOwnerPassword({ password, confirmPassword });
+      const result = mode === "recovery"
+        ? await resetPassword({ password, confirmPassword })
+        : await completeOwnerPassword({ password, confirmPassword });
       if (result.ok) {
         setCompleted(true);
         setPassword("");
@@ -59,7 +65,7 @@ export function NewPasswordForm() {
     }
   }
 
-  const disabled = pending || completed || errorCode === "UNAUTHENTICATED";
+  const disabled = !hydrated || pending || completed || linkRequired;
   const fields = [
     { id: "password", label: t.auth.passwordLabel, value: password, setValue: setPassword, visible: showPassword, setVisible: setShowPassword },
     { id: "confirmPassword", label: t.auth.confirmPasswordLabel, value: confirmPassword, setValue: setConfirmPassword, visible: showConfirmPassword, setVisible: setShowConfirmPassword },
@@ -69,13 +75,13 @@ export function NewPasswordForm() {
     <div className="w-full max-w-[450px] mx-auto">
       <div className="relative border-[3px] border-black bg-white p-7 sm:p-8 shadow-[8px_8px_0_#000] rounded-none">
         <div className="mb-6 space-y-1">
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{t.auth.newPasswordTitle}</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">{t.auth.newPasswordSubtitle}</p>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{mode === "recovery" ? t.auth.recoveryTitle : t.auth.newPasswordTitle}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">{mode === "recovery" ? t.auth.recoverySubtitle : t.auth.newPasswordSubtitle}</p>
         </div>
         {errorCode && (
           <div role="alert" className="mb-5 flex items-start gap-2.5 border-[3px] border-black bg-[#ff1744] p-3 text-xs font-semibold text-black shadow-[4px_4px_0_#000] rounded-none">
             <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-mono break-words">{errorCode === "network" ? t.auth.networkError : t.auth.errors[errorCode] ?? t.auth.errors.INTERNAL_ERROR}</p>
+            <p className="flex-1 font-mono break-words">{errorCode === "network" ? t.auth.networkError : errorCode === "UNAUTHENTICATED" ? mode === "recovery" ? t.auth.invalidRecovery : t.auth.invitationExpired : t.auth.errors[errorCode] ?? t.auth.errors.INTERNAL_ERROR}</p>
           </div>
         )}
         {completed && (
@@ -84,7 +90,7 @@ export function NewPasswordForm() {
             <p className="flex-1 font-mono">{t.auth.passwordCompleted}</p>
           </div>
         )}
-        <form onSubmit={submit} noValidate aria-busy={pending} className="space-y-4">
+        <form method="post" onSubmit={submit} noValidate aria-busy={pending} className="space-y-4">
           {fields.map((field) => (
             <div key={field.id} className="space-y-1.5">
               <label htmlFor={field.id} className="font-heading text-xs font-semibold text-foreground">{field.label}</label>
@@ -131,7 +137,8 @@ export function NewPasswordForm() {
             <span>{pending ? t.auth.requestPending : t.auth.completePasswordButton}</span>
           </button>
         </form>
-        <div className="mt-6 text-center text-xs text-muted-foreground">
+        <div className="mt-6 flex flex-col items-center gap-3 text-center text-xs text-muted-foreground">
+          <Link href="/reset" className="font-semibold text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-primary">{t.auth.requestNewRecoveryLink}</Link>
           <Link href="/login" className="font-semibold text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-primary">{t.auth.signInButton}</Link>
         </div>
       </div>

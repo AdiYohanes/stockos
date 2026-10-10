@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 7 — persistent local Dashboard integration (snapshot-consistent `stockos_get_dashboard` RPC, Potensi Pendapatan and Potensi Laba Kotor, live inventory health distributions, bounded attention items, 7d/30d movement activity, and persistent quick actions with optimistic refresh). Tickets 1, 2, 3, 4, 5, 6, and 7 implemented. Cloud, deployment, and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 8 — local password recovery, approved 2026-10-10. Provider-verified recovery and session-purpose enforcement must revoke all owner sessions before fresh login; real Auth/browser proof is required. Tickets 1–7 implemented. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -156,6 +156,18 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Stock Movement Chart accepting live 7d and 30d inbound/outbound volume with net flow calculations.
 - [x] Wired Dashboard quick actions (`ProductAddModal` and `StockMovementModal`) with optimistic router refresh on commit.
 - [x] Suite passes: `scripts/test-schemas.ts` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/`), focused ESLint on Dashboard PASS (0 errors, 0 warnings).
+
+## Backend Foundation — Ticket 8 Password Recovery (2026-10-10)
+
+- Implementation approved for isolated local recovery and all-owner-session revocation; cloud/external SMTP/deployment remain excluded.
+- Public TDD seam: real Auth/PostgreSQL RPC and browser. Browser RED confirmed: `/reset` had no `#email` input and displayed recovery unavailable.
+- [x] Real reset/new-password/login actions and translated invite/recovery UI; private purpose evidence binds live OTP session, confirmed owner, expiry, and completion phase. Concurrent writes fail closed; confirmed completion retries revocation only. Global sign-out precedes login success; recovery OTP cannot access business RPCs.
+- [x] `node scripts/check-owner-recovery.mjs <recovery-status.json>` PASS: invitation/recovery isolation, expired/private evidence, concurrent completion, native password update, all old JWT/refresh token denial, fresh login. `node scripts/check-owner-auth.mjs <recovery-status.json>` PASS: invitation/auth regression.
+- [x] `python -I scripts/test-recovery.py http://localhost:3004 <recovery-status.json>` PASS against real Auth/PostgreSQL and Edge: generic owner/unknown acknowledgement; Auth outage errors/draft retry; healthy-Auth SMTP failure without enumeration; same-password rejection; global revocation failure and revoke-only retry with changed draft; direct anonymous/password-session/unbound action denial and live recovery-to-invitation action denial; invitation-to-recovery action uses a stale invitation session (live cross-purpose isolation proved at RPC seam, not that action path); ambiguous password-write/evidence failure, fail-closed retry, and successful fresh recovery with different password; callback malformed/duplicate/unsafe redirect/replay denial; old browser-session denial; keyboard password toggle; 1440/390/320px without overflow.
+- [x] `node scripts/check-domain-stores.cjs`, `node scripts/check-dashboard-metrics.cjs`, `npx tsc --noEmit --pretty false`, focused auth/scripts ESLint `--max-warnings 0`, `npm run build`, and `git diff --check` PASS. Two-axis code review fixes include unexpected-error trace IDs, feature-owned callback logic, and explicit partial-outcome warning. Tiny existing auth getter duplication retained without new abstraction.
+- Full repository verification is **not green**: `npm run lint` reports 6 unrelated errors (Dashboard unescaped entities; Inventory cascading effects) and 4 unused-binding warnings. `scripts/check-stock-foundation.mjs` fails its broad private-function grant assertion because existing `stockos_private.shop_settings_dto` remains callable; recovery private helper/table grants pass. No unrelated code/grant fix included. Other feature browser suites retain existing fixture/port assumptions and were not rerun against recovery fixture.
+- Next.js 16.3 development logging exposed fixture action arguments before configuration fix. `next.config.ts` now disables Server Function/incoming-request logging to avoid password/callback-token output; earlier disposable fixture credentials were revoked/deleted, never production credentials. Existing Auth/stock proof resources and `.env.local` unchanged. Shared infrastructure health failures return retryable errors; account-specific delivery failures remain generic acknowledgement, which does not confirm delivery.
+- Isolated local proof only; external SMTP deliverability, cloud provisioning, deployment, and real-shop use remain unverified/outside scope.
 
 ## Next
 

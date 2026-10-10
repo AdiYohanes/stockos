@@ -6,14 +6,16 @@ import { setTimeout as delay } from "node:timers/promises";
 
 // Local, destructive fixture test. Never point this at a shop or cloud project.
 const status = JSON.parse(readFileSync(process.argv[2], "utf8").replace(/^﻿/, ""));
-assert.equal(status.API_URL, "http://127.0.0.1:55541", "Refuse nonfixture API URL");
-assert.ok(status.DB_URL === "postgresql://postgres:postgres@127.0.0.1:55542/postgres", "Refuse nonfixture DB URL");
+const recoveryFixture = status.API_URL === "http://127.0.0.1:55641";
+assert.ok(recoveryFixture || status.API_URL === "http://127.0.0.1:55541", "Refuse nonfixture API URL");
+assert.equal(status.DB_URL, recoveryFixture ? "postgresql://postgres:postgres@127.0.0.1:55642/postgres" : "postgresql://postgres:postgres@127.0.0.1:55542/postgres", "Refuse nonfixture DB URL");
 assert.equal(typeof status.ANON_KEY, "string", "Missing local anon key");
 assert.equal(typeof status.SERVICE_ROLE_KEY, "string", "Missing local service key");
 assert.ok(status.ANON_KEY.length && status.SERVICE_ROLE_KEY.length, "Empty local keys");
 
-const container = "supabase_db_stockos-stock-proof";
-const mailUrl = "http://127.0.0.1:55544";
+const project = recoveryFixture ? "stockos-recovery-proof" : "stockos-stock-proof";
+const container = `supabase_db_${project}`;
+const mailUrl = recoveryFixture ? "http://127.0.0.1:55644" : "http://127.0.0.1:55544";
 const emails = Array.from({ length: 6 }, () => `owner-${randomUUID()}@example.test`);
 const createdUsers = new Set();
 const createdProducts = new Set();
@@ -35,7 +37,7 @@ function docker(args) {
 function assertContainer() {
   const [inspection] = JSON.parse(docker(["inspect", container]));
   assert.equal(inspection.Name, `/${container}`, "Wrong fixture container");
-  assert.equal(inspection.Config.Labels?.["com.supabase.cli.project"], "stockos-stock-proof", "Wrong fixture project label");
+  assert.equal(inspection.Config.Labels?.["com.supabase.cli.project"], project, "Wrong fixture project label");
   assert.equal(inspection.State.Running, true, "Fixture database is not running");
 }
 

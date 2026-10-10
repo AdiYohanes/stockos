@@ -529,8 +529,17 @@ export interface Translations {
     invitationExpired: string;
     showPassword: string;
     hidePassword: string;
-    recoveryUnavailableTitle: string;
-    recoveryUnavailableDescription: string;
+    recoveryTitle: string;
+    recoverySubtitle: string;
+    invalidRecovery: string;
+    resetRequestTitle: string;
+    resetRequestSubtitle: string;
+    resetRequestButton: string;
+    resetRequestPending: string;
+    resetRequestSent: string;
+    resetRequestAcknowledgement: string;
+    requestNewRecoveryLink: string;
+    forgotPassword: string;
     errors: Record<string, string>;
   };
   modals: {

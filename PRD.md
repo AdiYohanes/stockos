@@ -51,7 +51,7 @@ Frontend flows:
 - Reset password
 - Logout
 
-Ticket 1 implements local Supabase owner authentication. Full recovery remains unavailable; other feature data remains mocked.
+Tickets 1–7 implement isolated local Supabase authentication and persistent feature integrations. Ticket 8 password recovery implementation approved 2026-10-10: verified recovery email, new password, revocation of all owner sessions, and fresh login. Recovery is implemented and verified against real isolated local Auth/browser, including partial-failure handling and all-session revocation; cloud and operational launch are not authorized.
 
 Target authentication is Supabase email/password with verified email and password recovery. Owner signup requires a server setup secret, atomically claims the only owner slot, and closes after binding. Public provider signup is disabled; no staff/team accounts. Partial provider setup must recover the same attempt, not create another owner. Ticket 1 uses invitation-mode setup without collecting a password until email verification; implementation approved for isolated local tests only.
 

@@ -1,23 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createSessionClient } from "@/lib/supabase/server";
+import { verifyPasswordPurpose } from "@/features/auth/server";
 
 export async function GET(request: NextRequest) {
-  const destination = new URL("/login?auth=invalid-invitation", process.env.STOCKOS_APP_URL!);
   const params = request.nextUrl.searchParams;
+  const type = params.get("type");
+  const destination = new URL(type === "recovery" ? "/login?auth=invalid-recovery" : "/login?auth=invalid-invitation", process.env.STOCKOS_APP_URL!);
   const token = params.get("token_hash");
-  if (params.get("type") === "invite" && token && /^[a-f0-9]{56,64}$/.test(token)
-    && [...params.keys()].every((key) => key === "type" || key === "token_hash")) {
-    const client = await createSessionClient(true);
-    const verified = await client.auth.verifyOtp({ token_hash: token, type: "invite" });
-    if (!verified.error) {
-      const owner = await client.rpc("stockos_owner_invitation");
-      if (!owner.error) {
-        destination.pathname = "/newpassword";
-        destination.search = "";
-      } else {
-        await client.auth.signOut({ scope: "local" });
-      }
-    }
+  if ((type === "invite" || type === "recovery") && token && /^(?:pkce_)?[a-f0-9]{56,64}$/.test(token)
+    && params.getAll("type").length === 1 && params.getAll("token_hash").length === 1
+    && [...params.keys()].every((key) => key === "type" || key === "token_hash")
+    && await verifyPasswordPurpose(token, type)) {
+    destination.pathname = "/newpassword";
+    destination.search = "";
   }
   const response = NextResponse.redirect(destination);
   response.headers.set("Cache-Control", "private, no-store");
