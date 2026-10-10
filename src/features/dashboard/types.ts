@@ -8,7 +8,7 @@ export interface OverviewMetric {
   change?: string;
   trend?: MetricTrend;
   supportingText?: string;
-  iconName: "products" | "value" | "low_stock" | "out_of_stock";
+  iconName: "products" | "revenue" | "net_profit" | "out_of_stock";
   variant?: "default" | "warning" | "destructive" | "success";
 }
 

@@ -4,7 +4,7 @@ import * as React from "react";
 import {
   Package,
   CircleDollarSign,
-  AlertTriangle,
+  Wallet,
   AlertOctagon,
   TrendingUp,
   TrendingDown,
@@ -25,10 +25,10 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
     switch (metric.id) {
       case "products":
         return t.dashboard.totalProducts;
-      case "inventory_value":
-        return t.dashboard.inventoryValuation;
-      case "low_stock":
-        return t.dashboard.lowStockAlerts;
+      case "revenue":
+        return t.dashboard.revenue;
+      case "net_profit":
+        return t.dashboard.estimatedNetProfit;
       case "out_of_stock":
         return t.products.outOfStock;
       default:
@@ -40,10 +40,10 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
     switch (metric.id) {
       case "products":
         return t.dashboard.acrossCategories;
-      case "inventory_value":
-        return t.dashboard.avgCost;
-      case "low_stock":
-        return t.dashboard.belowMinReorder;
+      case "revenue":
+        return t.dashboard.revenueSupportingText;
+      case "net_profit":
+        return t.dashboard.netProfitSupportingText;
       case "out_of_stock":
         return t.dashboard.zeroUnitsAvailable;
       default:
@@ -61,31 +61,37 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
         const IconComponent = iconConfig.icon;
         const label = getMetricLabel(metric);
         const supportingText = getSupportingText(metric);
+        const isFinancial = metric.id === "revenue" || metric.id === "net_profit";
 
         return (
           <div
             key={metric.id}
             className={cn(
-              "relative bg-white dark:bg-black border-[3px] border-ink shadow-hard-sm p-4 sm:p-5 flex flex-col justify-between h-full transition-all duration-150 press",
+              "relative min-w-0 bg-white dark:bg-black border-[3px] border-ink shadow-hard-sm p-4 sm:p-5 flex flex-col justify-between h-full",
               metric.variant === "destructive" && "border-red-600 shadow-[4px_4px_0px_#dc2626]",
               metric.variant === "warning" && "border-amber-500 shadow-[4px_4px_0px_#f59e0b]"
             )}
           >
             {/* Header: Label + Icon */}
-            <div className="flex flex-row items-center justify-between gap-4">
-              <span className="font-sans text-xs font-bold uppercase tracking-widest text-ink/80 truncate">
+            <div className="flex flex-row items-start justify-between gap-2">
+              <span className="min-w-0 font-sans text-xs font-bold uppercase tracking-widest text-ink/80 break-words">
                 {label}
               </span>
-              <IconComponent className={cn("h-5 w-5 shrink-0", iconConfig.iconClass)} />
+              <IconComponent aria-hidden="true" className={cn("h-5 w-5 shrink-0", iconConfig.iconClass)} />
             </div>
+            {isFinancial && (
+              <p className="font-mono text-[10px] text-ink/80 mt-2">
+                {t.dashboard.demoData} · {t.dashboard.financialPeriod}
+              </p>
+            )}
 
             {/* Metric Value + Trend */}
             <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mt-3">
-              <div className="font-display text-3xl font-[900] tracking-tighter text-ink">
+              <div className={cn("min-w-0 max-w-full font-mono text-xl sm:text-2xl font-bold tracking-tighter text-ink [overflow-wrap:anywhere]", !isFinancial && "text-3xl sm:text-3xl")}>
                 {metric.value}
               </div>
               {metric.change && (
-                <div className="font-mono text-[10px] uppercase font-bold shrink-0">
+                <div className="max-w-full font-mono text-[10px] uppercase font-bold">
                   {metric.trend === "up" && (
                     <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40 px-1 border border-emerald-600">
                       <TrendingUp className="mr-1 h-3.5 w-3.5" />
@@ -110,7 +116,7 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
 
             {/* Supporting note */}
             {supportingText && (
-              <p className="text-[10px] font-mono uppercase tracking-widest text-ink/60 mt-2 truncate">
+              <p className="text-[10px] font-mono leading-relaxed text-ink/80 mt-2 break-words">
                 {supportingText}
               </p>
             )}
@@ -128,15 +134,15 @@ function getIconConfig(name: OverviewMetric["iconName"]) {
         icon: Package,
         iconClass: "text-blue-600 dark:text-blue-400",
       };
-    case "value":
+    case "revenue":
       return {
         icon: CircleDollarSign,
-        iconClass: "text-emerald-600 dark:text-emerald-400",
+        iconClass: "text-ink",
       };
-    case "low_stock":
+    case "net_profit":
       return {
-        icon: AlertTriangle,
-        iconClass: "text-amber-600 dark:text-amber-500",
+        icon: Wallet,
+        iconClass: "text-ink",
       };
     case "out_of_stock":
       return {

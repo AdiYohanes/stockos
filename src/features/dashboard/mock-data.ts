@@ -6,6 +6,18 @@ import type {
   QuickActionItem,
 } from "./types";
 
+import { formatCurrency } from "../../lib/format";
+
+// ponytail: demo monthly totals only; replace with sales and expense aggregates when available.
+export const MOCK_FINANCIAL_SUMMARY = {
+  revenue: 8450000,
+  costOfGoodsSold: 6000000,
+  operatingExpenses: 625000,
+};
+const estimatedNetProfit = MOCK_FINANCIAL_SUMMARY.revenue
+  - MOCK_FINANCIAL_SUMMARY.costOfGoodsSold
+  - MOCK_FINANCIAL_SUMMARY.operatingExpenses;
+
 export const MOCK_OVERVIEW_METRICS: OverviewMetric[] = [
   {
     id: "products",
@@ -19,26 +31,20 @@ export const MOCK_OVERVIEW_METRICS: OverviewMetric[] = [
     variant: "default",
   },
   {
-    id: "inventory_value",
-    label: "Nilai Inventaris",
-    value: "Rp 248.650",
-    rawValue: 248650,
-    change: "+5,4% vs bulan lalu",
-    trend: "up",
-    supportingText: "Rata-rata biaya Rp 174,12",
-    iconName: "value",
+    id: "revenue",
+    label: "Revenue",
+    value: formatCurrency(MOCK_FINANCIAL_SUMMARY.revenue),
+    rawValue: MOCK_FINANCIAL_SUMMARY.revenue,
+    iconName: "revenue",
     variant: "default",
   },
   {
-    id: "low_stock",
-    label: "Stok Menipis",
-    value: "14",
-    rawValue: 14,
-    change: "3 item dipesan",
-    trend: "neutral",
-    supportingText: "Di bawah batas reorder min",
-    iconName: "low_stock",
-    variant: "warning",
+    id: "net_profit",
+    label: "Estimasi Untung Bersih",
+    value: formatCurrency(estimatedNetProfit),
+    rawValue: estimatedNetProfit,
+    iconName: "net_profit",
+    variant: "default",
   },
   {
     id: "out_of_stock",

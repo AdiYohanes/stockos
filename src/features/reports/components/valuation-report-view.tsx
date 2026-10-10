@@ -13,6 +13,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/context";
 import type { ValuationSummary } from "../types";
 
 interface ValuationReportViewProps {
@@ -22,6 +23,7 @@ interface ValuationReportViewProps {
 const emptySubscribe = () => () => {};
 
 export function ValuationReportView({ summary }: ValuationReportViewProps) {
+  const { t } = useI18n();
   const isMounted = React.useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -92,7 +94,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
               </ResponsiveContainer>
             ) : (
               <div className="flex h-full items-center justify-center text-xs font-mono text-muted-foreground">
-                Loading valuation chart...
+                {t.common.loading || "Loading valuation chart..."}
               </div>
             )}
           </div>
@@ -111,9 +113,9 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
                 <TableRow className="border-b border-ink">
-                  <TableHead className="font-mono text-xs font-bold text-foreground">Category Name</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">SKUs</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Units</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.category || "Category Name"}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.sku || "SKUs"}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.quantity || "Total Units"}</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Cost</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">Retail Value</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">Margin %</TableHead>

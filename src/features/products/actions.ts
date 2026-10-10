@@ -11,46 +11,51 @@ import {
   listProducts, productMutation,
 } from "./server";
 
+function revalidateAll() {
+  revalidatePath("/products");
+  revalidatePath("/inventory");
+}
+
 export async function createProductAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_create_product", CreateProductInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 export async function updateProductAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_update_product", UpdateProductInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 export async function archiveProductAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_archive_product", ArchiveProductInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 export async function reactivateProductAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_reactivate_product", ReactivateProductInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 export async function stockInAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_record_stock_in", StockInInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 export async function stockOutAction(input: unknown): Promise<ProductMutationResult> {
   const authorization = await authorizeProducts(true);
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_record_stock_out", StockOutInputSchema, input);
-  if (result.ok) revalidatePath("/products");
+  if (result.ok) revalidateAll();
   return result;
 }
 

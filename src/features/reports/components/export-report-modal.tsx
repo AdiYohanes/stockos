@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Download, FileText, CheckCircle2, X } from "lucide-react";
+import { Download, FileText, CheckCircle2, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ReportTab } from "../types";
@@ -11,7 +11,8 @@ interface ExportReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   activeTab: ReportTab;
-  onExport: (type: ReportTab) => void;
+  onExport: (format: "csv" | "print") => Promise<void> | void;
+  isExporting?: boolean;
 }
 
 export function ExportReportModal({
@@ -19,6 +20,7 @@ export function ExportReportModal({
   onClose,
   activeTab,
   onExport,
+  isExporting = false,
 }: ExportReportModalProps) {
   const { t } = useI18n();
   const [selectedFormat, setSelectedFormat] = React.useState<"csv" | "print">("csv");
@@ -26,17 +28,18 @@ export function ExportReportModal({
 
   if (!isOpen) return null;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (selectedFormat === "print") {
       window.print();
-    } else {
-      onExport(activeTab);
-    }
-    setIsExported(true);
-    setTimeout(() => {
-      setIsExported(false);
       onClose();
-    }, 1200);
+    } else {
+      await onExport("csv");
+      setIsExported(true);
+      setTimeout(() => {
+        setIsExported(false);
+        onClose();
+      }, 1200);
+    }
   };
 
   return (
@@ -49,9 +52,9 @@ export function ExportReportModal({
               <Download className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="font-heading text-base font-bold text-foreground">Export Report Data</h2>
+              <h2 className="font-heading text-base font-bold text-foreground">Export Data Laporan</h2>
               <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Dataset: {activeTab}
+                Laporan: {activeTab === "valuation" ? "Valuasi Stok" : activeTab === "velocity" ? "Pergerakan Stok" : "Peringatan Stok Menipis"}
               </p>
             </div>
           </div>
@@ -66,7 +69,7 @@ export function ExportReportModal({
         {/* Form Options */}
         <div className="my-5 space-y-4 font-mono text-xs">
           <div>
-            <label className="block font-bold text-foreground mb-1.5">Export Format</label>
+            <label className="block font-bold text-foreground mb-1.5">Format Berkas</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -92,14 +95,14 @@ export function ExportReportModal({
                 )}
               >
                 <FileText className="h-4 w-4" />
-                <span>{t.reports.exportPdf || "Print Summary"}</span>
+                <span>{t.reports.exportPdf || "Cetak / PDF"}</span>
               </button>
             </div>
           </div>
 
           <div className="rounded-none border-[3px] border-ink bg-[#f8f9fa] p-3 text-[11px] text-muted-foreground space-y-1">
-            <p className="font-bold text-foreground">Export Scope Notice:</p>
-            <p>Export file includes filtered search terms and selected category filters currently active in the workspace.</p>
+            <p className="font-bold text-foreground">Informasi Format CSV:</p>
+            <p>Berkas CSV diformat sesuai standar RFC 4180 dengan sanitasi formula spreadsheet otomatis untuk keamanan data toko.</p>
           </div>
         </div>
 
@@ -108,24 +111,30 @@ export function ExportReportModal({
           <Button
             variant="outline"
             onClick={onClose}
+            disabled={isExporting}
             className="border-[3px] border-ink bg-white font-mono text-xs font-bold hover:bg-slate-100"
           >
-            {t.common.cancel || "Cancel"}
+            {t.common.cancel || "Batal"}
           </Button>
           <Button
             onClick={handleDownload}
-            disabled={isExported}
-            className="border-[1.5px] border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo hover:bg-[#462ee0]"
+            disabled={isExported || isExporting}
+            className="border-[3px] border-ink bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo hover:bg-[#462ee0]"
           >
-            {isExported ? (
+            {isExporting ? (
+              <>
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                Memproses...
+              </>
+            ) : isExported ? (
               <>
                 <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-300" />
-                {t.common.success || "Exported!"}
+                {t.common.success || "Berhasil Diunduh!"}
               </>
             ) : (
               <>
                 <Download className="mr-1.5 h-4 w-4" />
-                {selectedFormat === "csv" ? (t.reports.exportCsv || "Download CSV") : (t.reports.exportPdf || "Print View")}
+                {selectedFormat === "csv" ? (t.reports.exportCsv || "Unduh CSV") : (t.reports.exportPdf || "Cetak Tampilan")}
               </>
             )}
           </Button>

@@ -1,6 +1,6 @@
 # StockOS 📦
 
-StockOS is a lightweight web-based Stock Management System / Mini ERP designed for small businesses, retail, and small warehouses.
+StockOS is a lightweight web-based stock management application for one small shop (warung). Warehouse management, transfers between locations, and purchase orders are outside the current scope.
 
 It bridges the gap between basic spreadsheet inventory trackers and complex enterprise ERPs by focusing on **simplicity, speed, and clear operational visibility**.
 
@@ -16,13 +16,13 @@ The project is currently in the **Frontend Foundation** phase.
 - **Language:** TypeScript
 
 ## 🌟 Core Features
-- **Dashboard:** Real-time overview of inventory health, low stock, and stock movements.
-- **Products:** Catalog management with SKU tracking and minimum thresholds.
-- **Inventory:** Real-time stock levels, movement logs (stock in/out), and adjustments.
-- **Warehouses:** Multi-location capacity tracking and stock transfers.
-- **Suppliers:** Supplier performance, tiers, and contact management.
-- **Purchase Orders:** End-to-end PO lifecycle, from creation to receiving goods.
-- **Settings:** Company profile, inventory rules, dan team roles.
+- **Dashboard:** Mock overview of inventory health, low stock, and stock movements.
+- **Products:** Catalog management, SKU tracking, minimum thresholds, and a success animation after creation.
+- **Inventory:** Shop stock levels, direct stock in/out, adjustments, and movement logs.
+- **Reports:** Mock valuation, velocity, reorder, and supplier performance summaries.
+- **Settings:** Shop profile, inventory rules, and team roles saved locally in the browser.
+
+Products and Inventory use independent session-scoped mock stores. Dashboard and Reports use fixtures, not live aggregates. Supplier metadata remains; no standalone supplier management screen is active.
 
 ## 📂 Project Structure
 This project uses a feature-based architecture. If you need to find something, start here:
@@ -30,7 +30,8 @@ This project uses a feature-based architecture. If you need to find something, s
 - `src/app/` - Next.js routes and page composition.
 - `src/components/` - Shared UI primitives (buttons, tables, layout).
 - `src/lib/` - Utilities and translations (i18n).
-- `docs/` - Extensive project documentation (`PRD.md`, `ARCHITECTURE.md`, `design.md`).
+- Root documentation: `PRD.md`, `ARCHITECTURE.md`, `PROGRESS.md`, and `design.md`.
+- `docs/` - Agent references and historical plans.
 
 ## 💻 Getting Started
 

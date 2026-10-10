@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 4 — persistent local Inventory integration (stock levels, movement audit trail, server-authoritative URL state, physical Stok Opname reconciliation, carton Stock In, sold-only Stock Out, live detail movement history), and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, and 3 remain implemented. Dashboard/Reports/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 5 — persistent local Reports integration (valuation, movement audit, low-stock deficit alerts, safe RFC 4180 CSV export, removed unsupported supplier performance tab), and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, 3, and 4 remain implemented. Dashboard/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -120,6 +120,18 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Verified via `scripts/test-inventory.py` against Edge headless: real pointer clicks, login, persistent catalog balances, physical count opname discrepancy (+2 Pcs), carton stock in (+10 Pcs), sold stock out (-5 Pcs), movements audit trail with live transaction references, detail sheet live history, mobile (390px) and desktop (1440px) responsive layout with no horizontal overflow, and clean fixture cleanup.
 - [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/inventory`).
 - [x] Dashboard/Reports/Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 5 Reports Integration (2026-10-10)
+
+- [x] Connected Reports frontend (`/reports`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_get_valuation_report`, `stockos_get_movement_report`, `stockos_get_low_stock_report`).
+- [x] Removed unsupported supplier performance tab from UI and Server navigation, retaining stock-based Valuation, Movement Velocity, and Low-Stock Reorder Risk views.
+- [x] Server-authoritative reads using URL search parameters (`tab`, `timeframe`, `q`, `category`) with parallel data fetching via Next.js App Router Server Component (`src/app/(dashboard)/reports/page.tsx`).
+- [x] RFC 4180 CSV export (`exportReportAction`) with formula injection neutralization (`='`, `+'`, `-'`, `@'`), 10,000-row limit, and 5 MiB size cap.
+- [x] Migration `20261010010000_reports_reads.sql`: owner-checked, security-definer, restricted search path, strict JSON validation (`allowed_keys`), and granular grants to `authenticated`.
+- [x] Slide-over inspection sheet wired to live entity selections with reactive derived state.
+- [x] Verified via `scripts/test-reports.py` against Edge headless: owner setup, product creation, movements/opname recordings, RPC output validation, browser navigation across all tabs, search/category filtering, and RFC 4180 export modal confirmation.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/reports`).
+- [x] Dashboard and Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
 
 ## Next
 

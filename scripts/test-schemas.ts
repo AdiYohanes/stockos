@@ -1,44 +1,58 @@
-import assert from "node:assert";
+import assert from "node:assert/strict";
 import {
   ProductSchema,
   CreateProductInputSchema,
 } from "../src/features/products/schemas/product.schema";
-import {
-  PurchaseOrderSchema,
-  CreatePOFormSchema,
-} from "../src/features/purchase-orders/schemas/po.schema";
 import { MOCK_PRODUCTS } from "../src/features/products/mock-data";
-import { MOCK_PURCHASE_ORDERS } from "../src/features/purchase-orders/mock-data";
+import { createInventoryStore } from "../src/features/inventory/store";
 
-// 1. Mock data runtime validation via Zod
-assert.equal(Array.isArray(MOCK_PRODUCTS), true);
 assert.equal(MOCK_PRODUCTS.length, 18);
-assert.equal(Array.isArray(MOCK_PURCHASE_ORDERS), true);
-assert.equal(MOCK_PURCHASE_ORDERS.length, 4);
-
-// 2. Reject invalid product schema
+assert.ok(MOCK_PRODUCTS.every((product) => !("warehouse" in product)));
 assert.throws(() => ProductSchema.parse({ sku: "AB" }));
-assert.throws(() =>
-  CreateProductInputSchema.parse({
-    name: "Test",
-    sku: "A", // too short
-    category: "Electronics",
-    unit: "pcs",
-    unitPrice: -5, // negative price
-    initialStock: 0,
-    minStock: 10,
-    warehouse: "Main Hub (WH-1)",
-  })
-);
 
-// 3. Reject invalid purchase order schema
-assert.throws(() =>
-  CreatePOFormSchema.parse({
-    supplierId: "",
-    destinationWarehouseId: "wh-1",
-    expectedDeliveryDate: "2026-08-25",
-    lineItems: [], // empty items
-  })
-);
+const input = {
+  name: "Test Product",
+  sku: "TEST-001",
+  category: "Electronics",
+  unit: "pcs",
+  unitPrice: 10,
+  initialStock: 0,
+  minStock: 10,
+  supplier: "Supplier A",
+};
+assert.ok(CreateProductInputSchema.safeParse(input).success);
+assert.equal(CreateProductInputSchema.safeParse({ ...input, unitPrice: -5 }).success, false);
+assert.equal(CreateProductInputSchema.safeParse({ ...input, sku: "A" }).success, false);
 
-console.log("PASS: Schema and mock data validations asserted successfully.");
+const inventory = createInventoryStore();
+const item = inventory.getState().items[0];
+assert.ok(!("warehouse" in item));
+inventory.getState().recordMovement(item.id, "in", 2, "IN-TEST");
+assert.equal(inventory.getState().items[0].currentStock, item.currentStock + 2);
+assert.throws(() => inventory.getState().recordMovement(item.id, "out", Number.MAX_SAFE_INTEGER, "OUT-TEST"));
+assert.equal(inventory.getState().items[0].currentStock, item.currentStock + 2);
+
+import {
+  ValuationReportInputSchema,
+  MovementReportInputSchema,
+  LowStockReportInputSchema,
+  ExportReportInputSchema,
+} from "../src/features/reports/schemas/reports-rpc.schema";
+
+// Reports RPC schema validations
+assert.ok(ValuationReportInputSchema.safeParse({}).success);
+assert.ok(ValuationReportInputSchema.safeParse({ search: "kopi", category: "Minuman" }).success);
+assert.equal(ValuationReportInputSchema.safeParse({ unknownKey: true }).success, false);
+
+assert.ok(MovementReportInputSchema.safeParse({ startDate: "2026-09-01", endDate: "2026-10-01" }).success);
+assert.equal(MovementReportInputSchema.safeParse({ startDate: "bad-date", endDate: "2026-10-01" }).success, false);
+assert.equal(MovementReportInputSchema.safeParse({}).success, false);
+
+assert.ok(LowStockReportInputSchema.safeParse({}).success);
+assert.ok(LowStockReportInputSchema.safeParse({ search: "beras" }).success);
+
+assert.ok(ExportReportInputSchema.safeParse({ kind: "valuation" }).success);
+assert.ok(ExportReportInputSchema.safeParse({ kind: "movements", startDate: "2026-09-01", endDate: "2026-10-01" }).success);
+assert.equal(ExportReportInputSchema.safeParse({ kind: "unsupported" }).success, false);
+
+console.log("PASS: Products and stock movements work without warehouses or purchase orders.");

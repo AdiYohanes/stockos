@@ -4,31 +4,36 @@ import * as React from "react";
 import { X, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { MOCK_MOVEMENT_VELOCITY, MOCK_REORDER_RISK } from "../mock-data";
 import { useI18n } from "@/lib/i18n/context";
+import type { MovementVelocityItem, ReorderRiskItem } from "../types";
 
 interface ReportDetailSheetProps {
   selectedId: string | null;
   selectedType: "velocity" | "reorder" | null;
+  velocityItems?: MovementVelocityItem[];
+  reorderItems?: ReorderRiskItem[];
   onClose: () => void;
 }
 
 export function ReportDetailSheet({
   selectedId,
   selectedType,
+  velocityItems = [],
+  reorderItems = [],
   onClose,
 }: ReportDetailSheetProps) {
   const { t } = useI18n();
+
   // Derived entity selection (React 19 pattern)
   const velocityItem = React.useMemo(() => {
     if (selectedType !== "velocity" || !selectedId) return null;
-    return MOCK_MOVEMENT_VELOCITY.find((item) => item.productId === selectedId) || null;
-  }, [selectedId, selectedType]);
+    return velocityItems.find((item) => item.productId === selectedId) || null;
+  }, [selectedId, selectedType, velocityItems]);
 
   const reorderItem = React.useMemo(() => {
     if (selectedType !== "reorder" || !selectedId) return null;
-    return MOCK_REORDER_RISK.find((item) => item.productId === selectedId) || null;
-  }, [selectedId, selectedType]);
+    return reorderItems.find((item) => item.productId === selectedId) || null;
+  }, [selectedId, selectedType, reorderItems]);
 
   if (!selectedId || !selectedType) return null;
 
@@ -43,10 +48,10 @@ export function ReportDetailSheet({
             </div>
             <div>
               <h3 className="font-heading text-sm font-bold text-foreground">
-                {t.common.details || "Report Entity Inspector"}
+                {t.common.details || "Detail Laporan"}
               </h3>
               <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                {selectedType} audit detail
+                {selectedType === "velocity" ? "Audit Pergerakan Produk" : "Audit Pengadaan Ulang"}
               </p>
             </div>
           </div>
@@ -74,21 +79,31 @@ export function ReportDetailSheet({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-none border-[3px] border-ink p-3">
-                  <span className="text-muted-foreground text-[10px]">Turnover Ratio</span>
-                  <div className="font-bold text-lg text-foreground">{velocityItem.turnoverRatio}x</div>
+                  <span className="text-muted-foreground text-[10px]">Stok Awal</span>
+                  <div className="font-bold text-base text-foreground">{formatNumber(velocityItem.openingQty ?? 0)}</div>
                 </div>
                 <div className="rounded-none border-[3px] border-ink p-3">
-                  <span className="text-muted-foreground text-[10px]">Velocity Tier</span>
-                  <div className="font-bold text-lg uppercase text-[#543afd]">{velocityItem.velocityTier}</div>
+                  <span className="text-muted-foreground text-[10px]">Stok Terkini</span>
+                  <div className="font-bold text-base text-foreground">{formatNumber(velocityItem.currentStock)}</div>
                 </div>
                 <div className="rounded-none border-[3px] border-ink p-3">
-                  <span className="text-muted-foreground text-[10px]">{t.dashboard.stockIn || "Stock In"}</span>
+                  <span className="text-muted-foreground text-[10px]">{t.dashboard.stockIn || "Stok Masuk"}</span>
                   <div className="font-bold text-base text-[#543afd]">+{formatNumber(velocityItem.stockInQty)}</div>
                 </div>
                 <div className="rounded-none border-[3px] border-ink p-3">
-                  <span className="text-muted-foreground text-[10px]">{t.dashboard.stockOut || "Stock Out"}</span>
+                  <span className="text-muted-foreground text-[10px]">{t.dashboard.stockOut || "Stok Keluar"}</span>
                   <div className="font-bold text-base text-foreground">-{formatNumber(velocityItem.stockOutQty)}</div>
                 </div>
+              </div>
+
+              <div className="rounded-none border-[3px] border-ink bg-[#f8f9fa] p-3 text-[11px] space-y-1">
+                <p className="font-bold text-foreground">Audit Pergerakan:</p>
+                <p className="text-muted-foreground">
+                  Selisih Opname: {velocityItem.opnameDelta !== undefined ? velocityItem.opnameDelta : 0}
+                </p>
+                <p className="text-muted-foreground">
+                  Pergerakan Terakhir: {velocityItem.lastMovementDate}
+                </p>
               </div>
             </div>
           )}
@@ -100,36 +115,37 @@ export function ReportDetailSheet({
                   {reorderItem.sku}
                 </span>
                 <h4 className="font-heading text-base font-bold text-foreground">{reorderItem.name}</h4>
-                <p className="text-[#b91c1c] font-bold">Estimated {reorderItem.daysRemaining} days of stock remaining</p>
+                <p className="text-[#b91c1c] font-bold">
+                  {reorderItem.currentStock === 0 ? "STOK HABIS (0 Unit)" : "STOK DI BAWAH BATAS MINIMUM"}
+                </p>
               </div>
 
               <div className="space-y-2 rounded-none border-[3px] border-ink p-3">
                 <div className="flex justify-between py-1 border-b border-ink">
-                  <span className="text-muted-foreground">{t.products.sheet.inventoryLevel || "Current Stock"}:</span>
-                  <span className="font-bold text-[#b91c1c]">{reorderItem.currentStock} units</span>
+                  <span className="text-muted-foreground">{t.products.sheet.inventoryLevel || "Stok Terkini"}:</span>
+                  <span className="font-bold text-[#b91c1c]">{reorderItem.currentStock} unit</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-ink">
-                  <span className="text-muted-foreground">{t.products.sheet.minThreshold || "Min Threshold"}:</span>
-                  <span className="font-bold">{reorderItem.minThreshold} units</span>
+                  <span className="text-muted-foreground">{t.products.sheet.minThreshold || "Batas Minimum"}:</span>
+                  <span className="font-bold">{reorderItem.minThreshold} unit</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-ink">
-                  <span className="text-muted-foreground">Suggested Order:</span>
-                  <span className="font-bold text-[#543afd]">+{reorderItem.suggestedReorderQty} units</span>
+                  <span className="text-muted-foreground">Kekurangan Reorder:</span>
+                  <span className="font-bold text-[#543afd]">+{reorderItem.suggestedReorderQty} unit</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-ink">
-                  <span className="text-muted-foreground">{t.inventory.unitCost || "Unit Cost"}:</span>
+                  <span className="text-muted-foreground">{t.inventory.unitCost || "Modal Satuan"}:</span>
                   <span className="font-bold">{formatCurrency(reorderItem.unitCost)}</span>
                 </div>
                 <div className="flex justify-between py-1 pt-2 font-bold text-sm">
-                  <span>Est. Total Cost:</span>
+                  <span>Est. Total Modal:</span>
                   <span className="text-[#543afd]">{formatCurrency(reorderItem.totalReorderCost)}</span>
                 </div>
               </div>
 
               <div className="rounded-none border-[3px] border-ink bg-[#f8f9fa] p-3 text-[11px] space-y-1">
-                <p className="font-bold text-foreground">{t.suppliers.supplierDetails || "Supplier Details"}:</p>
-                <p>{reorderItem.supplierName}</p>
-                <p className="text-muted-foreground">Expected Lead Time: {reorderItem.leadTimeDays} business days</p>
+                <p className="font-bold text-foreground">{t.suppliers.supplierDetails || "Pemasok"}:</p>
+                <p>{reorderItem.supplierName || "-"}</p>
               </div>
             </div>
           )}
@@ -141,7 +157,7 @@ export function ReportDetailSheet({
             onClick={onClose}
             className="w-full border-[3px] border-ink bg-white font-mono text-xs font-bold text-foreground shadow-neo-sm hover:bg-slate-100"
           >
-            {t.common.close || "Close"}
+            {t.common.close || "Tutup"}
           </Button>
         </div>
       </div>

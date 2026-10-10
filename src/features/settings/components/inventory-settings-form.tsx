@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Boxes, Calculator, AlertTriangle, ShieldCheck, HelpCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useI18n } from "@/lib/i18n/context";
 
 interface InventorySettingsFormProps {
   initialValues: InventorySettings;
@@ -16,6 +17,7 @@ interface InventorySettingsFormProps {
 }
 
 export function InventorySettingsForm({ initialValues, onChange }: InventorySettingsFormProps) {
+  const { t } = useI18n();
   const [formData, setFormData] = React.useState<InventorySettings>(initialValues);
 
   const handleChange = <K extends keyof InventorySettings>(field: K, value: InventorySettings[K]) => {
@@ -30,17 +32,17 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
-            <Boxes className="h-5 w-5 text-ink" /> Ambang Batas & Satuan Default
+            <Boxes className="h-5 w-5 text-ink" /> {t.settings.thresholdAndDefaultUnit}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
-            Standar kuantitas minimum peringatan stok dan unit barang bawaan saat pembuatan produk baru.
+            {t.settings.thresholdDesc}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-ink font-bold">
-                Batas Minimum Stok Rendah (Default)
+                {t.settings.defaultLowStock}
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -48,7 +50,7 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
                     <HelpCircle className="h-3.5 w-3.5 text-ink/60" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
-                    Jika stok fisik produk turun mencapai angka ini, produk akan ditandai berstatus &quot;LOW STOCK&quot;.
+                    {t.settings.lowStockTooltip}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -65,7 +67,7 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
 
           <div className="space-y-1.5">
             <Label htmlFor="defaultReorderQuantity" className="text-xs font-semibold text-ink font-bold">
-              Kuantitas Pemesanan Ulang Default (Reorder Batch)
+              {t.settings.defaultReorderQty}
             </Label>
             <Input
               id="defaultReorderQuantity"
@@ -79,14 +81,14 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-ink font-bold">
-              Satuan Pengukuran Utama (Default Unit of Measure)
+              {t.settings.defaultUnitMeasure}
             </Label>
             <Select
               value={formData.defaultUnit}
               onValueChange={(v) => handleChange("defaultUnit", (v || "Pcs") as DefaultUnit)}
             >
               <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder="Pilih Satuan" />
+                <SelectValue placeholder={t.settings.selectUnit} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Pcs">Pcs (Pieces)</SelectItem>
@@ -105,23 +107,23 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-ink font-bold">
-            <Calculator className="h-5 w-5 text-ink" /> Metode Valuasi & Kebijakan Stok
+            <Calculator className="h-5 w-5 text-ink" /> {t.settings.valMethodAndPolicies}
           </CardTitle>
           <CardDescription className="text-xs text-ink/60">
-            Kalkulasi nilai aset persediaan dan aturan toleransi stok fisik di warung.
+            {t.settings.valMethodDesc}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-ink font-bold">
-              Metode Valuasi Persediaan (Inventory Accounting)
+              {t.settings.inventoryAccounting}
             </Label>
             <Select
               value={formData.valuationMethod}
               onValueChange={(v) => handleChange("valuationMethod", (v || "FIFO") as ValuationMethod)}
             >
               <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
-                <SelectValue placeholder="Pilih Metode Valuasi" />
+                <SelectValue placeholder={t.settings.selectValMethod} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="FIFO">FIFO (First-In, First-Out)</SelectItem>
@@ -130,7 +132,7 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
               </SelectContent>
             </Select>
             <p className="text-[11px] text-ink/60">
-              Metode standar untuk menghitung total nilai aset laporan pada HPP dan laporan persediaan.
+              {t.settings.valMethodExplanation}
             </p>
           </div>
 
@@ -138,10 +140,10 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-ink" /> Perubahan Otomatis Status Stok Habis
+                  <ShieldCheck className="h-4 w-4 text-ink" /> {t.settings.autoOutofStock}
                 </Label>
                 <p className="text-[11px] text-ink/60">
-                  Otomatis ubah status produk jadi &quot;OUT OF STOCK&quot; saat saldo mencapai 0.
+                  {t.settings.autoOutofStockDesc}
                 </p>
               </div>
               <Switch
@@ -153,10 +155,10 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-xs font-bold text-ink font-bold flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" /> Izinkan Saldo Stok Negatif
+                  <AlertTriangle className="h-4 w-4 text-amber-500" /> {t.settings.allowNegativeStock}
                 </Label>
                 <p className="text-[11px] text-ink/60">
-                  Mengizinkan pengeluaran stok meskipun saldo kurang dari nol (Bisa menyebabkan mismatch fisik).
+                  {t.settings.allowNegativeStockDesc}
                 </p>
               </div>
               <Switch
@@ -168,10 +170,10 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-xs font-bold text-ink font-bold">
-                  Aktifkan Tracking Tanggal Kedaluwarsa (Batch Expiry)
+                  {t.settings.enableExpiryTracking}
                 </Label>
                 <p className="text-[11px] text-ink/60">
-                  Pencatatan lot batch dan peringatan masa kedaluwarsa item produk.
+                  {t.settings.enableExpiryTrackingDesc}
                 </p>
               </div>
               <Switch

@@ -95,8 +95,8 @@ export function useReports() {
         `"${v.category}"`,
         v.stockInQty.toString(),
         v.stockOutQty.toString(),
-        v.turnoverRatio.toFixed(1),
-        v.velocityTier.toUpperCase(),
+        (v.turnoverRatio ?? 0).toFixed(1),
+        (v.velocityTier ?? "").toUpperCase(),
       ]);
     } else if (type === "reorder") {
       headers = ["SKU", "Product Name", "Current Stock", "Min Threshold", "Days Remaining", "Suggested Reorder Qty", "Unit Cost ($)", "Est. Total Cost ($)", "Urgency"];
@@ -105,7 +105,7 @@ export function useReports() {
         `"${r.name}"`,
         r.currentStock.toString(),
         r.minThreshold.toString(),
-        r.daysRemaining.toString(),
+        (r.daysRemaining ?? 0).toString(),
         r.suggestedReorderQty.toString(),
         r.unitCost.toFixed(2),
         r.totalReorderCost.toFixed(2),

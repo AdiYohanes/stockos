@@ -1,4 +1,4 @@
-export type ReportTab = "valuation" | "velocity" | "reorder" | "performance";
+export type ReportTab = "valuation" | "velocity" | "reorder";
 
 export type ReportTimeframe = "7d" | "30d" | "90d" | "12m";
 
@@ -29,11 +29,13 @@ export interface MovementVelocityItem {
   sku: string;
   name: string;
   category: string;
+  openingQty?: number;
   stockInQty: number;
   stockOutQty: number;
+  opnameDelta?: number;
   currentStock: number;
-  turnoverRatio: number;
-  velocityTier: VelocityTier;
+  turnoverRatio?: number;
+  velocityTier?: VelocityTier;
   lastMovementDate: string;
 }
 
@@ -46,13 +48,13 @@ export interface ReorderRiskItem {
   category: string;
   currentStock: number;
   minThreshold: number;
-  daysRemaining: number;
   suggestedReorderQty: number;
   unitCost: number;
   totalReorderCost: number;
   urgency: RiskUrgency;
-  leadTimeDays: number;
   supplierName: string;
+  daysRemaining?: number;
+  leadTimeDays?: number;
 }
 
 export interface SupplierPerformance {

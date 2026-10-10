@@ -210,6 +210,9 @@ async function setupOwnerSession() {
   const invitation = success(await request("/auth/v1/verify", { body: { token_hash: hash, type: "invite" } }), "Verify invitation");
   captureUser(invitation);
   failureResult(await rpc("stockos_get_product", { p_input: { id: randomUUID() } }, invitation.access_token, status.ANON_KEY), "Invitation business access", "FORBIDDEN");
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+    failureResult(await rpc(name, { p_input: { injected: true } }, invitation.access_token, status.ANON_KEY), "OTP catalog access before validation", "FORBIDDEN");
+  }
   const password = `StockOS-test-${randomUUID()}!`;
   success(await request("/auth/v1/user", { method: "PUT", token: invitation.access_token, body: { password } }), "Initial password");
   success(await request("/auth/v1/logout?scope=local", { token: invitation.access_token }), "Logout invitation session");
@@ -225,13 +228,78 @@ try {
   const accessToken = await setupOwnerSession();
 
   const call = async (name, input) => {
-    if (input.requestId) createdRequests.add(input.requestId);
+    if (input?.requestId) createdRequests.add(input.requestId);
     const res = await rpc(`stockos_${name}`, { p_input: input }, accessToken, status.ANON_KEY);
     if (name === "create_product" && res.data?.data?.product?.id) {
       createdProducts.add(res.data.data.product.id);
     }
     return res;
   };
+
+  assert.deepEqual(success(await call("product_metrics", {}), "Empty catalog metrics").data, {
+    totalProducts: 0, inStockCount: 0, lowStockCount: 0, outOfStockCount: 0, totalValuation: "0.000000",
+  });
+
+  // Metrics span more than a page; expected modal uses the worked 1/3 residual.
+  const readFixtures = [];
+  for (let i = 0; i < 28; i++) {
+    readFixtures.push(success(await call("create_product", {
+      requestId: randomUUID(), sku: `TEST-READ-${String(i).padStart(2, "0")}`, name: `Catalog proof ${i}`,
+      category: `Proof ${String(i).padStart(2, "0")}`, supplier: `Vendor ${String(i).padStart(2, "0")}`,
+      unit: "Pcs", sellingPrice: "0", minStock: i === 27 ? 1 : 0,
+      openingQuantity: i === 26 ? 3 : i === 27 ? 1 : 0,
+      ...(i === 26 ? { purchaseTotal: "1" } : i === 27 ? { purchaseTotal: "2" } : {}),
+    }), "Create catalog read fixture").data.product);
+  }
+  success(await call("record_stock_out", { requestId: randomUUID(), productId: readFixtures[26].id, quantity: 1 }), "Fractional remaining modal");
+  success(await call("archive_product", {
+    requestId: randomUUID(), productId: readFixtures[0].id,
+    expectedMetadataVersion: readFixtures[0].metadataVersion, expectedStockVersion: readFixtures[0].stockVersion,
+  }), "Archive catalog read fixture");
+  const activeMetrics = { totalProducts: 27, inStockCount: 1, lowStockCount: 1, outOfStockCount: 25, totalValuation: "2.666667" };
+  assert.deepEqual(success(await call("product_metrics", {}), "Default active metrics").data, activeMetrics);
+  assert.deepEqual(success(await call("product_metrics", { archive: "active" }), "Explicit active metrics").data, activeMetrics);
+  assert.deepEqual(success(await call("product_metrics", { archive: "archived" }), "Archived metrics").data, {
+    totalProducts: 1, inStockCount: 0, lowStockCount: 0, outOfStockCount: 1, totalValuation: "0.000000",
+  });
+  assert.deepEqual(success(await call("product_metrics", { archive: "all" }), "All catalog metrics").data, {
+    ...activeMetrics, totalProducts: 28, outOfStockCount: 26,
+  });
+  const readPage = success(await call("list_products", { pageSize: 25 }), "Bounded catalog page").data;
+  assert.equal(readPage.items.length, 25);
+  assert.equal(readPage.total, 27);
+  assert.equal(success(await call("list_products", { search: "TEST-READ-27" }), "Search subset").data.total, 1);
+  assert.deepEqual(success(await call("product_metrics", {}), "Metrics after filtered read").data, activeMetrics);
+  for (const input of [null, [], "active", { archive: "deleted" }, { archive: 1 }, { archive: "x".repeat(21) }, { page: 1 }, { search: "Catalog" }, { injected: "x".repeat(20001) }]) {
+    failureResult(await call("product_metrics", input), "Invalid metrics input", "VALIDATION_ERROR");
+  }
+
+  assert.deepEqual(success(await call("text_suggestions", { kind: "category", prefix: "Proof 0" }), "Category suggestions include archive").data,
+    ["Proof 00", "Proof 01", "Proof 02", "Proof 03", "Proof 04", "Proof 05", "Proof 06", "Proof 07", "Proof 08", "Proof 09"]);
+
+  const suggestionTail = ["28", "29", "30", "% literal", "_ literal", "duplicate", "duplicate"];
+  for (let i = 0; i < suggestionTail.length; i++) {
+    success(await call("create_product", {
+      requestId: randomUUID(), sku: `TEST-SUGGEST-${i}`, name: `Suggestion proof ${i}`,
+      category: `Proof ${suggestionTail[i]}`, supplier: `Vendor ${suggestionTail[i]}`,
+      unit: "Pcs", sellingPrice: "0", minStock: 0,
+    }), "Create text suggestion fixture");
+  }
+  const cappedCategories = ["Proof % literal", "Proof 00", "Proof 01", "Proof 02", "Proof 03", "Proof 04", "Proof 05", "Proof 06", "Proof 07", "Proof 08", "Proof 09", "Proof 10", "Proof 11", "Proof 12", "Proof 13", "Proof 14", "Proof 15", "Proof 16", "Proof 17", "Proof 18", "Proof 19", "Proof 20", "Proof 21", "Proof 22", "Proof 23", "Proof 24", "Proof 25", "Proof 26", "Proof 27", "Proof 28"];
+  for (const kind of ["category", "supplier"]) {
+    const prefix = kind === "category" ? "Proof" : "Vendor";
+    const expected = kind === "category" ? cappedCategories : cappedCategories.map((value) => value.replace("Proof", "Vendor"));
+    assert.deepEqual(success(await call("text_suggestions", { kind }), "Distinct deterministic capped suggestions").data, expected);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: "" }), "Empty suggestion prefix").data, expected);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: `${prefix} %` }), "Literal percent prefix").data, [`${prefix} % literal`]);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: `${prefix} _` }), "Literal underscore prefix").data, [`${prefix} _ literal`]);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: `${prefix} duplicate` }), "Duplicate suggestions collapse").data, [`${prefix} duplicate`]);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: prefix.slice(1) }), "Prefix not substring").data, []);
+    assert.deepEqual(success(await call("text_suggestions", { kind, prefix: "x".repeat(120) }), "Maximum suggestion prefix").data, []);
+  }
+  for (const input of [null, [], "category", {}, { kind: "unit" }, { kind: 1 }, { kind: "category", prefix: 1 }, { kind: "category", prefix: "x".repeat(121) }, { kind: "category", injected: true }, { kind: "category", archive: "active" }]) {
+    failureResult(await call("text_suggestions", input), "Invalid suggestion input", "VALIDATION_ERROR");
+  }
 
   // ----------------------------------------------------
   // INITIAL TRACER TEST
@@ -598,8 +666,17 @@ try {
   assert.equal(sql(`SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'stockos_private'
     AND (has_function_privilege('authenticated',p.oid,'EXECUTE') OR has_function_privilege('anon',p.oid,'EXECUTE'))`), "0");
   assert.equal(sql(`SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public'
-    AND p.proname IN ('stockos_create_product','stockos_update_product','stockos_archive_product','stockos_reactivate_product','stockos_record_stock_in','stockos_record_stock_out','stockos_record_opname','stockos_adjust_inventory_cost','stockos_get_product','stockos_list_products','stockos_list_inventory_events')
-    AND p.prosecdef AND p.proconfig = ARRAY['search_path=""'] AND has_function_privilege('authenticated',p.oid,'EXECUTE') AND NOT has_function_privilege('anon',p.oid,'EXECUTE')`), "11");
+    AND p.proname IN ('stockos_create_product','stockos_update_product','stockos_archive_product','stockos_reactivate_product','stockos_record_stock_in','stockos_record_stock_out','stockos_record_opname','stockos_adjust_inventory_cost','stockos_get_product','stockos_list_products','stockos_list_inventory_events','stockos_product_metrics','stockos_text_suggestions')
+    AND p.prosecdef AND p.proconfig = ARRAY['search_path=""'] AND has_function_privilege('authenticated',p.oid,'EXECUTE') AND NOT has_function_privilege('anon',p.oid,'EXECUTE')`), "13");
+  assert.equal(sql(`SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace,
+    LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) acl
+    WHERE n.nspname = 'public' AND p.proname IN ('stockos_product_metrics','stockos_text_suggestions')
+      AND acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'`), "0");
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+    const denied = await rpc(name, { p_input: { injected: true } }, undefined, status.ANON_KEY);
+    assert.equal(denied.status, 401, "Anonymous catalog grant denied");
+    assert.equal(denied.data?.code, "42501", "Anonymous denied by function grant");
+  }
   assert.equal((await rpc("stockos_get_product", { p_input: { id: product.id } }, undefined, status.ANON_KEY)).ok, false, "Anonymous access denied");
 
   const outsider = captureUser(success(await request("/auth/v1/admin/users", {
@@ -607,12 +684,18 @@ try {
   }), "Create unbound fixture user"));
   const outsiderLogin = success(await request("/auth/v1/token?grant_type=password", { body: { email: outsider.email, password: "StockOS-outsider-test!" } }), "Unbound password login");
   failureResult(await rpc("stockos_get_product", { p_input: { id: randomUUID() } }, outsiderLogin.access_token, status.ANON_KEY), "Unbound existence protection", "FORBIDDEN");
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+    failureResult(await rpc(name, { p_input: { injected: true } }, outsiderLogin.access_token, status.ANON_KEY), "Unbound catalog authorization before validation", "FORBIDDEN");
+  }
 
   const ownerId = JSON.parse(Buffer.from(accessToken.split(".")[1], "base64url").toString()).sub;
   assert.ok(createdUsers.has(ownerId));
   sql(`UPDATE auth.users SET email_confirmed_at = NULL WHERE id = ${sqlString(ownerId)}::uuid`);
   try {
     failureResult(await call("get_product", { id: randomUUID() }), "Unverified existence protection", "FORBIDDEN");
+    for (const name of ["product_metrics", "text_suggestions"]) {
+      failureResult(await call(name, { injected: true }), "Unverified catalog authorization before validation", "FORBIDDEN");
+    }
   } finally {
     sql(`UPDATE auth.users SET email_confirmed_at = now() WHERE id = ${sqlString(ownerId)}::uuid`);
   }
@@ -627,9 +710,15 @@ try {
   assert.match(sessionId, uuid);
   sql(`UPDATE auth.sessions SET not_after = now() - interval '1 second' WHERE id = ${sqlString(sessionId)}::uuid AND user_id = ANY(ARRAY[${[...createdUsers].map(sqlString).join(",")}]::uuid[])`);
   failureResult(await call("get_product", { id: product.id }), "Expired live session", "UNAUTHENTICATED");
+  for (const name of ["product_metrics", "text_suggestions"]) {
+    failureResult(await call(name, { injected: true }), "Expired catalog authorization before validation", "UNAUTHENTICATED");
+  }
   sql(`UPDATE auth.sessions SET not_after = NULL WHERE id = ${sqlString(sessionId)}::uuid`);
   success(await request("/auth/v1/logout?scope=local", { token: accessToken }), "Owner provider logout");
   failureResult(await call("get_product", { id: randomUUID() }), "Revoked existence protection", "UNAUTHENTICATED");
+  for (const name of ["product_metrics", "text_suggestions"]) {
+    failureResult(await call(name, { injected: true }), "Revoked catalog authorization before validation", "UNAUTHENTICATED");
+  }
 
 } catch (error) {
   failure = error instanceof Error ? error.message : "Stock foundation fixture test failed";

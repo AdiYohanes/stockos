@@ -21,9 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 4, local Inventory integration**
+**Implementation phase: Backend Foundation — ticket 5, local Reports integration**
 
-Ticket 4 implementation approved 2026-10-10: persistent Inventory reads/filters, movement audit trail, physical Stok Opname reconciliation, carton Stock In, sold-only Stock Out, and live detail movement logs through existing owner RPCs; isolated server/browser proof. Dashboard/Reports/Settings remain mocked. Cloud, deployment, and real-shop use remain outside this slice.
+Ticket 5 implementation approved 2026-10-10: persistent Reports reads (`stockos_get_valuation_report`, `stockos_get_movement_report`, `stockos_get_low_stock_report`), authoritative Server Components and Server Actions, RFC 4180 CSV export with formula injection neutralization, removal of unsupported supplier performance tab, and live browser proof against isolated local Supabase. Dashboard/Settings remain mocked. Cloud, deployment, and real-shop use remain outside this slice.
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 
@@ -44,8 +44,9 @@ Current implemented scope:
 - Local private product/stock schema and owner-checked lifecycle/stock/modal RPCs (ticket 2)
 - Local Products persistent backend integration (ticket 3)
 - Local Inventory persistent backend integration (ticket 4)
+- Local Reports persistent backend integration (ticket 5)
 
-Dashboard/Reports/Settings UI data remains mocked. Authentication, products, and inventory use local Supabase PostgreSQL; production readiness/deployment is not implemented.
+Dashboard and Settings UI data remain mocked. Authentication, products, inventory, and reports use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 
 Do not move into backend implementation unless explicitly requested.
 

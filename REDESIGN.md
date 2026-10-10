@@ -19,6 +19,8 @@ The redesign should preserve existing product functionality unless a requirement
 
 This document describes the migration from the current frontend presentation to the target design system.
 
+Scope update (2026-10-08): active screens serve one small shop. Warehouse management, inter-location transfers, purchase orders, and standalone supplier management are not migration targets. Use `PROGRESS.md` for current implementation status and `design.md` for the current visual system; the initial migration table below is historical planning context.
+
 It does not replace:
 
 - `docs/[PRD.md](http://PRD.md)`
@@ -430,9 +432,6 @@ Suggested order:
 Dashboard
 Products
 Inventory
-Warehouses
-Suppliers
-Purchase Orders
 Reports
 Settings
 ```
@@ -542,9 +541,6 @@ Current initial state:
 | Dashboard              | Pending     |                                            |
 | Products               | Migrated    | Reference screen: Single-surface containment, metric ribbon, 48px ledger table, slide-over inspection |
 | Inventory              | Migrated    | Single-surface containment, metric ribbon, 48px ledger tables, stock health gauge, slide-over inspection |
-| Warehouses             | Pending     |                                            |
-| Suppliers              | Pending  |                                            |
-| Purchase Orders        | Pending  |                                            |
 | Reports                | Pending  |                                            |
 | Settings               | Pending  |                                            |
 | Accessibility pass     | Pending  |                                            |

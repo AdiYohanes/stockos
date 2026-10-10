@@ -78,7 +78,7 @@ function rpcFailure(data: unknown): ProductFailure | null {
   return parsed.success ? productFailure(parsed.data.code, undefined, parsed.data.traceId) : null;
 }
 
-async function productRead<Input, Output>(rpc: string, schema: z.ZodType<Input>, output: z.ZodType<Output>, input: unknown, writable: boolean): Promise<ProductReadResult<Output>> {
+export async function productRead<Input, Output>(rpc: string, schema: z.ZodType<Input>, output: z.ZodType<Output>, input: unknown, writable: boolean): Promise<ProductReadResult<Output>> {
   const authorization = await authorizeProducts(writable);
   if (!authorization.ok) return authorization;
   const parsed = schema.safeParse(input);
@@ -96,7 +96,7 @@ async function productRead<Input, Output>(rpc: string, schema: z.ZodType<Input>,
 }
 
 // The signed client was independently authorized by the invoking action before input validation.
-export async function productMutation<Input>(client: SessionClient, rpc: "stockos_create_product" | "stockos_update_product" | "stockos_archive_product" | "stockos_reactivate_product" | "stockos_record_stock_in" | "stockos_record_stock_out", schema: z.ZodType<Input>, input: unknown): Promise<ProductMutationResult> {
+export async function productMutation<Input>(client: SessionClient, rpc: "stockos_create_product" | "stockos_update_product" | "stockos_archive_product" | "stockos_reactivate_product" | "stockos_record_stock_in" | "stockos_record_stock_out" | "stockos_record_opname" | "stockos_adjust_inventory_cost", schema: z.ZodType<Input>, input: unknown): Promise<ProductMutationResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
   try {
