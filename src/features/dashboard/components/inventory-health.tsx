@@ -3,7 +3,7 @@
 import * as React from "react";
 import { HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { InventoryHealthData } from "../types";
 import { MOCK_INVENTORY_HEALTH } from "../mock-data";
@@ -78,7 +78,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.healthy.percentage}%)</span>
           </div>
           <span className="font-bold text-ink text-xs">
-            ${formatNumber(data.healthy.value)}
+            {formatCurrency(data.healthy.value)}
           </span>
         </div>
 
@@ -90,7 +90,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.lowStock.percentage}%)</span>
           </div>
           <span className="font-bold text-ink text-xs">
-            ${formatNumber(data.lowStock.value)}
+            {formatCurrency(data.lowStock.value)}
           </span>
         </div>
 
@@ -102,7 +102,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.outOfStock.percentage}%)</span>
           </div>
           <span className="font-bold text-red-600 text-xs">
-            ${formatNumber(data.outOfStock.value)}
+            {formatCurrency(data.outOfStock.value)}
           </span>
         </div>
       </div>

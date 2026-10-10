@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   RefreshCw,
   PackagePlus,
@@ -10,20 +11,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
-import { AddProductModal } from "./modals/add-product-modal";
-import { StockInModal } from "./modals/stock-in-modal";
-import { StockOutModal } from "./modals/stock-out-modal";
+import { ProductAddModal } from "@/features/products/components/product-add-modal";
+import { StockMovementModal } from "@/features/inventory/components/stock-movement-modal";
+import { mapProductToInventoryItem } from "@/features/inventory/adapters";
+import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
 
 interface DashboardHeaderProps {
   userName?: string;
+  rawProducts?: ProductDto[];
 }
 
-export function DashboardHeader({ userName }: DashboardHeaderProps) {
+export function DashboardHeader({ userName, rawProducts = [] }: DashboardHeaderProps) {
+  const router = useRouter();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [movementOpen, setMovementOpen] = React.useState(false);
+  const [movementType, setMovementType] = React.useState<"in" | "out">("in");
   const { t } = useI18n();
+
+  const allItems = React.useMemo(() => rawProducts.map(mapProductToInventoryItem), [rawProducts]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    router.refresh();
     setTimeout(() => {
       setIsRefreshing(false);
     }, 600);
@@ -58,7 +67,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
 
       {/* Quick Actions & Refresh */}
       <div className="flex flex-wrap items-center gap-2 shrink-0 self-start lg:self-auto">
-        <AddProductModal>
+        <ProductAddModal onCommitted={async () => { router.refresh(); }}>
           <Button
             variant="outline"
             size="sm"
@@ -68,31 +77,47 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
             <PackagePlus className="text-primary group-hover/button:text-white transition-colors" />
             <span className="sr-only sm:not-sr-only">{t.dashboard.addProduct}</span>
           </Button>
-        </AddProductModal>
+        </ProductAddModal>
 
-        <StockInModal>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            title={t.dashboard.stockIn}
-          >
-            <ArrowDownToLine className="text-emerald-600 dark:text-emerald-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
-            <span className="sr-only sm:not-sr-only">{t.dashboard.stockIn}</span>
-          </Button>
-        </StockInModal>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          title={t.dashboard.stockIn}
+          onClick={() => {
+            setMovementType("in");
+            setMovementOpen(true);
+          }}
+        >
+          <ArrowDownToLine className="text-emerald-600 dark:text-emerald-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
+          <span className="sr-only sm:not-sr-only">{t.dashboard.stockIn}</span>
+        </Button>
 
-        <StockOutModal>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            title={t.dashboard.stockOut}
-          >
-            <ArrowUpFromLine className="text-amber-600 dark:text-amber-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
-            <span className="sr-only sm:not-sr-only">{t.dashboard.stockOut}</span>
-          </Button>
-        </StockOutModal>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          title={t.dashboard.stockOut}
+          onClick={() => {
+            setMovementType("out");
+            setMovementOpen(true);
+          }}
+        >
+          <ArrowUpFromLine className="text-amber-600 dark:text-amber-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
+          <span className="sr-only sm:not-sr-only">{t.dashboard.stockOut}</span>
+        </Button>
+
+        <StockMovementModal
+          open={movementOpen}
+          onOpenChange={setMovementOpen}
+          targetItem={null}
+          defaultType={movementType}
+          allItems={allItems}
+          rawProducts={rawProducts}
+          onCommitted={async () => {
+            router.refresh();
+          }}
+        />
 
         <div className="h-5 w-[3px] bg-border mx-1 hidden sm:block" />
 

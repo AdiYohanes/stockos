@@ -43,6 +43,10 @@ import {
   GetShopSettingsInputSchema,
   UpdateShopSettingsInputSchema,
 } from "../src/features/settings/schemas/settings-rpc.schema";
+import {
+  GetDashboardInputSchema,
+  DashboardDtoSchema,
+} from "../src/features/dashboard/schemas/dashboard-rpc.schema";
 
 // Reports RPC schema validations
 assert.ok(ValuationReportInputSchema.safeParse({}).success);
@@ -98,4 +102,73 @@ assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, expe
 assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, defaultMinStock: -1 }).success, false);
 assert.equal(UpdateShopSettingsInputSchema.safeParse({ ...validUpdateInput, unknownField: true }).success, false);
 
-console.log("PASS: Products, stock movements, reports, and settings schemas validated.");
+// Dashboard RPC schema validations (Ticket 7)
+assert.ok(GetDashboardInputSchema.safeParse({}).success);
+assert.equal(GetDashboardInputSchema.safeParse({ unexpected: true }).success, false);
+
+const validDashboardDto = {
+  metrics: {
+    totalProducts: 42,
+    inStockCount: 35,
+    lowStockCount: 5,
+    outOfStockCount: 2,
+    potentialSellingValue: "15000000",
+    potentialGrossProfit: "4500000.000000",
+    totalCostValue: "10500000.000000",
+  },
+  health: {
+    totalProducts: 42,
+    healthScore: 83,
+    healthy: { count: 35, percentage: 83.3, value: "12000000" },
+    lowStock: { count: 5, percentage: 11.9, value: "3000000" },
+    outOfStock: { count: 2, percentage: 4.8, value: "0" },
+  },
+  attentionItems: [
+    {
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      sku: "KOPI-01",
+      name: "Kopi Kapal Api",
+      category: "Minuman",
+      currentStock: 0,
+      minStock: 10,
+      unit: "pcs",
+      status: "out_of_stock" as const,
+      lastRestocked: "2026-10-09T10:00:00.000Z",
+    },
+  ],
+  recentEvents: [
+    {
+      id: "223e4567-e89b-12d3-a456-426614174000",
+      productId: "123e4567-e89b-12d3-a456-426614174000",
+      productSku: "KOPI-01",
+      productName: "Kopi Kapal Api",
+      kind: "sold",
+      quantityDelta: -5,
+      reference: "NOTA-001",
+      recordedAt: "2026-10-10T12:00:00.000Z",
+    },
+  ],
+  movements: {
+    days7: {
+      timeframe: "7d" as const,
+      totalIn: 100,
+      totalOut: 80,
+      netChange: 20,
+      data: [{ period: "Sen", stockIn: 20, stockOut: 15 }],
+    },
+    days30: {
+      timeframe: "30d" as const,
+      totalIn: 500,
+      totalOut: 450,
+      netChange: 50,
+      data: [{ period: "Minggu 1", stockIn: 120, stockOut: 100 }],
+    },
+  },
+  asOf: "2026-10-10T14:00:00.000Z",
+};
+
+assert.ok(DashboardDtoSchema.safeParse(validDashboardDto).success);
+assert.equal(DashboardDtoSchema.safeParse({ ...validDashboardDto, metrics: { ...validDashboardDto.metrics, totalProducts: -1 } }).success, false);
+assert.equal(DashboardDtoSchema.safeParse({ ...validDashboardDto, health: { ...validDashboardDto.health, healthScore: 105 } }).success, false);
+
+console.log("PASS: Products, stock movements, reports, settings, and dashboard schemas validated.");

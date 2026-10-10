@@ -61,7 +61,8 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
         const IconComponent = iconConfig.icon;
         const label = getMetricLabel(metric);
         const supportingText = getSupportingText(metric);
-        const isFinancial = metric.id === "revenue" || metric.id === "net_profit";
+        const isMoney = metric.id === "revenue" || metric.id === "net_profit" || metric.id === "potential_revenue" || metric.id === "potential_profit";
+        const isDemo = metric.id === "revenue" || metric.id === "net_profit";
 
         return (
           <div
@@ -79,7 +80,7 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
               </span>
               <IconComponent aria-hidden="true" className={cn("h-5 w-5 shrink-0", iconConfig.iconClass)} />
             </div>
-            {isFinancial && (
+            {isDemo && (
               <p className="font-mono text-[10px] text-ink/80 mt-2">
                 {t.dashboard.demoData} · {t.dashboard.financialPeriod}
               </p>
@@ -87,7 +88,7 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
 
             {/* Metric Value + Trend */}
             <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mt-3">
-              <div className={cn("min-w-0 max-w-full font-mono text-xl sm:text-2xl font-bold tracking-tighter text-ink [overflow-wrap:anywhere]", !isFinancial && "text-3xl sm:text-3xl")}>
+              <div className={cn("min-w-0 max-w-full font-mono text-xl sm:text-2xl font-bold tracking-tighter text-ink [overflow-wrap:anywhere]", !isMoney && "text-3xl sm:text-3xl")}>
                 {metric.value}
               </div>
               {metric.change && (

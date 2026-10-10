@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 6 — persistent local Settings integration (singleton store profile, creation defaults, monotonic version optimistic concurrency control, client UUID idempotency via mutation_requests, administrative audit trail with nullable product_id, and warung scope enforcement). Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1, 2, 3, 4, and 5 remain implemented. Dashboard/recovery/cloud/deployment and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 7 — persistent local Dashboard integration (snapshot-consistent `stockos_get_dashboard` RPC, Potensi Pendapatan and Potensi Laba Kotor, live inventory health distributions, bounded attention items, 7d/30d movement activity, and persistent quick actions with optimistic refresh). Tickets 1, 2, 3, 4, 5, 6, and 7 implemented. Cloud, deployment, and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -144,6 +144,18 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Warung scope enforcement (Stories 38–39): Removed unsupported mock team management and notification simulation tabs, removed fake accounting toggles (FIFO/LIFO, multi-currency, negative stock, batch expiry), and ensured system reset returns creation defaults without wiping operational product or stock data.
 - [x] Suite passes: `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/settings`), focused ESLint on Settings PASS (0 errors, 0 warnings).
 - [x] Dashboard UI data remains mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 7 Dashboard Integration (2026-10-10)
+
+- [x] Connected Dashboard frontend (`/`) to persistent local Supabase backend via Server Component data fetching and owner-checked PostgreSQL RPC `stockos_get_dashboard`.
+- [x] Replaced demo month-to-date financial cards with glossary-defined Potensi Pendapatan (`current_stock * selling_price`) and Potensi Laba Kotor (Potensi Pendapatan minus weighted-average inventory cost value).
+- [x] Migration `20261010030000_dashboard_reads.sql`: owner-checked, security-definer, restricted search path, strict JSON validation (`allowed_keys`), timezone-aware intervals (`stockos_private.shop_settings.timezone`), aggregating active products, stock health, attention list, recent events, and 7d/30d movements in the shop timezone.
+- [x] Strict Zod validation (`dashboard-rpc.schema.ts`), decimal string parsing, and server-only query helper `getDashboard()`.
+- [x] Live Inventory Health distribution (healthy, low stock, out of stock) with Rupiah formatting.
+- [x] Bounded Need Attention table populated from live `current_stock <= min_stock` active products.
+- [x] Stock Movement Chart accepting live 7d and 30d inbound/outbound volume with net flow calculations.
+- [x] Wired Dashboard quick actions (`ProductAddModal` and `StockMovementModal`) with optimistic router refresh on commit.
+- [x] Suite passes: `scripts/test-schemas.ts` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/`), focused ESLint on Dashboard PASS (0 errors, 0 warnings).
 
 ## Next
 
