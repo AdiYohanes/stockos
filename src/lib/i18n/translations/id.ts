@@ -108,6 +108,24 @@ export const idTranslations: Translations = {
     welcomeBack: "Selamat datang kembali",
   },
   products: {
+    persistent: {
+      create: "Buat produk", restock: "Isi ulang produk existing", lookup: "Cari nama atau SKU", selectProduct: "Pilih produk / SKU", search: "Cari nama atau SKU",
+      openingQuantity: "Jumlah stok awal", purchaseTotal: "Total biaya beli (rupiah bulat)", cartonMode: "Terima dalam karton", cartonCount: "Jumlah karton", unitsPerCarton: "Unit dasar per karton",
+      shelfLocation: "Lokasi rak", reference: "Nota / referensi (opsional)", receipt: "Stok Masuk — penerimaan", sold: "Stok Keluar — barang terjual saja", archive: "Arsipkan", reactivate: "Aktifkan kembali",
+      archiveHelp: "Arsip mempertahankan SKU dan riwayat. Hanya produk stok nol dapat diarsipkan.", zeroStockRequired: "Stok harus nol sebelum diarsipkan.", archivedHelp: "Aktifkan kembali sebelum mengedit atau mencatat stok.", identityLocked: "SKU dan unit dasar terkunci setelah ada riwayat inventaris.",
+      retry: "Ulangi permintaan sama", uncertain: "Hasil belum pasti. Isian tersimpan; ulangi permintaan sama sebelum meninggalkan formulir.", pending: "Menyimpan…", conflict: "Produk berubah. Tinjau nilai terkini sebelum mengirim ulang draft.", reviewCurrent: "Tinjau data terkini", reviewed: "Sudah ditinjau — pertahankan draft dan kirim ulang",
+      currentState: "Data terkini", metadataVersion: "Revisi metadata", stockVersion: "Revisi stok", inventoryCostValue: "Nilai modal stok",
+      averagePurchaseCost: "Rata-rata modal beli", potentialSellingValue: "Potensi Pendapatan", potentialGrossProfit: "Potensi Laba Kotor", history: "Riwayat inventaris",
+      opening: "Stok awal", opname: "Stok Opname", cost_adjustment: "Koreksi modal", before: "Sebelum", after: "Sesudah", previous: "Sebelumnya", next: "Selanjutnya",
+      refreshError: "Tersimpan, tetapi data terkini gagal dimuat. Ulangi pemuatan; mutasi tidak diulang.", invalidQuantity: "Masukkan jumlah unit dasar bulat dalam batas; konversi karton harus sesuai.", selectRequired: "Pilih produk existing berdasarkan ID / SKU.", freeCostHelp: "Total biaya beli wajib untuk stok masuk. Isi 0 hanya jika barang benar-benar gratis.",
+      archived: "Diarsipkan", allArchives: "Aktif + arsip", localData: "Products persisten lokal — hanya pembuktian terisolasi", inventoryDemo: "Inventory memakai data demo. Pergerakan demo tidak mengubah Products persisten.",
+      errors: {
+        VALIDATION_ERROR: "Periksa isian; jumlah bulat dan biaya rupiah bulat wajib.", UNAUTHENTICATED: "Sesi berakhir. Masuk kembali; draft tetap tersimpan.", FORBIDDEN: "Akses pemilik diperlukan.",
+        SKU_EXISTS: "SKU sudah ada, termasuk produk arsip.", VERSION_CONFLICT: "Produk berubah. Tinjau data terkini sebelum mengulang.", IDENTITY_LOCKED: "SKU dan unit dasar terkunci oleh riwayat inventaris.",
+        PRODUCT_HAS_STOCK: "Arsip memerlukan stok nol.", PRODUCT_ARCHIVED: "Aktifkan produk kembali dahulu.", NOT_FOUND: "Produk tidak ditemukan.", INSUFFICIENT_STOCK: "Jumlah terjual melebihi stok tersedia.",
+        REQUEST_ID_CONFLICT: "ID permintaan dipakai dengan isian berbeda. Tinjau sebelum pengiriman baru.", INTERNAL_ERROR: "Hasil belum pasti. Ulangi permintaan sama.",
+      },
+    },
     title: "Produk",
     subtitle:
       "Kelola master data produk, SKU, kategori, dan batas minimum persediaan.",

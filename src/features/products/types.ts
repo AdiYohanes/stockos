@@ -1,12 +1,13 @@
 export * from "./schemas/product.schema";
 
-export type ProductSortField = "name" | "sku" | "stock" | "price" | "category" | "createdAt";
+export type ProductSortField = "name" | "sku" | "currentStock" | "sellingPrice" | "createdAt";
 export type ProductSortOrder = "asc" | "desc";
 
 export interface ProductFilterState {
   searchQuery: string;
-  category: string; // 'all' or specific category
-  status: "all" | import("./schemas/product.schema").ProductStatus;
+  category: string;
+  status: "all" | "in_stock" | "low_stock" | "out_of_stock";
+  archive: "active" | "archived" | "all";
   sortField: ProductSortField;
   sortOrder: ProductSortOrder;
   page: number;
@@ -18,5 +19,5 @@ export interface ProductMetrics {
   inStockCount: number;
   lowStockCount: number;
   outOfStockCount: number;
-  totalValuation: number;
+  totalValuation: string;
 }

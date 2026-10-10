@@ -6,12 +6,14 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { SkuBadge } from "@/components/shared/sku-badge";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "../format";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { ProductRowActions } from "./product-row-actions";
 import { ProductEmptyState } from "./product-empty-state";
-import type { Product, ProductFilterState } from "../types";
+import type { ProductFilterState } from "../types";
+import type { ProductDto as Product } from "../schemas/product-rpc.schema";
 
 interface ProductsTableProps {
   products: Product[];
@@ -43,10 +45,10 @@ export function ProductsTable({
   const { t } = useI18n();
   const { page, pageSize } = filterState;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalCount);
+  const startItem = products.length === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endItem = products.length === 0 ? 0 : Math.min(page * pageSize, totalCount);
 
-  if (products.length === 0) {
+  if (products.length === 0 && totalCount === 0) {
     return (
       <ProductEmptyState
         hasFilters={hasActiveFilters}
@@ -89,21 +91,19 @@ export function ProductsTable({
               const stockPercentage =
                 product.minStock > 0
                   ? Math.min(100, Math.round((product.currentStock / product.minStock) * 100))
-                  : 100;
-              const totalProductValue = product.currentStock * (product.unitPrice || 0);
+                  : product.currentStock > 0 ? 100 : 0;
 
               return (
                 <tr
                   key={product.id}
-                  onClick={() => onViewDetails(product)}
                   className="group transition-colors hover:bg-acid/10 cursor-pointer h-16"
                 >
                   {/* Col 1: Product Name & Category */}
                   <td className="px-5 py-4">
                     <div className="flex flex-col">
-                      <span className="font-display font-bold uppercase text-sm text-ink group-hover:text-primary transition-colors">
+                      <button type="button" onClick={() => onViewDetails(product)} className="input-focus text-left font-display font-bold uppercase text-sm text-ink hover:underline">
                         {product.name}
-                      </span>
+                      </button>
                       <div className="mt-0.5 flex items-center gap-2">
                         <span className="font-mono text-[9px] opacity-45 uppercase">
                           {product.category}
@@ -139,9 +139,9 @@ export function ProductsTable({
                         <span
                           className={cn(
                             "font-display font-[900] text-sm",
-                            product.status === "out_of_stock"
+                            product.stockStatus === "out_of_stock"
                               ? "text-red-600"
-                              : product.status === "low_stock"
+                              : product.stockStatus === "low_stock"
                               ? "text-orange-700"
                               : "text-ink"
                           )}
@@ -159,12 +159,12 @@ export function ProductsTable({
                       {/* 3px Stock Gauge - Neobrutalist */}
                       <div className="h-1.5 w-full overflow-hidden bg-paper border border-ink">
                         <div
-                          style={{ width: `${Math.max(product.currentStock > 0 ? 6 : 0, stockPercentage)}%` }}
+                          style={{ width: `${stockPercentage}%` }}
                           className={cn(
                             "h-full transition-all duration-300 border-r border-ink",
-                            product.status === "out_of_stock"
+                            product.stockStatus === "out_of_stock"
                               ? "bg-red-600"
-                              : product.status === "low_stock"
+                              : product.stockStatus === "low_stock"
                               ? "bg-orange-400"
                               : "bg-acid"
                           )}
@@ -178,12 +178,12 @@ export function ProductsTable({
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-ink">
                         <span className="text-[10px] text-ink/50 mr-1">J:</span>
-                        {formatCurrency(product.unitPrice || 0)}
+                        {formatProductMoney(product.sellingPrice)}
                       </span>
-                      {product.unitPurchasePrice !== undefined && (
+                      {product.averagePurchaseCost !== null && (
                         <span className="text-xs font-bold text-emerald-600 mt-1">
                           <span className="text-[10px] text-emerald-600/50 mr-1">B:</span>
-                          {formatCurrency(product.unitPurchasePrice)}
+                          {formatProductMoney(product.averagePurchaseCost)}
                         </span>
                       )}
                     </div>
@@ -191,26 +191,22 @@ export function ProductsTable({
 
                   {/* Col 6: Disciplined Status Micro-Dot */}
                   <td className="px-5 py-4">
-                    {product.status === "in_stock" && (
+                    {product.stockStatus === "in_stock" && (
                       <span className="bg-acid border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
-                        Optimal
+                        {t.products.inStock}
                       </span>
                     )}
-                    {product.status === "low_stock" && (
+                    {product.stockStatus === "low_stock" && (
                       <span className="bg-orange-400 border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
-                        Low Stock
+                        {t.products.lowStock}
                       </span>
                     )}
-                    {product.status === "out_of_stock" && (
+                    {product.stockStatus === "out_of_stock" && (
                       <span className="bg-ink text-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
-                        Critical
+                        {t.products.outOfStock}
                       </span>
                     )}
-                    {product.status === "draft" && (
-                      <span className="bg-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
-                        Draft
-                      </span>
-                    )}
+                    {product.archivedAt && <span className="block mt-2 font-mono text-[10px] font-bold">{t.products.persistent.archived}</span>}
                   </td>
 
                   {/* Col 7: Actions Menu */}

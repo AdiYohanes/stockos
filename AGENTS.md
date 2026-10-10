@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 2, local database and stock/modal RPC proof**
+**Implementation phase: Backend Foundation — ticket 3, local Products integration**
+
+Ticket 3 implementation approved 2026-10-10: persistent Products reads/create/metadata/archive/reactivation, opening stock, receipt/restock and sold-only Stock Out through existing owner RPCs; minimum owner-checked catalog metrics/text suggestions and isolated server/browser proof. Inventory remains explicitly demo; Dashboard/Reports/Settings remain mocked. UI opname/modal correction, recovery, cloud, deployment, and real-shop use remain outside this slice.
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 

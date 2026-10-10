@@ -6,7 +6,9 @@ Version: `0.x`
 
 Current architecture phase:
 
-**Backend Foundation ticket 2 active (local database and stock/modal RPC proof); domain UI remains mocked**
+**Backend Foundation ticket 3 active (local Products integration); other domain UI remains mocked**
+
+Implementation approved 2026-10-10 for server-authoritative Products queries/Server Actions using existing session-scoped owner RPCs, plus minimal catalog metrics/suggestions reads. Products drafts/navigation stay client-local; Inventory keeps independent demo state. No reports/settings/dashboard integration, new costing implementation, recovery, cloud or deployment.
 
 Implementation approval received 2026-10-09 for isolated local Supabase auth/bootstrap only. Invitation-mode setup omits password until verified invitation landing; public provider signup stays disabled. Ticket 2 approval received 2026-10-09 for isolated private product/evidence/retry schema, owner-checked lifecycle and stock/modal RPCs, bounded reads, and real contract tests. Exact arithmetic and transactions remain PostgreSQL-owned. Full recovery, UI/Server Action integration, reports/settings persistence, external SMTP proof, cloud provisioning, and deployment remain outside this ticket.
 

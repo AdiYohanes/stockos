@@ -288,7 +288,9 @@ These are future considerations and should not automatically be treated as appro
 
 Current development phase:
 
-**Backend Foundation ticket 2 active — local database and stock/modal RPC proof; feature UI remains mocked**
+**Backend Foundation ticket 3 active — local persistent Products integration; other feature UI remains mocked**
+
+Implementation approved 2026-10-10 for Products catalog/detail/create/metadata/archive/reactivation plus opening stock, receipts/restock and sold-only Stock Out. Inventory remains explicitly demo; reports/settings/dashboard/recovery/cloud/deployment and operational use are outside this slice.
 
 Implemented:
 

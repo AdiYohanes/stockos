@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-StockOS is a lightweight web-based Stock Management System / Mini ERP.
+StockOS is a lightweight web-based stock management system for one small shop (warung). Warehouses, multi-location transfers, and purchase orders are outside scope.
 
 ---
 
@@ -15,10 +15,17 @@ Use the repository documentation as project context.
 ### Primary documents
 
 - `AGENTS.md` — coding-agent behavior, engineering rules, scope control, and working conventions.
-- `docs/PRD.md` — product goals, scope, requirements, and expected behavior.
-- `docs/ARCHITECTURE.md` — technical structure, feature boundaries, dependency direction, and data flow.
-- `docs/PROGRESS.md` — current implementation status and development progress.
+- `PRD.md` — product goals, scope, requirements, and expected behavior.
+- `ARCHITECTURE.md` — technical structure, feature boundaries, dependency direction, and data flow.
+- `PROGRESS.md` — current implementation status and development progress.
 - `design.md` — source of truth for UI, UX, visual language, interaction patterns, and design system.
+- `GLOSSARY.md` — approved domain terms, including sold-only Stock Out and stock-based potentials.
+- `docs/BACKEND_PLAN.md` — confirmed backend scope, delivery order, proof/release gates.
+- `docs/DATABASE.md` — target entities, constraints, exact costing, transactions, grants, and retention.
+- `docs/API_CONTRACT.md` — server query/Server Action contracts, auth, errors, conflicts, retries, and exports; not a second REST API.
+- `docs/FULLSTACK_SPEC.md` — issue-ready user stories, implementation/testing decisions, and scope exclusions.
+
+Backend target is confirmed but not implemented. `ready-for-agent` and spec approval do not authorize code, migrations, provisioning, or deployment; follow the separate approval gate in `AGENTS.md`.
 
 Do not duplicate detailed documentation inside this file.
 
@@ -62,9 +69,6 @@ Current features include:
 - Dashboard
 - Inventory
 - Products
-- Warehouses
-- Suppliers
-- Purchase Orders
 - Reports
 - Settings
 - Authentication

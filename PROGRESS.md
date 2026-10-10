@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 2 — private stock schema, product lifecycle and stock/modal RPCs, bounded reads, and real PostgreSQL/Auth contract proof. Explicit approval received 2026-10-09; isolated local Supabase only. Ticket 1 owner auth remains implemented; domain UI/Server Actions, reports/settings and recovery remain outside ticket 2.
+Implementation: Backend Foundation ticket 3 — persistent local Products integration (catalog/detail/lifecycle, opening stock, receipts/restock, sold-only Stock Out), minimal catalog reads, and real server/browser proof. Explicit approval received 2026-10-10; isolated local Supabase only. Tickets 1/2 remain implemented. Inventory stays explicitly demo; Dashboard/Reports/Settings/recovery/cloud/deployment and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -87,6 +87,24 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - Full `npm run lint` fails on unrelated existing frontend: four unescaped quotes in dashboard `stock-in-modal.tsx:181,184`, effect state copies in `inventory-header.tsx:25` and `products-toolbar.tsx:41`; 10 existing warnings. These files remain outside ticket 2.
 - Two-axis code review completed against ticket 2 scope. No confirmed standard/spec defects remain; spec suggestions for omitted unit/minStock conflict with the required-input contract, and settings evidence belongs to a later approved slice. Operation branching/replay duplication retained instead of adding speculative abstractions. Review follow-up tightened native success/count null checks and fixture ownership; affected checks pass again.
 - Browser smoke not rerun: no UI integration or UI changes in this ticket. Reports/settings/recovery/cloud/real-shop readiness are not delivered.
+
+## Backend Foundation — Ticket 3 Products Integration (2026-10-10)
+
+- [x] Connected Products frontend to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_list_products`, `stockos_get_product`, `stockos_create_product`, `stockos_update_product`, `stockos_archive_product`, `stockos_reactivate_product`, `stockos_record_stock_in`, `stockos_record_stock_out`, `stockos_product_metrics`, `stockos_text_suggestions`).
+- [x] Server-authoritative catalog reading URL search parameters (`search`, `category`, `status`, `archive`, `sort`, `page`, `pageSize`) with default pageSize 25, maximum 100.
+- [x] Product detail sheet fetching by ID, with separately paginated inventory history without unbound embedded arrays.
+- [x] Product creation with optional opening stock and mandatory purchase total for positive stock (zero IDR allowed for free goods).
+- [x] Restock by explicit ID/SKU selection using `stockos_record_stock_in`.
+- [x] Carton mode calculating base quantity via `cartonCount * unitsPerCarton`.
+- [x] Metadata edit guarded by `expectedMetadataVersion`; SKU and unit locked once inventory history exists; selling price changes do not alter inventory valuation.
+- [x] Zero-stock archive and reactivation using `metadataVersion` and `stockVersion`.
+- [x] Sold-only Stock Out using `stockos_record_stock_out`.
+- [x] Native PostgreSQL read RPCs migration `20261010000000_product_reads.sql` providing catalog metrics and prefix suggestions with fixed search path and restrictive grants.
+- [x] Strict Zod validation (`product-rpc.schema.ts`), exact 6-decimal money formatting (`formatProductMoney()`), and request-scoped signed Supabase client (`createSessionClient()`).
+- [x] Mutation resilience: client-generated UUID, frozen request payload, exact requestId retry on uncertain network failures; conflicts preserve drafts and require review.
+- [x] Verified via `scripts/test-products.py` against Edge headless: real pointer clicks, login, creation, opening valuation, page reload/new session persistence, carton restock, sold movements, price edit without valuation change, two-session conflict review, lost-response retry/replay, detail sheet focus trap/Escape, desktop (1440px) and mobile (390px) responsive layout with no horizontal overflow, and fixture cleanup.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit --pretty false` PASS, `npm run build` PASS, focused ESLint on Products PASS (0 errors, 0 warnings), `git diff --check` PASS.
+- [x] Inventory UI remains mock with an explicit demo banner; Dashboard/Reports/Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
 
 ## Next
 

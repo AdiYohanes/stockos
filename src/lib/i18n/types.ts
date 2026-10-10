@@ -107,6 +107,18 @@ export interface Translations {
     welcomeBack: string;
   };
   products: {
+    persistent: {
+      create: string; restock: string; lookup: string; selectProduct: string; search: string;
+      openingQuantity: string; purchaseTotal: string; cartonMode: string; cartonCount: string; unitsPerCarton: string;
+      shelfLocation: string; reference: string; receipt: string; sold: string; archive: string; reactivate: string;
+      archiveHelp: string; zeroStockRequired: string; archivedHelp: string; identityLocked: string;
+      retry: string; uncertain: string; pending: string; conflict: string; reviewCurrent: string; reviewed: string;
+      currentState: string; metadataVersion: string; stockVersion: string; inventoryCostValue: string;
+      averagePurchaseCost: string; potentialSellingValue: string; potentialGrossProfit: string; history: string;
+      opening: string; opname: string; cost_adjustment: string; before: string; after: string; previous: string; next: string;
+      refreshError: string; invalidQuantity: string; selectRequired: string; freeCostHelp: string;
+      archived: string; allArchives: string; localData: string; inventoryDemo: string; errors: Record<string, string>;
+    };
     title: string;
     subtitle: string;
     badgeText: string;
