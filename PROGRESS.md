@@ -169,6 +169,14 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - Next.js 16.3 development logging exposed fixture action arguments before configuration fix. `next.config.ts` now disables Server Function/incoming-request logging to avoid password/callback-token output; earlier disposable fixture credentials were revoked/deleted, never production credentials. Existing Auth/stock proof resources and `.env.local` unchanged. Shared infrastructure health failures return retryable errors; account-specific delivery failures remain generic acknowledgement, which does not confirm delivery.
 - Isolated local proof only; external SMTP deliverability, cloud provisioning, deployment, and real-shop use remain unverified/outside scope.
 
+## Session Checkpoint — Resume Ticket 9 (2026-10-11)
+
+- Ticket 8 implementation committed as `c21e14f` (`feat(auth): add local owner password recovery`) on `refactor/warung-scope`. Recovery verification/results and known gaps are recorded immediately above.
+- Next session: bootstrap repository context, check Git status, then identify ticket 9 requirements from the repository spec/issue tracker before planning changes. Ticket 9 scope is not yet identified; this checkpoint does not authorize cloud provisioning, deployment, external SMTP, or real-shop use.
+- Carry forward: full lint has 6 errors/4 warnings; broad stock contract fails existing `shop_settings_dto` private-function grants; live invitation-to-recovery Server Action proof remains incomplete. Do not report full suite green or expand scope silently.
+- Recovery app process on port 3004 stopped. Disposable `stockos-recovery-proof` Docker resources retained; fixture directory `C:\Users\USER\AppData\Local\Temp\stockos-recovery-proof-9LeW0T`. Its `status.json` contains local secrets: do not commit, publish, or print. Inspect identity/ports before reuse; never reset existing resources implicitly. Existing Auth/stock fixtures and `.env.local` unchanged.
+- Resume command: `/implement tiket 9` after ticket requirements are identified. No ticket 9 implementation started in this session.
+
 ## Next
 
 - [ ] Validate small-shop wording and sample catalog with users.
