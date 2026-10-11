@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { updateProductAction, getTextSuggestionsAction } from "../actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
+import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../sample-warung-catalog";
 import { ProductFormField } from "./product-add-modal";
 
 interface EditProductModalProps {
@@ -22,7 +23,7 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
   const { t } = useI18n();
   const c = t.products.persistent;
   const [expectedVersion, setExpectedVersion] = React.useState(product.metadataVersion);
-  const [suggestions, setSuggestions] = React.useState<{ category: string[]; supplier: string[] }>({ category: [], supplier: [] });
+  const [suggestions, setSuggestions] = React.useState<{ category: string[]; supplier: string[] }>({ category: [...WARUNG_CATEGORIES], supplier: [] });
   const submission = useProductSubmission(updateProductAction, async value => { await onCommitted(value); onClose(); });
   React.useEffect(() => { onBlocked(submission.blocked); return () => onBlocked(false); }, [submission.blocked, onBlocked]);
   React.useEffect(() => {
@@ -31,7 +32,10 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
       try {
         const category = await getTextSuggestionsAction({ kind: "category", prefix: "" });
         const supplier = await getTextSuggestionsAction({ kind: "supplier", prefix: "" });
-        if (active) setSuggestions({ category: category.ok ? category.data.slice(0, 30) : [], supplier: supplier.ok ? supplier.data.slice(0, 30) : [] });
+        if (active) setSuggestions({
+          category: category.ok && category.data.length > 0 ? Array.from(new Set([...category.data, ...WARUNG_CATEGORIES])) : [...WARUNG_CATEGORIES],
+          supplier: supplier.ok ? supplier.data.slice(0, 30) : [],
+        });
       } catch { /* Optional suggestions never block free-text metadata. */ }
     });
     return () => { active = false; };
@@ -59,14 +63,16 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
         <ProductFormField id="edit-name" name="name" label={`${t.products.form.nameLabel} *`} defaultValue={product.name} required maxLength={120} error={submission.fieldErrors.name?.[0]} />
         <ProductFormField id="edit-sku" name="sku" label={`${t.products.form.skuLabel} *`} defaultValue={product.sku} disabled={identityLocked} required minLength={3} maxLength={64} />
         <ProductFormField id="edit-category" name="category" label={`${t.products.form.categoryLabel} *`} defaultValue={product.category} list="edit-categories" required maxLength={120} />
-        <ProductFormField id="edit-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} defaultValue={product.unit} disabled={identityLocked} required maxLength={30} />
+        <ProductFormField id="edit-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} defaultValue={product.unit} disabled={identityLocked} required maxLength={30} list="edit-units" />
         <ProductFormField id="edit-selling-price" name="sellingPrice" label={`${t.products.form.priceLabel} *`} defaultValue={product.sellingPrice} required pattern="[0-9]{1,13}" inputMode="numeric" maxLength={13} />
         <ProductFormField id="edit-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} defaultValue={product.minStock} required type="number" min={0} max={1_000_000_000} step={1} />
         <ProductFormField id="edit-supplier" name="supplier" label={t.products.form.supplierLabel} defaultValue={product.supplier ?? ""} list="edit-suppliers" maxLength={120} />
         <ProductFormField id="edit-shelfLocation" name="shelfLocation" label={c.shelfLocation} defaultValue={product.shelfLocation ?? ""} maxLength={80} />
         <ProductFormField id="edit-barcode" name="barcode" label={t.products.sheet.barcodeUpc} defaultValue={product.barcode ?? ""} maxLength={64} />
         <ProductFormField id="edit-description" name="description" label={t.products.form.descLabel} defaultValue={product.description ?? ""} maxLength={2000} />
-        <datalist id="edit-categories">{suggestions.category.map(value => <option key={value} value={value} />)}</datalist><datalist id="edit-suppliers">{suggestions.supplier.map(value => <option key={value} value={value} />)}</datalist>
+        <datalist id="edit-categories">{suggestions.category.map(value => <option key={value} value={value} />)}</datalist>
+        <datalist id="edit-suppliers">{suggestions.supplier.map(value => <option key={value} value={value} />)}</datalist>
+        <datalist id="edit-units">{WARUNG_UNITS.map(value => <option key={value} value={value} />)}</datalist>
       </fieldset>
     </DialogBody><DialogFooter className="border-t-[3px] border-ink"><Button type="button" variant="outline" disabled={submission.blocked} onClick={onClose}>{t.common.cancel}</Button>{submission.uncertain || submission.refreshFailed ? <Button type="button" disabled={submission.pending} onClick={submission.retry}>{c.retry}</Button> : <Button type="submit" disabled={submission.pending || !!product.archivedAt || submission.code === "VERSION_CONFLICT"}>{submission.pending ? c.pending : t.common.save}</Button>}</DialogFooter></form>;
 }

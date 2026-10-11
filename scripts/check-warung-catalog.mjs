@@ -18,9 +18,12 @@ assert.ok(!idContent.includes("PT Logistik Nusantara"), "id.ts must not contain 
 assert.ok(!idContent.includes("rian.hidayat@logistik.com"), "id.ts must not contain enterprise email placeholder");
 assert.ok(!idContent.includes("Jl. Industri Utama"), "id.ts must not contain industrial address placeholder");
 assert.ok(!idContent.includes("MITRA PABRIK"), "id.ts must not use MITRA PABRIK badge");
+assert.ok(!idContent.includes("pengiriman (KELUAR)"), "id.ts must use warung terminology for stock out instead of logistics pengiriman");
+assert.ok(!idContent.includes("pengiriman masuk"), "id.ts must use warung terminology for stock in instead of pengiriman masuk");
 
 assert.ok(!enContent.includes("Acme Logistics Corp"), "en.ts must not contain Acme Logistics Corp placeholder");
 assert.ok(!enContent.includes("123 Industrial Way"), "en.ts must not contain 123 Industrial Way placeholder");
+assert.ok(!enContent.includes("dispatch (OUT)"), "en.ts must use warung terminology for stock out instead of dispatch");
 
 // 2. Check sample warung catalog module
 const catalogModulePath = path.join(root, "src/features/products/sample-warung-catalog.ts");

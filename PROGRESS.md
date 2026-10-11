@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 9 — Gate D: Private Fullstack Release & Comprehensive Verification completed 2026-10-11. Tickets 1–9 implemented. All feature domains connected to local Supabase PostgreSQL/Auth. Zero ESLint errors/warnings, clean TypeScript, Next.js build passes, domain/schema validation passes, and private function grants patched. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 11 — Local Catalog & Wording Validation in local test environment completed 2026-10-11. Tickets 1–11 implemented. All feature domains connected to local Supabase PostgreSQL/Auth with authentic 18-product Indonesian warung catalog verified in browser across all routes. Zero ESLint errors/warnings, clean TypeScript, Next.js build passes, automated Playwright Edge validation passes. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -191,7 +191,18 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Created `scripts/seed-warung-catalog.mjs` supporting both dry-run schema validation and live local Supabase seeding via `stockos_create_product` RPC.
 - [x] Full regression suite passes: `scripts/check-warung-catalog.mjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
 
+## Backend Foundation — Ticket 11 Local Catalog & Wording Validation (2026-10-11)
+
+- [x] Validated small-shop wording across translation dictionaries, eliminating logistics terms (`pengiriman (KELUAR)`, `pengiriman masuk`, `dispatch (OUT)` in favor of `barang terjual (KELUAR)`, `barang masuk`, `sold goods (OUT)`).
+- [x] Integrated canonical `WARUNG_CATEGORIES` and `WARUNG_UNITS` autocompletion datalists into `ProductAddModal` and `EditProductModal`.
+- [x] Fixed PostgreSQL ISO 8601 timestamptz with timezone offset (`+00:00`) parsing in Zod datetime schemas (`dashboard-rpc.schema.ts`, `product-rpc.schema.ts`, `settings-rpc.schema.ts`).
+- [x] Created `scripts/launch-warung-proof.py`: Dedicated launcher provisioning owner and 18 warung catalog products in local test environment on `http://localhost:3002`.
+- [x] Created `scripts/test-warung-catalog.py`: End-to-end automated Playwright browser test driving Microsoft Edge headless through login and all 5 primary routes (Dashboard, Products, Inventory, Reports, Settings).
+- [x] Verified exact financial valuations against PostgreSQL state: Total modal Rp 4.726.850, Potensi Pendapatan Rp 5.457.500, Potensi Laba Kotor Rp 730.650, health distribution (16 in stock, 1 low stock, 1 out of stock).
+- [x] Verified responsive layouts at desktop (1440px) and mobile (390px) viewports with zero horizontal overflow.
+- [x] Negative assertions confirmed zero enterprise/logistics wording across all screens.
+- [x] Regression suite clean: `scripts/check-warung-catalog.mjs` PASS, `scripts/test-warung-catalog.py` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
+
 ## Next
 
-- [ ] Validate small-shop wording and sample catalog with users in local test environment.
 - [ ] Prepare operational release checklist (backup/restore drill, monitoring, external SMTP provider evaluation) when cloud deployment approval is authorized.

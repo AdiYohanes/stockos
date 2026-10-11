@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createProductAction, stockInAction, listProductsAction, getTextSuggestionsAction } from "../actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
+import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../sample-warung-catalog";
 
 interface ProductAddModalProps {
   children?: React.ReactNode;
@@ -34,7 +35,7 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
   const [matches, setMatches] = React.useState<ProductDto[]>([]);
   const [selected, setSelected] = React.useState<ProductDto | null>(null);
   const [lookupError, setLookupError] = React.useState(false);
-  const [suggestions, setSuggestions] = React.useState<{ category: string[]; supplier: string[] }>({ category: [], supplier: [] });
+  const [suggestions, setSuggestions] = React.useState<{ category: string[]; supplier: string[] }>({ category: [...WARUNG_CATEGORIES], supplier: [] });
   const [created, setCreated] = React.useState<ProductDto | null>(null);
   const submission = useProductSubmission(mode === "create" ? createProductAction : stockInAction, async product => {
     await onCommitted(product);
@@ -50,7 +51,10 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
       try {
         const categories = await getTextSuggestionsAction({ kind: "category", prefix: "" });
         const suppliers = await getTextSuggestionsAction({ kind: "supplier", prefix: "" });
-        if (active) setSuggestions({ category: categories.ok ? categories.data.slice(0, 30) : [], supplier: suppliers.ok ? suppliers.data.slice(0, 30) : [] });
+        if (active) setSuggestions({
+          category: categories.ok && categories.data.length > 0 ? Array.from(new Set([...categories.data, ...WARUNG_CATEGORIES])) : [...WARUNG_CATEGORIES],
+          supplier: suppliers.ok ? suppliers.data.slice(0, 30) : [],
+        });
       } catch { /* Suggestions are optional; free text remains available. */ }
     });
     return () => { active = false; };
@@ -97,14 +101,16 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
           <ProductFormField id="product-name" name="name" label={`${t.products.form.nameLabel} *`} required maxLength={120} error={submission.fieldErrors.name?.[0]} />
           <ProductFormField id="product-sku" name="sku" label={`${t.products.form.skuLabel} *`} required minLength={3} maxLength={64} error={submission.fieldErrors.sku?.[0]} />
           <ProductFormField id="product-category" name="category" label={`${t.products.form.categoryLabel} *`} required maxLength={120} list="add-categories" />
-          <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} />
+          <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} list="add-units" />
           <ProductFormField id="product-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} type="number" required min={0} max={1_000_000_000} step={1} defaultValue="0" />
           <ProductFormField id="product-sell" name="sellingPrice" label={`${t.products.form.priceLabel} *`} required inputMode="numeric" pattern="[0-9]{1,13}" maxLength={13} error={submission.fieldErrors.sellingPrice?.[0]} />
           <ProductFormField id="product-supplier" name="supplier" label={t.products.form.supplierLabel} maxLength={120} list="add-suppliers" />
           <ProductFormField id="product-shelf" name="shelfLocation" label={c.shelfLocation} maxLength={80} />
           <ProductFormField id="product-barcode" name="barcode" label={t.products.sheet.barcodeUpc} maxLength={64} />
           <ProductFormField id="product-description" name="description" label={t.products.form.descLabel} maxLength={2000} />
-          <datalist id="add-categories">{suggestions.category.map(value => <option key={value} value={value} />)}</datalist><datalist id="add-suppliers">{suggestions.supplier.map(value => <option key={value} value={value} />)}</datalist>
+          <datalist id="add-categories">{suggestions.category.map(value => <option key={value} value={value} />)}</datalist>
+          <datalist id="add-suppliers">{suggestions.supplier.map(value => <option key={value} value={value} />)}</datalist>
+          <datalist id="add-units">{WARUNG_UNITS.map(value => <option key={value} value={value} />)}</datalist>
         </div>}
         <label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={cartons} onChange={e => setCartons(e.target.checked)} />{c.cartonMode}</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

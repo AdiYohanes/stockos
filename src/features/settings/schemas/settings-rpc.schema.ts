@@ -9,7 +9,7 @@ const revisionInput = z.union([
   revision,
   z.number().int().positive().transform((val) => String(val)),
 ]);
-const timestamp = z.iso.datetime();
+const timestamp = z.iso.datetime({ offset: true });
 export const timezoneEnum = z.enum(["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura"]);
 
 export const ShopSettingsDtoSchema = z.strictObject({

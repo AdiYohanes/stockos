@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 10, Sample Catalog & Wording Validation**
+**Implementation phase: Backend Foundation — ticket 11, Local Catalog & Wording Validation in Local Test Environment**
+
+Ticket 11 implementation completed 2026-10-11: authentic Indonesian warung wording validation across UI routes and translation dictionaries (eliminated remaining logistics terms in favor of warung terminology), canonical categories and units autocomplete integration in product modals, automated Playwright browser validation across all 5 routes (Dashboard, Products, Inventory, Reports, Settings), verified financial valuations and health metrics, desktop (1440px) and mobile (390px) responsive layout checks with zero horizontal overflow, and dedicated local launcher script (`scripts/launch-warung-proof.py`). Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Ticket 10 implementation completed 2026-10-11: small-shop (warung) wording validation across i18n translations (eliminated enterprise/industrial remnants), canonical warung categories and base units definition, representative 18-product authentic Indonesian small-shop catalog conforming to `CreateProductInputSchema`, automated TDD test validation script (`scripts/check-warung-catalog.mjs`), and local Supabase seeding script (`scripts/seed-warung-catalog.mjs`). Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 

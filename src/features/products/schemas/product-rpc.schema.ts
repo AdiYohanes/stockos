@@ -9,7 +9,7 @@ const revision = z.string().regex(/^[0-9]{1,19}$/).refine((value) => /^[0-9]{1,1
 const decimal = z.string().max(40).regex(/^[0-9]+(?:\.[0-9]{1,6})?$/);
 const signedDecimal = z.string().max(41).regex(/^-?[0-9]+(?:\.[0-9]{1,6})?$/);
 const sku = text(64).toUpperCase().pipe(z.string().regex(/^[A-Z0-9_./-]{3,64}$/));
-const timestamp = z.iso.datetime();
+const timestamp = z.iso.datetime({ offset: true });
 const archive = z.enum(["active", "archived", "all"]);
 const stockStatus = z.enum(["in_stock", "low_stock", "out_of_stock"]);
 const eventKind = z.enum(["opening", "receipt", "sold", "opname", "cost_adjustment"]);

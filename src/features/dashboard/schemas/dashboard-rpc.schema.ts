@@ -4,7 +4,7 @@ import type { ProductReadResult } from "@/features/products/schemas/product-rpc.
 const text = (max: number) => z.string().trim().min(1).max(max);
 const quantity = z.number().int().min(0).max(1_000_000_000);
 const money = z.string().regex(/^-?[0-9]+(\.[0-9]{1,6})?$/);
-const timestamp = z.iso.datetime();
+const timestamp = z.iso.datetime({ offset: true });
 
 export const GetDashboardInputSchema = z.strictObject({}).default({});
 
