@@ -181,6 +181,16 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Two-axis code review completed across Standards and Spec axes.
 - [x] Local private fullstack codebase verification completed for Ticket 9. Gate D operational requirements (cloud provisioning, external SMTP deliverability, deployment runtime limits, backup/restore drill) remain unverified open gaps before real-shop release.
 
+## Backend Foundation — Ticket 10 Sample Catalog & Wording Validation (2026-10-11)
+
+- [x] Validated small-shop (warung) wording compliance across `src/lib/i18n/translations/id.ts` and `en.ts`, removing legacy enterprise/industrial placeholders (e.g. "PT Logistik Nusantara", "Acme Logistics Corp", "MITRA PABRIK", "Jl. Industri Utama", industrial email/addresses).
+- [x] Defined canonical Indonesian warung categories (`WARUNG_CATEGORIES`) and base units (`WARUNG_UNITS`) in `src/features/products/sample-warung-catalog.ts`.
+- [x] Created representative 18-product authentic Indonesian small-shop catalog (`SAMPLE_WARUNG_PRODUCTS`) with whole IDR pricing, carton/unit ratios, sembako/FMCG staples, and stock health distributions (16 in stock, 1 low stock, 1 out of stock).
+- [x] Implemented sample catalog metrics calculator `getSampleCatalogMetrics()` providing total inventory valuation, potential revenue, and potential gross profit.
+- [x] Created automated TDD test script `scripts/check-warung-catalog.mjs` asserting zero enterprise wording in translations and verifying that all 18 sample products strictly conform to `CreateProductInputSchema`.
+- [x] Created `scripts/seed-warung-catalog.mjs` supporting both dry-run schema validation and live local Supabase seeding via `stockos_create_product` RPC.
+- [x] Full regression suite passes: `scripts/check-warung-catalog.mjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
+
 ## Next
 
 - [ ] Validate small-shop wording and sample catalog with users in local test environment.
