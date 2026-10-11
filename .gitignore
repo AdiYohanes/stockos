@@ -34,6 +34,13 @@ yarn-error.log*
 .env*
 !.env.example
 
+# sensitive operational proof artifacts (keep outside repository)
+/ops-proof/
+*.dump
+*.backup
+*supabase-status*.json
+smtp-proof*.json
+
 # vercel
 .vercel
 

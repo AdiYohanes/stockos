@@ -2,7 +2,9 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 11 — Local Catalog & Wording Validation in local test environment completed 2026-10-11. Tickets 1–11 implemented. All feature domains connected to local Supabase PostgreSQL/Auth with authentic 18-product Indonesian warung catalog verified in browser across all routes. Zero ESLint errors/warnings, clean TypeScript, Next.js build passes, automated Playwright Edge validation passes. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 12 — approved local Operational Readiness slice completed 2026-10-11; external operational gates remain blocked. Scope: isolated local forward migration and backup/restore proof, environment/secrets separation, capacity/cost evaluation, and recovery/operations runbook. SMTP harness only; external delivery proof blocked. No cloud provisioning/deployment, paid resources, production launch, real-shop data/import, or domain feature changes.
+
+Tickets 1–11 completed local prerequisites; all feature domains use local Supabase PostgreSQL/Auth with the authentic 18-product warung catalog verified across routes. Ticket 11 lint/type/build/browser checks passed; ticket 12 local Auth/PostgreSQL operations proof, CLI self-checks and regression checks pass.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -204,6 +206,20 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Negative assertions confirmed zero enterprise/logistics wording across all screens.
 - [x] Regression suite clean: `scripts/check-warung-catalog.mjs` PASS, `scripts/test-warung-catalog.py` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
 
+## Backend Foundation — Ticket 12 Operational Readiness (2026-10-11)
+
+- [x] Approved local-only scope; SMTP preflight is no-send and external delivery remains blocked.
+- [x] Added `docs/OPERATIONS.md`: environment/secrets, forward migration/failure recovery, backup/Auth restore, monitoring/incident responsibilities, capacity/cost and release gates.
+- [x] Added `scripts/check-smtp-readiness.mjs`: missing/valid config returns BLOCKED (exit 2), unsafe config returns exit 1; `--self-test` verifies redaction, exact recipient allowlist, bounded fields and public-secret rejection without network/email.
+- [x] Added guarded native `scripts/check-operations.mjs`: exclusive lock, retained resource denial, pinned container identity, owner-only external dump folder, migration retry/failure rollback, archive/checksum/grants/Auth/session/retry checks.
+- [x] Final real local proof `node scripts/check-operations.mjs --run` PASS after review fixes: forward migration/no-op/failed-DDL rollback, consistent archive and corruption rejection, exact domain/settings/evidence/retry restore, pre/post quarantine live-session control, old JWT/refresh denial, fresh owner login and private function/table RLS grants. Restore plus validation: 4,536 ms (local fixture only, not production RTO). Source and target fixtures stopped; sensitive dump/status artifacts retained outside repository for review.
+- [x] Regression: domain stores, dashboard metrics, warung catalog, schema checks, TypeScript, full zero-warning ESLint, production build and `git diff --check` passed. Catalog check emits existing Node `MODULE_TYPELESS_PACKAGE_JSON` warning; ESLint has no warnings.
+- [x] Two-axis review fixes: refuse retained volumes/concurrent runners; release lock on setup failure; retain Auth sequence state; constrain unsupported MFA inventory; check archive integrity before mutation; distinguish live-session denial from outage/invalid signing keys.
+- [x] Standards/Spec review follow-up has no remaining material findings in the reviewed changes. No UI/browser suite rerun: no UI/domain feature changes.
+- [ ] External SMTP, off-host encrypted backup/restore, budget/region/operator approval and hosted runtime/deployment remain open. Ticket 12 does not authorize or prove production readiness.
+
 ## Next
 
-- [ ] Prepare operational release checklist (backup/restore drill, monitoring, external SMTP provider evaluation) when cloud deployment approval is authorized.
+- [ ] Supply authorized SMTP provider/sender/test inbox before real external delivery proof.
+- [ ] Confirm named recovery responsibility, backup storage/key custody/retention and service budget/region before separately approved provisioning/deployment.
+- [ ] No production launch or real-shop import until operational gates are proven and explicitly authorized.

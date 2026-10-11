@@ -288,9 +288,9 @@ These are future considerations and should not automatically be treated as appro
 
 Current development phase:
 
-**Backend Foundation ticket 3 active — local persistent Products integration; other feature UI remains mocked**
+**Backend Foundation ticket 12 active — operational readiness in isolated local fixtures**
 
-Implementation approved 2026-10-10 for Products catalog/detail/create/metadata/archive/reactivation plus opening stock, receipts/restock and sold-only Stock Out. Inventory remains explicitly demo; reports/settings/dashboard/recovery/cloud/deployment and operational use are outside this slice.
+Tickets 1–11 connect authentication and all feature screens to local Supabase and verify the sample warung catalog. Implementation approved 2026-10-11 for local forward migration and independent backup/restore proof, environment/secrets separation, capacity/cost evaluation, and operations/recovery runbook. External SMTP delivery remains blocked; only a no-send readiness harness is approved. Cloud provisioning, deployment, paid resources, real-shop data/import, production launch, and domain feature changes remain excluded.
 
 Implemented:
 

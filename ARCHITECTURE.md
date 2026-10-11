@@ -6,7 +6,9 @@ Version: `0.x`
 
 Current architecture phase:
 
-**Backend Foundation ticket 8 active (local owner password recovery)**
+**Backend Foundation ticket 12 active (isolated local operational readiness)**
+
+Implementation approved 2026-10-11 for native forward migration/backup/restore proof and operations documentation, without changing feature boundaries. Tickets 1–11 are completed local prerequisites. SMTP harness is no-send; external delivery remains blocked. Cloud provisioning/deployment, paid resources, production launch, and real-shop data/import remain excluded.
 
 Tickets 1–7 connect auth and feature screens to isolated local Supabase. Ticket 8 implementation approved 2026-10-10 for provider-verified recovery, private session-bound purpose evidence, independent Server Action authorization, and global owner-session revocation before fresh password login. Passwords and tokens remain provider-managed; completion evidence contains no credentials. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 

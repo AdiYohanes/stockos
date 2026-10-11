@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 11, Local Catalog & Wording Validation in Local Test Environment**
+**Implementation phase: Backend Foundation — ticket 12, Operational Readiness (isolated local proof and runbook)**
+
+Ticket 12 implementation approved 2026-10-11 for environment/secrets separation, forward migration proof, independent local backup/restore drill, capacity/cost evaluation, and recovery/operations runbook. SMTP is harness-only: external delivery proof remains blocked until provider/recipient and sending authorization are supplied. Tickets 9–11 are completed prerequisites. Cloud provisioning, Vercel deployment, paid resources, production launch, real-shop data/import, and domain feature changes are excluded.
 
 Ticket 11 implementation completed 2026-10-11: authentic Indonesian warung wording validation across UI routes and translation dictionaries (eliminated remaining logistics terms in favor of warung terminology), canonical categories and units autocomplete integration in product modals, automated Playwright browser validation across all 5 routes (Dashboard, Products, Inventory, Reports, Settings), verified financial valuations and health metrics, desktop (1440px) and mobile (390px) responsive layout checks with zero horizontal overflow, and dedicated local launcher script (`scripts/launch-warung-proof.py`). Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
