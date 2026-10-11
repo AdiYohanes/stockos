@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -15,9 +16,10 @@ from urllib.request import Request, urlopen
 
 from playwright.sync_api import expect, sync_playwright
 
-ROOT = Path("C:/Users/USER/Documents/ai-native/stockos")
+ROOT = Path(__file__).resolve().parents[1]
 BASE = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].startswith("http") else "http://localhost:3002"
-STATUS_PATH = Path(sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "C:/Users/USER/AppData/Local/Temp/stockos-stock-proof/status.json")
+STATUS_CANDIDATE = Path(sys.argv[2]) if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else Path(tempfile.gettempdir()) / "stockos-stock-proof/status.json"
+STATUS_PATH = STATUS_CANDIDATE if STATUS_CANDIDATE.exists() else Path("C:/Users/USER/AppData/Local/Temp/stockos-stock-proof/status.json")
 KEEP_FIXTURE = "--keep" in sys.argv
 
 assert STATUS_PATH.exists(), f"Status file {STATUS_PATH} not found"
@@ -35,6 +37,7 @@ USER_ID = None
 ACCESS_TOKEN = None
 PREPARED = False
 DEV_PROC = None
+SCRATCH_DIR = None
 
 FORBIDDEN_WORDS = [
     "PT Logistik",
@@ -204,12 +207,12 @@ def setup_owner_and_catalog():
     total_profit = int(sql("SELECT round(sum((current_stock * selling_price) - inventory_cost_value)) FROM stockos_private.products;"))
     assert total_profit == 730650, f"Expected potential gross profit 730650, got {total_profit}"
 
-    print(f"      Database verified: 18 items, 8 categories, 16 healthy, 1 low, 1 out of stock.")
+    print(f"      Database verified: 18 items, 7 distinct categories across 8 canonical warung categories, 16 healthy, 1 low, 1 out of stock.")
     print(f"      Valuations verified: Cost Rp 4.726.850 | Revenue Rp 5.457.500 | Profit Rp 730.650")
 
 
 def ensure_dev_server():
-    global DEV_PROC
+    global DEV_PROC, SCRATCH_DIR
     # Check if BASE is already responding
     try:
         with urlopen(BASE + "/login", timeout=2) as resp:
@@ -230,19 +233,19 @@ def ensure_dev_server():
         STOCKOS_SETUP_SECRET=uuid.uuid4().hex,
         NEXT_TELEMETRY_DISABLED="1",
     )
-    scratch = Path(tempfile.mkdtemp(prefix="stockos-warung-proof-"))
+    SCRATCH_DIR = Path(tempfile.mkdtemp(prefix="stockos-warung-proof-"))
     for name in ("src", "public"):
-        shutil.copytree(ROOT / name, scratch / name)
+        shutil.copytree(ROOT / name, SCRATCH_DIR / name)
     for name in ("package.json", "tsconfig.json", "postcss.config.mjs"):
-        shutil.copy2(ROOT / name, scratch / name)
-    (scratch / "next.config.js").write_text("module.exports = {distDir: '.next-warung-proof'};\n")
-    res = subprocess.run(["cmd", "/c", "mklink", "/J", str(scratch / "node_modules"), str(ROOT / "node_modules")], capture_output=True)
+        shutil.copy2(ROOT / name, SCRATCH_DIR / name)
+    (SCRATCH_DIR / "next.config.js").write_text("module.exports = {distDir: '.next-warung-proof'};\n")
+    res = subprocess.run(["cmd", "/c", "mklink", "/J", str(SCRATCH_DIR / "node_modules"), str(ROOT / "node_modules")], capture_output=True)
     assert res.returncode == 0, "Junction creation failed"
 
     DEV_PROC = subprocess.Popen(
         ["node", str(ROOT / "node_modules/next/dist/bin/next"), "dev", "--webpack", "--port", "3002"],
         env=env,
-        cwd=str(scratch),
+        cwd=str(SCRATCH_DIR),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -388,12 +391,18 @@ def run_browser_validation():
 
 
 def cleanup():
-    global DEV_PROC
+    global DEV_PROC, SCRATCH_DIR
     if DEV_PROC:
         print("Stopping Next.js dev server subprocess...")
         DEV_PROC.terminate()
         DEV_PROC.wait()
         DEV_PROC = None
+
+    if SCRATCH_DIR and SCRATCH_DIR.exists():
+        subprocess.run(["cmd", "/c", "rmdir", str(SCRATCH_DIR / "node_modules")], capture_output=True)
+        import shutil
+        shutil.rmtree(SCRATCH_DIR, ignore_errors=True)
+        SCRATCH_DIR = None
 
     if not KEEP_FIXTURE and PREPARED:
         print("[6/6] Cleaning up test database records...")

@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createProductAction, stockInAction, listProductsAction, getTextSuggestionsAction } from "../actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
-import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../sample-warung-catalog";
+import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../constants";
 
 interface ProductAddModalProps {
   children?: React.ReactNode;

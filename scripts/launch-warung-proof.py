@@ -15,8 +15,9 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-ROOT = Path("C:/Users/USER/Documents/ai-native/stockos")
-STATUS_PATH = Path("C:/Users/USER/AppData/Local/Temp/stockos-stock-proof/status.json")
+ROOT = Path(__file__).resolve().parents[1]
+STATUS_CANDIDATE = Path(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].endswith(".json") else Path(tempfile.gettempdir()) / "stockos-stock-proof/status.json"
+STATUS_PATH = STATUS_CANDIDATE if STATUS_CANDIDATE.exists() else Path("C:/Users/USER/AppData/Local/Temp/stockos-stock-proof/status.json")
 assert STATUS_PATH.exists(), f"Status file {STATUS_PATH} not found"
 STATUS = json.loads(STATUS_PATH.read_text(encoding="utf-8-sig"))
 assert STATUS["API_URL"] == "http://127.0.0.1:55541", "Refuse non-fixture API"
@@ -174,7 +175,11 @@ def launch_server():
     print("Press Ctrl+C to terminate server.")
     print("=" * 60 + "\n")
 
-    raise SystemExit(subprocess.call(["node", str(ROOT / "node_modules/next/dist/bin/next"), "dev", "--webpack", "--port", "3002"], env=env, cwd=str(scratch)))
+    try:
+        raise SystemExit(subprocess.call(["node", str(ROOT / "node_modules/next/dist/bin/next"), "dev", "--webpack", "--port", "3002"], env=env, cwd=str(scratch)))
+    finally:
+        subprocess.run(["cmd", "/c", "rmdir", str(scratch / "node_modules")], capture_output=True)
+        shutil.rmtree(scratch, ignore_errors=True)
 
 
 if __name__ == "__main__":

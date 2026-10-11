@@ -184,7 +184,7 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 ## Backend Foundation — Ticket 10 Sample Catalog & Wording Validation (2026-10-11)
 
 - [x] Validated small-shop (warung) wording compliance across `src/lib/i18n/translations/id.ts` and `en.ts`, removing legacy enterprise/industrial placeholders (e.g. "PT Logistik Nusantara", "Acme Logistics Corp", "MITRA PABRIK", "Jl. Industri Utama", industrial email/addresses).
-- [x] Defined canonical Indonesian warung categories (`WARUNG_CATEGORIES`) and base units (`WARUNG_UNITS`) in `src/features/products/sample-warung-catalog.ts`.
+- [x] Defined canonical Indonesian warung categories (`WARUNG_CATEGORIES`) and base units (`WARUNG_UNITS`) in `src/features/products/constants.ts`, re-exported by `sample-warung-catalog.ts` for fixture consumers.
 - [x] Created representative 18-product authentic Indonesian small-shop catalog (`SAMPLE_WARUNG_PRODUCTS`) with whole IDR pricing, carton/unit ratios, sembako/FMCG staples, and stock health distributions (16 in stock, 1 low stock, 1 out of stock).
 - [x] Implemented sample catalog metrics calculator `getSampleCatalogMetrics()` providing total inventory valuation, potential revenue, and potential gross profit.
 - [x] Created automated TDD test script `scripts/check-warung-catalog.mjs` asserting zero enterprise wording in translations and verifying that all 18 sample products strictly conform to `CreateProductInputSchema`.
@@ -194,7 +194,8 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 ## Backend Foundation — Ticket 11 Local Catalog & Wording Validation (2026-10-11)
 
 - [x] Validated small-shop wording across translation dictionaries, eliminating logistics terms (`pengiriman (KELUAR)`, `pengiriman masuk`, `dispatch (OUT)` in favor of `barang terjual (KELUAR)`, `barang masuk`, `sold goods (OUT)`).
-- [x] Integrated canonical `WARUNG_CATEGORIES` and `WARUNG_UNITS` autocompletion datalists into `ProductAddModal` and `EditProductModal`.
+- [x] Integrated canonical `WARUNG_CATEGORIES` and `WARUNG_UNITS` autocompletion datalists into `ProductAddModal` and `EditProductModal`, without importing sample catalog data into production forms.
+- [x] Local proof scripts resolve repository paths relative to their own files and clean up scratch directories after server shutdown; sample catalog imports support native Node.js TypeScript seeding.
 - [x] Fixed PostgreSQL ISO 8601 timestamptz with timezone offset (`+00:00`) parsing in Zod datetime schemas (`dashboard-rpc.schema.ts`, `product-rpc.schema.ts`, `settings-rpc.schema.ts`).
 - [x] Created `scripts/launch-warung-proof.py`: Dedicated launcher provisioning owner and 18 warung catalog products in local test environment on `http://localhost:3002`.
 - [x] Created `scripts/test-warung-catalog.py`: End-to-end automated Playwright browser test driving Microsoft Edge headless through login and all 5 primary routes (Dashboard, Products, Inventory, Reports, Settings).
