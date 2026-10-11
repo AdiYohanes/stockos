@@ -6,7 +6,6 @@ import {
   Barcode,
   Plus,
   Sparkles,
-  Layers,
 } from "lucide-react";
 import {
   DialogRoot,
@@ -24,7 +23,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useI18n } from "@/lib/i18n/context";
 
 interface AddProductModalProps {
   children: React.ReactNode;
@@ -51,7 +49,6 @@ const INITIAL_FORM_DATA: ProductFormData = {
 };
 
 export function AddProductModal({ children }: AddProductModalProps) {
-  const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [formData, setFormData] = React.useState<ProductFormData>(INITIAL_FORM_DATA);

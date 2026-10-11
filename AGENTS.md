@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 8, local password recovery**
+**Implementation phase: Backend Foundation — ticket 9, Gate D private fullstack release & comprehensive verification**
+
+Ticket 9 implementation completed 2026-10-11: full repository zero-warning/zero-error ESLint cleanup, private schema function grant fixes (`stockos_private.shop_settings_dto`), Next.js production build, domain store/metric and schema validations, and two-axis code review. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Ticket 8 implementation approved 2026-10-10: provider-verified owner recovery, session-bound invitation/recovery purpose checks, password completion, global owner-session revocation, and real isolated local Auth/browser proof. Recovery requires fresh password login after completion. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
@@ -50,6 +52,7 @@ Current implemented scope:
 - Local Settings persistent backend integration (ticket 6)
 - Local Dashboard persistent backend integration (ticket 7)
 - Local owner password recovery with all-session revocation (ticket 8)
+- Local private fullstack release & comprehensive verification (ticket 9 / Gate D)
 
 Authentication, products, inventory, reports, settings, and dashboard use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 

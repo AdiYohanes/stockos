@@ -38,7 +38,6 @@ interface FormInnerProps {
   initialItem: InventoryItem | null;
   initialType: "in" | "out" | null;
   allItems: InventoryItem[];
-  rawProducts: ProductDto[];
   onClose: () => void;
   onCommitted?: OnProductCommitted;
 }
@@ -47,7 +46,6 @@ function StockMovementForm({
   initialItem,
   initialType,
   allItems,
-  rawProducts,
   onClose,
   onCommitted,
 }: FormInnerProps) {
@@ -390,7 +388,6 @@ export function StockMovementModal({
   targetItem,
   defaultType,
   allItems,
-  rawProducts = [],
   onCommitted,
 }: StockMovementModalProps) {
   return (
@@ -403,7 +400,6 @@ export function StockMovementModal({
             initialItem={targetItem}
             initialType={defaultType}
             allItems={allItems}
-            rawProducts={rawProducts}
             onClose={() => onOpenChange(false)}
             onCommitted={onCommitted}
           />

@@ -285,7 +285,7 @@ Reusable visual primitives should use established design tokens.
 
 # 11. Data Model
 
-Target database design is finalized for the agreed scope in `docs/DATABASE.md`. Local migrations implement singleton shop/owner setup plus private products, inventory/administrative evidence, and durable successful mutation retry results. Owner RPCs own exact costing, request-first locking, revisions, atomic evidence, and bounded reads. Real isolated PostgreSQL/Auth checks prove this boundary; feature UI still uses independent mocks. No cloud database is provisioned.
+Target database design is finalized for the agreed scope in `docs/DATABASE.md`. Local migrations implement singleton shop/owner setup plus private products, inventory/administrative evidence, and durable successful mutation retry results. Owner RPCs own exact costing, request-first locking, revisions, atomic evidence, and bounded reads. Real isolated PostgreSQL/Auth checks and Server Component / Server Action wiring connect all features (Products, Inventory, Reports, Settings, Dashboard, and Recovery) to the persistent local database with private schema grant hardening (Gate D / Ticket 9). No cloud database is provisioned.
 
 Frontend types represent UI requirements and should not automatically become database schemas.
 

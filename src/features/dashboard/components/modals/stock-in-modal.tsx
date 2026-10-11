@@ -178,10 +178,10 @@ export function StockInModal({ children }: StockInModalProps) {
                   <DialogClose
                     render={<Button variant="outline" size="sm" type="button" className="btn-neo border-[3px]" />}
                   >
-                    "Batal"
+                    Batal
                   </DialogClose>
                   <Button type="submit" size="sm" className="bg-emerald-400 hover:bg-emerald-500 text-ink border-[3px] border-ink shadow-hard-sm press">
-                    "Simpan Stok Masuk"
+                    Simpan Stok Masuk
                   </Button>
                 </DialogFooter>
               </form>

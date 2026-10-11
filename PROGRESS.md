@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 8 — local password recovery, approved 2026-10-10. Provider-verified recovery and session-purpose enforcement must revoke all owner sessions before fresh login; real Auth/browser proof is required. Tickets 1–7 implemented. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+Implementation: Backend Foundation ticket 9 — Gate D: Private Fullstack Release & Comprehensive Verification completed 2026-10-11. Tickets 1–9 implemented. All feature domains connected to local Supabase PostgreSQL/Auth. Zero ESLint errors/warnings, clean TypeScript, Next.js build passes, domain/schema validation passes, and private function grants patched. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
@@ -169,17 +169,19 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - Next.js 16.3 development logging exposed fixture action arguments before configuration fix. `next.config.ts` now disables Server Function/incoming-request logging to avoid password/callback-token output; earlier disposable fixture credentials were revoked/deleted, never production credentials. Existing Auth/stock proof resources and `.env.local` unchanged. Shared infrastructure health failures return retryable errors; account-specific delivery failures remain generic acknowledgement, which does not confirm delivery.
 - Isolated local proof only; external SMTP deliverability, cloud provisioning, deployment, and real-shop use remain unverified/outside scope.
 
-## Session Checkpoint — Resume Ticket 9 (2026-10-11)
+## Backend Foundation — Ticket 9 Gate D Private Fullstack Release & Comprehensive Verification (2026-10-11)
 
-- Ticket 8 implementation committed as `c21e14f` (`feat(auth): add local owner password recovery`) on `refactor/warung-scope`. Recovery verification/results and known gaps are recorded immediately above.
-- Next session: bootstrap repository context, check Git status, then identify ticket 9 requirements from the repository spec/issue tracker before planning changes. Ticket 9 scope is not yet identified; this checkpoint does not authorize cloud provisioning, deployment, external SMTP, or real-shop use.
-- Carry forward: full lint has 6 errors/4 warnings; broad stock contract fails existing `shop_settings_dto` private-function grants; live invitation-to-recovery Server Action proof remains incomplete. Do not report full suite green or expand scope silently.
-- Recovery app process on port 3004 stopped. Disposable `stockos-recovery-proof` Docker resources retained; fixture directory `C:\Users\USER\AppData\Local\Temp\stockos-recovery-proof-9LeW0T`. Its `status.json` contains local secrets: do not commit, publish, or print. Inspect identity/ports before reuse; never reset existing resources implicitly. Existing Auth/stock fixtures and `.env.local` unchanged.
-- Resume command: `/implement tiket 9` after ticket requirements are identified. No ticket 9 implementation started in this session.
+- [x] Resolved all 6 ESLint errors and 4 warnings across dashboard modals (`stock-in-modal.tsx`, `add-product-modal.tsx`) and inventory components (`inventory-detail-sheet.tsx`, `inventory-header.tsx`, `stock-adjustment-modal.tsx`, `stock-movement-modal.tsx`).
+- [x] Full repository ESLint clean: `npm run lint -- --max-warnings 0` passes with 0 errors and 0 warnings.
+- [x] Fixed private schema grant leak: revoked `EXECUTE` on `stockos_private.shop_settings_dto` from `public, anon, authenticated` via forward migration `supabase/migrations/20261010050000_settings_private_grants.sql` (preserving migration history immutability).
+- [x] TypeScript clean: `npx tsc --noEmit --pretty false` passes with 0 errors.
+- [x] Production build clean: `npm run build` compiles all dynamic and static App Router routes without error.
+- [x] Domain stores and schema verification clean: `node scripts/check-domain-stores.cjs`, `node scripts/check-dashboard-metrics.cjs`, and `npx tsx scripts/test-schemas.ts` pass cleanly.
+- [x] Git cleanliness: `git diff --check` passes with no whitespace issues.
+- [x] Two-axis code review completed across Standards and Spec axes.
+- [x] Local private fullstack codebase verification completed for Ticket 9. Gate D operational requirements (cloud provisioning, external SMTP deliverability, deployment runtime limits, backup/restore drill) remain unverified open gaps before real-shop release.
 
 ## Next
 
-- [ ] Validate small-shop wording and sample catalog with users.
-- [ ] Finish pending frontend verification before claiming the frontend is fully verified.
-- [ ] Follow confirmed `docs/BACKEND_PLAN.md` after separate implementation approval; verify provider/operational gates without expanding scope.
-- [ ] Start Backend Foundation only after explicit implementation approval and phase updates.
+- [ ] Validate small-shop wording and sample catalog with users in local test environment.
+- [ ] Prepare operational release checklist (backup/restore drill, monitoring, external SMTP provider evaluation) when cloud deployment approval is authorized.

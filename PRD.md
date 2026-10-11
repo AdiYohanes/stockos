@@ -51,7 +51,7 @@ Frontend flows:
 - Reset password
 - Logout
 
-Tickets 1–7 implement isolated local Supabase authentication and persistent feature integrations. Ticket 8 password recovery implementation approved 2026-10-10: verified recovery email, new password, revocation of all owner sessions, and fresh login. Recovery is implemented and verified against real isolated local Auth/browser, including partial-failure handling and all-session revocation; cloud and operational launch are not authorized.
+Tickets 1–8 implement isolated local Supabase authentication and persistent feature integrations. Ticket 9 completes Gate D private fullstack release and comprehensive verification: full repository zero-warning ESLint, private schema grant hardening, clean Next.js build, domain/store schema checks, and two-axis review; cloud and operational launch remain outside this slice.
 
 Target authentication is Supabase email/password with verified email and password recovery. Owner signup requires a server setup secret, atomically claims the only owner slot, and closes after binding. Public provider signup is disabled; no staff/team accounts. Partial provider setup must recover the same attempt, not create another owner. Ticket 1 uses invitation-mode setup without collecting a password until email verification; implementation approved for isolated local tests only.
 

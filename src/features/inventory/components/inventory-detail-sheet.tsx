@@ -41,23 +41,22 @@ export function InventoryDetailSheet({
   React.useEffect(() => {
     if (!item?.id || !open) return;
     let active = true;
-    setLoadingEvents(true);
-    listInventoryEventsAction({ productId: item.id, pageSize: 25 })
-      .then((result) => {
+    React.startTransition(async () => {
+      setLoadingEvents(true);
+      try {
+        const result = await listInventoryEventsAction({ productId: item.id, pageSize: 25 });
         if (!active) return;
         if (result.ok && result.data) {
           setEvents(result.data.items.map(mapEventToStockMovement));
         } else {
           setEvents(item.movementLogs || []);
         }
-      })
-      .catch(() => {
-        if (!active) return;
-        setEvents(item.movementLogs || []);
-      })
-      .finally(() => {
+      } catch {
+        if (active) setEvents(item.movementLogs || []);
+      } finally {
         if (active) setLoadingEvents(false);
-      });
+      }
+    });
     return () => {
       active = false;
     };

@@ -19,20 +19,18 @@ export function InventoryHeader({
 }: InventoryHeaderProps) {
   const { t } = useI18n();
 
-  const [localSearch, setLocalSearch] = React.useState(searchQuery);
+  const [search, setSearch] = React.useState({ source: searchQuery, value: searchQuery });
+  if (search.source !== searchQuery) {
+    setSearch({ source: searchQuery, value: searchQuery });
+  }
 
   React.useEffect(() => {
-    setLocalSearch(searchQuery);
-  }, [searchQuery]);
-
-  React.useEffect(() => {
+    if (search.value === searchQuery) return;
     const timer = setTimeout(() => {
-      if (localSearch !== searchQuery) {
-        onSearchChange(localSearch);
-      }
+      onSearchChange(search.value);
     }, 250);
     return () => clearTimeout(timer);
-  }, [localSearch, searchQuery, onSearchChange]);
+  }, [search.value, searchQuery, onSearchChange]);
 
   return (
     <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-8">
@@ -51,8 +49,8 @@ export function InventoryHeader({
           <input
             className="input-focus w-full sm:w-64 px-3 py-3 bg-transparent font-body text-sm text-ink placeholder:text-ink/50"
             placeholder={t.inventory.searchStockPlaceholder}
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
+            value={search.value}
+            onChange={(e) => setSearch({ source: searchQuery, value: e.target.value })}
           />
         </div>
         <button
