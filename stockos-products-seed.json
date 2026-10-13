@@ -1,0 +1,418 @@
+[
+  {
+    "sku": "AIC-001",
+    "name": "Aice Bingo Cone / Choco Melt",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "5000",
+    "openingQuantity": 24,
+    "purchaseTotal": "97500",
+    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+  },
+  {
+    "sku": "AIC-002",
+    "name": "Aice Mochi Chocolate",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 40,
+    "purchaseTotal": "93500"
+  },
+  {
+    "sku": "AIC-003",
+    "name": "Aice Choco Malt Stick",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3000",
+    "openingQuantity": 100,
+    "purchaseTotal": "160000"
+  },
+  {
+    "sku": "AIC-004",
+    "name": "Aice Sundae Chocolate / Strawberry",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "5000",
+    "openingQuantity": 48,
+    "purchaseTotal": "194400",
+    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+  },
+  {
+    "sku": "AIC-005",
+    "name": "Aice Mochi Klepon / Mango",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 40,
+    "purchaseTotal": "94500",
+    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+  },
+  {
+    "sku": "AIC-006",
+    "name": "Aice Mochi Stick / Durian",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 40,
+    "purchaseTotal": "92500",
+    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+  },
+  {
+    "sku": "AIC-007",
+    "name": "Aice Taro Crispy",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "4000",
+    "openingQuantity": 80,
+    "purchaseTotal": "252800"
+  },
+  {
+    "sku": "AIC-008",
+    "name": "Aice Sweet Corn",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 80,
+    "purchaseTotal": "192000"
+  },
+  {
+    "sku": "AIC-009",
+    "name": "Aice Semangka Stick",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2500",
+    "openingQuantity": 100,
+    "purchaseTotal": "155000"
+  },
+  {
+    "sku": "AIC-010",
+    "name": "Aice Coffee Crispy",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "4000",
+    "openingQuantity": 40,
+    "purchaseTotal": "126400"
+  },
+  {
+    "sku": "AIC-011",
+    "name": "Aice Miki Miki Coco",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 120,
+    "purchaseTotal": "192000"
+  },
+  {
+    "sku": "AIC-012",
+    "name": "Aice Miki Miki Vanilla",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 60,
+    "purchaseTotal": "96000"
+  },
+  {
+    "sku": "IN1-001",
+    "name": "Mie Sedaap Ayam Bawang",
+    "category": "Mi Instan",
+    "unit": "Bungkus",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 40,
+    "purchaseTotal": "110000"
+  },
+  {
+    "sku": "IN1-002",
+    "name": "Mie Sukses Isi 2",
+    "category": "Mi Instan",
+    "unit": "Bungkus",
+    "minStock": 0,
+    "sellingPrice": "4500",
+    "openingQuantity": 48,
+    "purchaseTotal": "174000"
+  },
+  {
+    "sku": "IN1-003",
+    "name": "Roma Biskuit Kelapa",
+    "category": "Makanan Ringan",
+    "unit": "Bungkus",
+    "minStock": 0,
+    "sellingPrice": "10000",
+    "openingQuantity": 3,
+    "purchaseTotal": "25200"
+  },
+  {
+    "sku": "IN2-001",
+    "name": "Kapal Api",
+    "category": "Minuman",
+    "unit": "Sachet",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "48975"
+  },
+  {
+    "sku": "IN2-002",
+    "name": "Luwak White Coffee",
+    "category": "Minuman",
+    "unit": "Sachet",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 20,
+    "purchaseTotal": "30400"
+  },
+  {
+    "sku": "IN2-003",
+    "name": "Beng-Beng",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2500",
+    "openingQuantity": 51,
+    "purchaseTotal": "108000"
+  },
+  {
+    "sku": "IN2-004",
+    "name": "Okky Drink Max Stroberi",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 48,
+    "purchaseTotal": "75200"
+  },
+  {
+    "sku": "IN2-005",
+    "name": "Okky Drink Max Loli",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 48,
+    "purchaseTotal": "74400"
+  },
+  {
+    "sku": "IN2-006",
+    "name": "Le Minerale 600ml",
+    "category": "Minuman",
+    "unit": "Botol",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 120,
+    "purchaseTotal": "223500"
+  },
+  {
+    "sku": "IN2-007",
+    "name": "Teh Gelas Cup 160ml",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "1500",
+    "openingQuantity": 48,
+    "purchaseTotal": "43800"
+  },
+  {
+    "sku": "IN2-008",
+    "name": "Teh Gelas Big",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 48,
+    "purchaseTotal": "54000"
+  },
+  {
+    "sku": "IN2-009",
+    "name": "Coca-Cola 250ml",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "4000",
+    "openingQuantity": 12,
+    "purchaseTotal": "33500"
+  },
+  {
+    "sku": "IN2-010",
+    "name": "Fanta Strawberry 250ml",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "4000",
+    "openingQuantity": 24,
+    "purchaseTotal": "66200"
+  },
+  {
+    "sku": "IN2-011",
+    "name": "Aqua 600ml",
+    "category": "Minuman",
+    "unit": "Botol",
+    "minStock": 0,
+    "sellingPrice": "4000",
+    "openingQuantity": 48,
+    "purchaseTotal": "86000"
+  },
+  {
+    "sku": "IN2-012",
+    "name": "Le Minerale Galon 15L",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "25000",
+    "openingQuantity": 4,
+    "purchaseTotal": "80200"
+  },
+  {
+    "sku": "PRM-001",
+    "name": "Lolly Jelly Candy",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "45000"
+  },
+  {
+    "sku": "PRM-002",
+    "name": "Cokelat Sikat Gigi",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "45000"
+  },
+  {
+    "sku": "PRM-003",
+    "name": "Permen Lipstick",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 48,
+    "purchaseTotal": "90000",
+    "description": "Akumulasi stok: sebelumnya 24 pcs (modal Rp45.000), tambahan 24 pcs (modal Rp45.000). Total 48 pcs."
+  },
+  {
+    "sku": "PRM-004",
+    "name": "Permen Yogurt",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "45000"
+  },
+  {
+    "sku": "PRM-005",
+    "name": "Milo Coklat Candy",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "500",
+    "openingQuantity": 120,
+    "purchaseTotal": "45000"
+  },
+  {
+    "sku": "PRM-006",
+    "name": "Mie Gaul Candy",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 24,
+    "purchaseTotal": "35000"
+  },
+  {
+    "sku": "PRM-007",
+    "name": "Permen Mata",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "500",
+    "openingQuantity": 120,
+    "purchaseTotal": "45000"
+  },
+  {
+    "sku": "PRM-008",
+    "name": "Permen Cokelat",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "40000"
+  },
+  {
+    "sku": "PRM-009",
+    "name": "Permen Sate",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "40000"
+  },
+  {
+    "sku": "TMB-001",
+    "name": "Wota",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "1000",
+    "openingQuantity": 96,
+    "purchaseTotal": "34000"
+  },
+  {
+    "sku": "TMB-002",
+    "name": "Yakult",
+    "category": "Minuman",
+    "unit": "Botol",
+    "minStock": 0,
+    "sellingPrice": "2500",
+    "openingQuantity": 90,
+    "purchaseTotal": "136500",
+    "description": "Akumulasi stok: sebelumnya 65 botol (modal Rp84.000), tambahan 5 pak x 5 botol = 25 botol (modal Rp52.500). Total 90 botol."
+  },
+  {
+    "sku": "TMB-003",
+    "name": "Nata de Coco",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3000",
+    "openingQuantity": 72,
+    "purchaseTotal": "160000"
+  },
+  {
+    "sku": "TMB-004",
+    "name": "Cimory Gelas",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3000",
+    "openingQuantity": 12,
+    "purchaseTotal": "20500"
+  },
+  {
+    "sku": "TMB-005",
+    "name": "Yogurt",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3000",
+    "openingQuantity": 48,
+    "purchaseTotal": "41000"
+  }
+]

@@ -40,6 +40,7 @@ yarn-error.log*
 *.backup
 *supabase-status*.json
 smtp-proof*.json
+stockos-login.txt
 
 # vercel
 .vercel
