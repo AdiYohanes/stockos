@@ -1,6 +1,6 @@
 # StockOS Backend Plan
 
-Updated: 2026-10-09. **Design confirmed; documentation/specification only. Backend not implemented.** The owner confirmed the interview design and approved server-operation integration testing plus browser smoke coverage. Published as [GitHub Issue #4](https://github.com/AdiYohanes/stockos/issues/4) with `ready-for-agent`; that label does not authorize implementation.
+Updated: 2026-10-12. **Local backend implemented through tickets 1–12; correctness hardening active. External operational/deployment gates remain blocked.** The owner confirmed the interview design and approved server-operation integration testing plus browser smoke coverage. Published as [GitHub Issue #4](https://github.com/AdiYohanes/stockos/issues/4) with `ready-for-agent`; that label does not authorize implementation.
 
 ## 1. Sources of Truth
 
@@ -16,7 +16,7 @@ Updated: 2026-10-09. **Design confirmed; documentation/specification only. Backe
 | [Agent rules](../AGENTS.md) | Scope and implementation approval gate |
 | This plan | Integration order, verification/release gates, remaining operational setup |
 
-No separate middleware document or empty architecture layers. Record ADRs only when a non-obvious, costly-to-reverse tradeoff needs durable rationale. No SQL, migrations, runtime code, dependency installation, infrastructure, or deployment in this task.
+No separate middleware document or empty architecture layers. Record ADRs only when a non-obvious, costly-to-reverse tradeoff needs durable rationale. Each implementation slice requires explicit approval; documentation and issue readiness alone never authorize it. Current repair authorizes new forward migrations and isolated synthetic-data proof, not hosted resources or deployment.
 
 ## 2. Confirmed Scope
 
@@ -32,9 +32,9 @@ No separate middleware document or empty architecture layers. Record ADRs only w
 
 ## 3. Current Implementation Gaps
 
-Products/Inventory have independent session stores/fixtures and identities; Dashboard/Reports are fixtures. Settings use localStorage with controls unsupported by the agreed target. Auth/login/signup/reset are mocks. Carton inputs lack reliable conversion; stock-in entry points lack purchase-cost capture; zero-difference opname is currently rejected; metadata and deletion rules differ from the target.
+All five feature routes use isolated local Supabase PostgreSQL/Auth; Products/Inventory share one balance, Reports/Dashboard read stock potentials/evidence, and Settings persist shared defaults. Legacy stores remain regression fixtures only. Carton conversion, purchase cost, unchanged opname evidence, archive constraints, and verified owner recovery are implemented.
 
-Frontend final lint/type/build checks after warning cleanup remain pending; earlier smoke checks are not a full CRUD/keyboard/contrast/visual regression audit. No schema/provider provisioning/migrations exist. Documents describe a target, not delivered fullstack functionality.
+Active repairs address mutation uncertainty/conflict review, shop-local report accuracy and exact money, bounded detail/export, Settings-driven creation defaults, and unreachable mock runtime. Prior local proof does not establish external SMTP, hosted runtime, off-host recovery, or production readiness. See PROGRESS.md for current checks and explicit gaps.
 
 ## 4. Delivery Order After Explicit Implementation Approval
 

@@ -8,11 +8,13 @@ import { useI18n } from "@/lib/i18n/context";
 
 interface SettingsTabNavProps {
   activeTab: SettingsTab;
+  disabled?: boolean;
   onTabChange: (tab: SettingsTab) => void;
 }
 
 export function SettingsTabNav({
   activeTab,
+  disabled = false,
   onTabChange,
 }: SettingsTabNavProps) {
   const { t } = useI18n();
@@ -49,6 +51,9 @@ export function SettingsTabNav({
           return (
             <button
               key={tab.id}
+              type="button"
+              disabled={disabled}
+              aria-current={isActive ? "page" : undefined}
               onClick={() => onTabChange(tab.id)}
               className={cn(
                 "flex items-center gap-2 rounded-none px-3.5 py-2 font-mono text-xs font-semibold transition-all whitespace-nowrap",

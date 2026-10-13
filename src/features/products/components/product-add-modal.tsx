@@ -12,7 +12,10 @@ import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
 import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../constants";
 
+export type ProductCreationDefaults = { defaultUnit: string; defaultMinStock: number };
+
 interface ProductAddModalProps {
+  defaults: ProductCreationDefaults;
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -23,9 +26,10 @@ export function ProductFormField({ label, id, error, ...props }: React.Component
   return <div className="space-y-1.5 min-w-0"><Label htmlFor={id} className="text-[10px] font-bold uppercase tracking-widest text-ink">{label}</Label><Input {...props} id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} className="h-10 rounded-none border-[3px] border-ink bg-white font-mono shadow-none focus-visible:shadow-hard-sm" />{error && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">{error}</p>}</div>;
 }
 
-function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onCommitted: OnProductCommitted; onBlocked: (blocked: boolean) => void }) {
+function AddForm({ defaults, onClose, onCommitted, onBlocked }: { defaults: ProductCreationDefaults; onClose: () => void; onCommitted: OnProductCommitted; onBlocked: (blocked: boolean) => void }) {
   const { t } = useI18n();
   const c = t.products.persistent;
+  const [formDefaults, setFormDefaults] = React.useState(defaults);
   const [mode, setMode] = React.useState<"create" | "restock">("create");
   const [cartons, setCartons] = React.useState(false);
   const [count, setCount] = React.useState("");
@@ -89,7 +93,7 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
     }
   }
 
-  if (created) return <div className="p-6 text-center space-y-5"><div className="mx-auto flex h-20 w-20 items-center justify-center border-[3px] border-ink bg-emerald-50 shadow-hard-sm motion-safe:animate-check-pop"><Check className="h-12 w-12 text-emerald-700" /></div><DialogTitle className="font-bold uppercase text-xl">{t.modals.addProduct.successTitle}</DialogTitle><DialogDescription>{created.name} · {created.sku}</DialogDescription><Button onClick={onClose}>{t.modals.finish}</Button><Button variant="outline" onClick={() => { setCreated(null); setQuantity("0"); setCartons(false); setCount(""); setUnits(""); }}>{t.modals.addProduct.addAnother}</Button></div>;
+  if (created) return <div className="p-6 text-center space-y-5"><div className="mx-auto flex h-20 w-20 items-center justify-center border-[3px] border-ink bg-emerald-50 shadow-hard-sm motion-safe:animate-check-pop"><Check className="h-12 w-12 text-emerald-700" /></div><DialogTitle className="font-bold uppercase text-xl">{t.modals.addProduct.successTitle}</DialogTitle><DialogDescription>{created.name} · {created.sku}</DialogDescription><Button onClick={onClose}>{t.modals.finish}</Button><Button variant="outline" onClick={() => { setFormDefaults(defaults); setCreated(null); setQuantity("0"); setCartons(false); setCount(""); setUnits(""); }}>{t.modals.addProduct.addAnother}</Button></div>;
 
   return <form onSubmit={submit}>
     <div className="border-b-[3px] border-ink px-5 py-4"><DialogTitle className="flex items-center gap-3 text-lg font-bold uppercase"><PackagePlus className="h-5 w-5" />{t.modals.addProduct.title}</DialogTitle><DialogDescription className="text-xs font-mono mt-1">{mode === "create" ? c.create : c.restock}</DialogDescription></div>
@@ -101,8 +105,8 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
           <ProductFormField id="product-name" name="name" label={`${t.products.form.nameLabel} *`} required maxLength={120} error={submission.fieldErrors.name?.[0]} />
           <ProductFormField id="product-sku" name="sku" label={`${t.products.form.skuLabel} *`} required minLength={3} maxLength={64} error={submission.fieldErrors.sku?.[0]} />
           <ProductFormField id="product-category" name="category" label={`${t.products.form.categoryLabel} *`} required maxLength={120} list="add-categories" />
-          <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} list="add-units" />
-          <ProductFormField id="product-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} type="number" required min={0} max={1_000_000_000} step={1} defaultValue="0" />
+          <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} list="add-units" defaultValue={formDefaults.defaultUnit} />
+          <ProductFormField id="product-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} type="number" required min={0} max={1_000_000_000} step={1} defaultValue={formDefaults.defaultMinStock} />
           <ProductFormField id="product-sell" name="sellingPrice" label={`${t.products.form.priceLabel} *`} required inputMode="numeric" pattern="[0-9]{1,13}" maxLength={13} error={submission.fieldErrors.sellingPrice?.[0]} />
           <ProductFormField id="product-supplier" name="supplier" label={t.products.form.supplierLabel} maxLength={120} list="add-suppliers" />
           <ProductFormField id="product-shelf" name="shelfLocation" label={c.shelfLocation} maxLength={80} />
@@ -125,10 +129,10 @@ function AddForm({ onClose, onCommitted, onBlocked }: { onClose: () => void; onC
   </form>;
 }
 
-export function ProductAddModal({ children, open: controlledOpen, onOpenChange, onCommitted }: ProductAddModalProps) {
+export function ProductAddModal({ defaults, children, open: controlledOpen, onOpenChange, onCommitted }: ProductAddModalProps) {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const [blocked, setBlocked] = React.useState(false);
   const open = controlledOpen ?? internalOpen;
   const changeOpen = (next: boolean) => { if (!next && blocked) return; if (onOpenChange) onOpenChange(next); else setInternalOpen(next); };
-  return <DialogRoot open={open} onOpenChange={changeOpen}>{children && <DialogTrigger render={children as React.ReactElement} />}<DialogPortal><DialogBackdrop /><DialogPopup className="max-w-xl overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg"><AddForm onClose={() => { if (onOpenChange) onOpenChange(false); else setInternalOpen(false); }} onCommitted={onCommitted} onBlocked={setBlocked} /></DialogPopup></DialogPortal></DialogRoot>;
+  return <DialogRoot open={open} onOpenChange={changeOpen}>{children && <DialogTrigger render={children as React.ReactElement} />}<DialogPortal><DialogBackdrop /><DialogPopup className="max-w-xl overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg"><AddForm defaults={defaults} onClose={() => { if (onOpenChange) onOpenChange(false); else setInternalOpen(false); }} onCommitted={onCommitted} onBlocked={setBlocked} /></DialogPopup></DialogPortal></DialogRoot>;
 }

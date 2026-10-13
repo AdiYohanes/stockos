@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { CompanySettings, TimezoneCode } from "../types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,30 +11,19 @@ import { Building2, Globe, Mail, Phone, MapPin, User, ShieldCheck, Coins } from 
 import { useI18n } from "@/lib/i18n/context";
 
 interface CompanySettingsFormProps {
-  initialValues: CompanySettings;
+  values: CompanySettings;
+  disabled?: boolean;
   ownerEmail?: string;
   onChange: (updated: Partial<CompanySettings>) => void;
 }
 
-export function CompanySettingsForm({ initialValues, ownerEmail, onChange }: CompanySettingsFormProps) {
+export function CompanySettingsForm({ values: formData, disabled = false, ownerEmail, onChange }: CompanySettingsFormProps) {
   const { t } = useI18n();
-  const [formData, setFormData] = React.useState<CompanySettings>(initialValues);
-
-  const handleChange = (field: keyof CompanySettings, value: string) => {
-    const next = { ...formData, [field]: value };
-    setFormData(next);
-    onChange(next);
-  };
-
-  const handleTimezoneChange = (val: string | null) => {
-    const nextTz = (val as TimezoneCode) || "Asia/Jakarta";
-    const next = { ...formData, timezone: nextTz };
-    setFormData(next);
-    onChange(next);
-  };
+  const handleChange = (field: keyof CompanySettings, value: string) => onChange({ [field]: value });
+  const handleTimezoneChange = (val: string | null) => onChange({ timezone: (val as TimezoneCode) || "Asia/Jakarta" });
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <fieldset disabled={disabled} className="grid gap-6 md:grid-cols-2">
       {/* Business Identity */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
@@ -142,8 +130,8 @@ export function CompanySettingsForm({ initialValues, ownerEmail, onChange }: Com
             <Label className="text-xs font-semibold text-ink">
               {t.settings.timezone} <span className="text-red-500">*</span>
             </Label>
-            <Select value={formData.timezone} onValueChange={handleTimezoneChange}>
-              <SelectTrigger className="h-9 text-xs input-focus border-[3px] border-ink rounded-none">
+            <Select value={formData.timezone} onValueChange={handleTimezoneChange} disabled={disabled}>
+              <SelectTrigger className="w-full h-9 text-xs input-focus border-[3px] border-ink rounded-none">
                 <SelectValue placeholder={t.settings.selectTimezonePlaceholder} />
               </SelectTrigger>
               <SelectContent>
@@ -190,6 +178,6 @@ export function CompanySettingsForm({ initialValues, ownerEmail, onChange }: Com
           </div>
         </CardContent>
       </Card>
-    </div>
+    </fieldset>
   );
 }

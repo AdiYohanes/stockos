@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
-import { ProductAddModal } from "@/features/products/components/product-add-modal";
+import { ProductAddModal, type ProductCreationDefaults } from "@/features/products/components/product-add-modal";
 import { StockMovementModal } from "@/features/inventory/components/stock-movement-modal";
 import { mapProductToInventoryItem } from "@/features/inventory/adapters";
 import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
@@ -19,9 +19,10 @@ import type { ProductDto } from "@/features/products/schemas/product-rpc.schema"
 interface DashboardHeaderProps {
   userName?: string;
   rawProducts?: ProductDto[];
+  creationDefaults: ProductCreationDefaults | null;
 }
 
-export function DashboardHeader({ userName, rawProducts = [] }: DashboardHeaderProps) {
+export function DashboardHeader({ userName, rawProducts = [], creationDefaults }: DashboardHeaderProps) {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [movementOpen, setMovementOpen] = React.useState(false);
@@ -67,7 +68,7 @@ export function DashboardHeader({ userName, rawProducts = [] }: DashboardHeaderP
 
       {/* Quick Actions & Refresh */}
       <div className="flex flex-wrap items-center gap-2 shrink-0 self-start lg:self-auto">
-        <ProductAddModal onCommitted={async () => { router.refresh(); }}>
+        {creationDefaults ? <ProductAddModal defaults={creationDefaults} onCommitted={async () => { router.refresh(); }}>
           <Button
             variant="outline"
             size="sm"
@@ -77,7 +78,10 @@ export function DashboardHeader({ userName, rawProducts = [] }: DashboardHeaderP
             <PackagePlus className="text-primary group-hover/button:text-white transition-colors" />
             <span className="sr-only sm:not-sr-only">{t.dashboard.addProduct}</span>
           </Button>
-        </ProductAddModal>
+        </ProductAddModal> : <div role="alert" className="text-xs">
+          <p>{t.common.error}</p>
+          <Button variant="outline" size="sm" onClick={() => router.refresh()}>{t.products.persistent.retry}</Button>
+        </div>}
 
         <Button
           variant="outline"

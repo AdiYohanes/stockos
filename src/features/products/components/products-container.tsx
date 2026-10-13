@@ -13,7 +13,7 @@ import { ProductDetailSheet } from "./product-detail-sheet";
 import { EditProductModal } from "./edit-product-modal";
 import { DeleteProductDialog } from "./delete-product-dialog";
 import { QuickMovementModal } from "./quick-movement-modal";
-import { ProductAddModal } from "./product-add-modal";
+import { ProductAddModal, type ProductCreationDefaults } from "./product-add-modal";
 import type { ProductFilterState } from "../types";
 import type { ProductDto, ProductsPage, ProductMetrics, ProductFailure } from "../schemas/product-rpc.schema";
 
@@ -24,9 +24,10 @@ interface ProductsContainerProps {
   metrics: ProductMetrics | null;
   categories: string[];
   failure: ProductFailure | null;
+  creationDefaults: ProductCreationDefaults | null;
 }
 
-export function ProductsContainer({ filterState, catalog, metrics, categories, failure }: ProductsContainerProps) {
+export function ProductsContainer({ filterState, catalog, metrics, categories, failure, creationDefaults }: ProductsContainerProps) {
   const router = useRouter();
   const { t } = useI18n();
   const p = t.products.persistent;
@@ -69,7 +70,7 @@ export function ProductsContainer({ filterState, catalog, metrics, categories, f
   }
 
   return <div className="flex flex-col gap-4 sm:gap-5 w-full pb-10" aria-busy={filters.pending || reading}>
-    <ProductsHeader onAdd={() => setAddOpen(true)} />
+    <ProductsHeader addDisabled={!creationDefaults} onAdd={() => setAddOpen(true)} />
     <p className="border-[3px] border-ink bg-paper p-3 text-xs font-mono">{p.localData} · {filterState.archive === "all" ? p.allArchives : filterState.archive === "archived" ? p.archived : t.common.active}</p>
     {(failure || readError) && <div role="alert" className="border-[3px] border-ink p-3">
       <p>{readError ?? (failure ? p.errors[failure.code] ?? t.common.error : t.common.error)}</p>
@@ -84,13 +85,13 @@ export function ProductsContainer({ filterState, catalog, metrics, categories, f
       <ProductsTable products={catalog.items} totalCount={catalog.total} filterState={filterState} hasActiveFilters={filters.hasActiveFilters}
         onPageChange={filters.setPage} onResetFilters={filters.resetFilters} onViewDetails={(product) => void open(product, "detail")}
         onEdit={(product) => void open(product, "edit")} onDelete={(product) => void open(product, "lifecycle")}
-        onQuickMovement={(product, type) => void open(product, type)} onAddProductClick={() => setAddOpen(true)} />
+        onQuickMovement={(product, type) => void open(product, type)} onAddProductClick={() => { if (creationDefaults) setAddOpen(true); else router.refresh(); }} />
     </div>}
     {selected && selection?.mode === "detail" && <ProductDetailSheet key={selected.id} product={selected} open onOpenChange={close}
       onEdit={(product) => void open(product, "edit")} onMovement={(product, type) => void open(product, type)} onLifecycle={(product) => void open(product, "lifecycle")} />}
     {selected && selection?.mode === "edit" && <EditProductModal key={selected.id} product={selected} open onOpenChange={close} onCommitted={committed} identityLocked={selection.identityLocked} />}
     {selected && selection?.mode === "lifecycle" && <DeleteProductDialog key={selected.id} product={selected} open onOpenChange={close} onCommitted={committed} />}
     {selected && (selection?.mode === "in" || selection?.mode === "out") && <QuickMovementModal key={`${selected.id}:${selection.mode}`} product={selected} type={selection.mode} open onOpenChange={close} onCommitted={committed} />}
-    <ProductAddModal open={addOpen} onOpenChange={setAddOpen} onCommitted={committed} />
+    {creationDefaults && <ProductAddModal defaults={creationDefaults} open={addOpen} onOpenChange={setAddOpen} onCommitted={committed} />}
   </div>;
 }

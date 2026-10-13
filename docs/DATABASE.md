@@ -1,6 +1,6 @@
 # StockOS Database Design
 
-Status: target design confirmed 2026-10-09; not implemented. PostgreSQL on Supabase. No executable SQL or migrations are included. Business vocabulary: [Glossary](../GLOSSARY.md). Contracts: [API_CONTRACT.md](API_CONTRACT.md).
+Status: persistent isolated local PostgreSQL on Supabase, with forward migrations under `supabase/migrations`; correctness hardening active 2026-10-12. PROGRESS.md records actual proof results. No production database or deployment is authorized. Business vocabulary: [Glossary](../GLOSSARY.md). Contracts: [API_CONTRACT.md](API_CONTRACT.md).
 
 ## 1. Scope and Authority
 
@@ -156,6 +156,16 @@ Business tables live in a non-public schema. Enable RLS and revoke all direct ta
 Bootstrap/admin credentials are server-only and limited to owner provisioning/reconciliation. Normal business requests use session-scoped clients rather than bypassing RLS with service credentials. Public provider signup is disabled; directly registered/unbound provider users never gain shop access.
 
 Indexes: unique SKU; product active/category ordering for actual list queries; product creation time plus ID; inventory events (product_id, recorded_at descending, id descending), (recorded_at descending, id descending), and kind/time for report queries; unique product/version; unique request ID; correction reference; administrative event time/product. Do not add full-text/trigram extensions until measured queries need them. Category/supplier suggestions use bounded distinct text queries.
+
+### Bounded report reads
+
+Report functions retain fixed safe search paths, strict mode-specific input keys, independent live-owner checks, and authenticated-only EXECUTE. New forward migrations replace report functions without changing stored balances, evidence, retry records, or installed migration history.
+
+- `screen`: page/pageSize defaults 1/25, maximum size 100; deterministic category or product ordering, with product ID tiebreak. Totals and movement daily trends aggregate all matching rows, while only detail is paginated.
+- `summary`: aggregate DTO only; no items, categories, trends, or pagination keys.
+- `export`: no client limit/pagination keys; materialized ordered candidates capped at 10,001. More than 10,000 fails LIMIT_EXCEEDED before detail JSON is built. No silent truncation.
+
+Each report statement owns its settings/filter/aggregate/probe/detail snapshot. Movement dates are shop-local inclusive-start/exclusive-end with validated expected timezone checked against Settings in that statement; mismatch returns VERSION_CONFLICT. Search uses literal case-insensitive name/SKU matching, including `%`/`_`. Valuation multiplication and sums remain PostgreSQL numeric, not bigint casts; all calculated money leaves RPCs as exact decimal strings. Category totals use the same full filter as overall totals.
 
 ## 7. Retention, Migrations, and Provider Recovery
 

@@ -25,6 +25,7 @@ SHOP, PREFIX = f"Inventory browser proof {RUN}", f"INV-{RUN[:8].upper()}"
 PRODUCTS, REQUESTS = set(), set()
 USER = TOKEN = None
 PREPARED = False
+PINNED_CONTAINER_ID = None
 
 
 def docker(*args):
@@ -34,7 +35,11 @@ def docker(*args):
 
 
 def guard():
+    global PINNED_CONTAINER_ID
     item = json.loads(docker("inspect", CONTAINER))[0]
+    if PINNED_CONTAINER_ID is None:
+        PINNED_CONTAINER_ID = item["Id"]
+    assert item["Id"] == PINNED_CONTAINER_ID, "Fixture container changed; refuse writes"
     assert item["Name"] == f"/{CONTAINER}"
     assert item["Config"]["Labels"]["com.supabase.cli.project"] == "stockos-stock-proof"
     assert item["State"]["Running"] is True
@@ -108,15 +113,30 @@ def provision():
 def cleanup():
     if not PREPARED:
         return
-    products = "ARRAY[" + ",".join(quote(value) for value in PRODUCTS) + "]::uuid[]" if PRODUCTS else "ARRAY[]::uuid[]"
+    products = "ARRAY[" + ",".join(quote(value) for value in PRODUCTS) + "]::uuid[]"
+    requests = "ARRAY[" + ",".join(quote(value) for value in REQUESTS) + "]::uuid[]"
     user = quote(USER) + "::uuid" if USER else "NULL::uuid"
     sql(f"""BEGIN;
       LOCK TABLE stockos_private.owner_registration, stockos_private.shop_settings IN EXCLUSIVE MODE;
-      DELETE FROM stockos_private.inventory_events WHERE product_id = ANY({products}) OR actor_id = {user};
-      DELETE FROM stockos_private.administrative_events WHERE product_id = ANY({products}) OR actor_id = {user};
-      DELETE FROM stockos_private.products WHERE id = ANY({products});
-      DELETE FROM stockos_private.mutation_requests WHERE actor_id = {user};
-      DELETE FROM stockos_private.shop_settings WHERE id = 1;
+      DO $guard$ BEGIN
+        IF (SELECT count(*) FROM stockos_private.owner_registration)<>1
+          OR NOT EXISTS(SELECT 1 FROM stockos_private.owner_registration WHERE id=1)
+          OR EXISTS(SELECT 1 FROM stockos_private.owner_registration WHERE id<>1 OR
+            (state<>'unclaimed' AND (email IS DISTINCT FROM {quote(EMAIL)} OR
+             (auth_user_id IS NOT NULL AND auth_user_id IS DISTINCT FROM {user}))))
+          OR EXISTS(SELECT 1 FROM stockos_private.shop_settings WHERE id<>1 OR name<>{quote(SHOP)})
+          OR EXISTS(SELECT 1 FROM auth.users WHERE id IS DISTINCT FROM {user} OR email IS DISTINCT FROM {quote(EMAIL)})
+          OR EXISTS(SELECT 1 FROM stockos_private.products WHERE NOT(id=ANY({products})) OR sku NOT LIKE {quote(PREFIX + '-%')})
+          OR EXISTS(SELECT 1 FROM stockos_private.mutation_requests WHERE NOT(request_id=ANY({requests})))
+          OR EXISTS(SELECT 1 FROM stockos_private.inventory_events WHERE NOT(product_id=ANY({products})) OR NOT(request_id=ANY({requests})))
+          OR EXISTS(SELECT 1 FROM stockos_private.administrative_events WHERE NOT(request_id=ANY({requests})))
+        THEN RAISE EXCEPTION 'Uncaptured fixture records; cleanup refused'; END IF;
+      END $guard$;
+      DELETE FROM stockos_private.inventory_events WHERE product_id=ANY({products});
+      DELETE FROM stockos_private.administrative_events WHERE request_id=ANY({requests});
+      DELETE FROM stockos_private.products WHERE id=ANY({products});
+      DELETE FROM stockos_private.mutation_requests WHERE request_id=ANY({requests});
+      DELETE FROM stockos_private.shop_settings WHERE id=1 AND name={quote(SHOP)};
       UPDATE stockos_private.owner_registration SET state = 'unclaimed', attempt_id = NULL,
         email = NULL, auth_user_id = NULL, provisioned_at = NULL, bound_at = NULL, updated_at = now() WHERE id = 1;
       DELETE FROM auth.users WHERE id = {user};
@@ -134,7 +154,170 @@ def login(context):
 
 
 def is_mutation(request):
-    return request.method == "POST" and request.headers.get("next-action")
+    if request.method != "POST" or not request.headers.get("next-action"):
+        return False
+    try:
+        args = json.loads(request.post_data)
+        return isinstance(args[0], dict) and "requestId" in args[0]
+    except (TypeError, ValueError, IndexError):
+        return False
+
+
+def capture(request):
+    if is_mutation(request):
+        REQUESTS.add(str(uuid.UUID(json.loads(request.post_data)[0]["requestId"])))
+
+
+def action_result(text):
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        try:
+            data = json.loads(line.split(":", 1)[1])
+        except ValueError:
+            continue
+        if isinstance(data, dict) and isinstance(data.get("ok"), bool):
+            return data
+    raise AssertionError("Server Action response missing safe result")
+
+
+def get_product(product_id):
+    return rpc("get_product", {"id": product_id})
+
+
+def history(product_id):
+    return rpc("list_inventory_events", {"productId": product_id, "pageSize": 100})
+
+
+def open_opname(page, product):
+    page.goto(BASE + "/inventory")
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.locator("button[title*='Stock Adjustment'], button[title*='Penyesuaian']").click()
+    expect(page.get_by_role("dialog")).to_be_visible()
+
+
+def assert_close_blocked(page):
+    dialog = page.get_by_role("dialog")
+    page.keyboard.press("Escape")
+    expect(dialog).to_be_visible()
+    dialog.get_by_role("button", name="Close dialog", exact=True).click()
+    expect(dialog).to_be_visible()
+    page.mouse.click(5, 5)
+    expect(dialog).to_be_visible()
+    expect(dialog.get_by_role("button", name=re.compile(r"^(Cancel|Batal)$"))).to_be_disabled()
+
+
+def lost_response(page, product, opname=False):
+    before = history(product["id"])["total"]
+    stock_before = get_product(product["id"])["currentStock"]
+    if opname:
+        open_opname(page, product)
+        page.locator("#newStock").fill(str(stock_before + 1))
+    else:
+        page.goto(BASE + "/inventory")
+        page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
+        page.locator("#itemSelect").select_option(product["id"])
+        page.locator("#quantity").fill("1")
+        page.locator("#purchaseTotal").fill("0")
+    dropped = []
+
+    def lose(route):
+        if is_mutation(route.request) and not dropped:
+            result = route.fetch()
+            assert action_result(result.text())["ok"] is True
+            dropped.append(route.request)
+            route.abort("failed")
+        else:
+            route.continue_()
+
+    page.route("**/inventory*", lose)
+    dialog = page.get_by_role("dialog")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    assert_close_blocked(page)
+    expect(page.locator("#newStock" if opname else "#quantity")).to_have_value(str(stock_before + 1) if opname else "1")
+    page.unroute("**/inventory*", lose)
+    with page.expect_request(is_mutation) as retry:
+        dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    assert json.loads(retry.value.post_data) == json.loads(dropped[0].post_data)
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert get_product(product["id"])["currentStock"] == stock_before + 1
+    assert history(product["id"])["total"] == before + 1
+
+
+def hardening(page, browser, product, empty_product):
+    lost_response(page, product)
+    lost_response(page, product, opname=True)
+    other_context = browser.new_context()
+    other = login(other_context)
+    other.on("request", capture)
+    open_opname(other, product)
+    other.locator("#newStock").fill("9")
+    other.locator("#adjNote").fill("Keep physical-count draft")
+    # Independent owner session sells all stock while stale count stays open.
+    page.goto(BASE + "/inventory")
+    page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
+    page.get_by_role("dialog").get_by_role("button", name=re.compile(r"Stock Out|Stok Keluar", re.I)).click()
+    page.locator("#itemSelect").select_option(product["id"])
+    page.locator("#quantity").fill(str(get_product(product["id"])["currentStock"]))
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    failed_read = []
+
+    def fail_conflict_read(route):
+        if route.request.method == "POST" and route.request.headers.get("next-action"):
+            try:
+                args = json.loads(route.request.post_data)
+            except (TypeError, ValueError):
+                args = []
+            if args and isinstance(args[0], dict) and args[0] == {"id": product["id"]} and not failed_read:
+                failed_read.append(True)
+                route.abort("failed")
+                return
+        route.continue_()
+
+    other.route("**/inventory*", fail_conflict_read)
+    dialog = other.get_by_role("dialog")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+    expect(other.locator("#newStock")).to_have_value("9")
+    expect(other.locator("#adjNote")).to_have_value("Keep physical-count draft")
+    assert failed_read, "Conflict latest-read failure was not exercised"
+    other.unroute("**/inventory*", fail_conflict_read)
+    dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    reviewed = dialog.get_by_role("button", name=re.compile(r"Reviewed|Sudah ditinjau", re.I))
+    expect(reviewed).to_be_visible(timeout=20000)
+    expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+    reviewed.click()
+    expect(other.locator("#newStock")).to_have_value("")
+    expect(other.locator("#adjNote")).to_have_value("Keep physical-count draft")
+    other.locator("#newStock").fill("2")
+    expect(dialog.get_by_text("+2 Pcs", exact=True)).to_be_visible()
+    expect(other.locator("#foundCost")).to_be_visible()
+    other.locator("#foundCost").fill("6000")
+    expected_version = get_product(product["id"])["stockVersion"]
+    with other.expect_request(is_mutation) as posted:
+        dialog.locator('button[type="submit"]').click()
+    payload = json.loads(posted.value.post_data)[0]
+    assert payload["expectedStockVersion"] == expected_version
+    expect(dialog).not_to_be_visible(timeout=20000)
+    latest = get_product(product["id"])
+    assert latest["currentStock"] == 2 and latest["inventoryCostValue"] == "6000.000000"
+    # Changing selection remounts count/review state belonging to previous product.
+    other.locator("section").filter(has=other.locator("h2")).get_by_role("button", name=re.compile(r"^(Stock Adjustment|Penyesuaian Stok)$")).click()
+    other.locator("#itemSelect").select_option(product["id"])
+    other.locator("#newStock").fill("7")
+    other.locator("#adjNote").fill("Previous product note")
+    other.locator("#itemSelect").select_option(empty_product["id"])
+    expect(other.locator("#newStock")).to_have_value("0")
+    expect(other.locator("#adjNote")).to_have_value("")
+    other.locator("#newStock").fill("1")
+    expect(other.locator("#foundCost")).to_have_value("0")
+    other.keyboard.press("Escape")
+    expect(other.get_by_role("dialog")).not_to_be_visible()
+    other_context.close()
+    print("PASS: movement/opname lost-response close guards and exact replay; two-session conflict read retry, preserved note, explicit recount, current found-cost snapshot")
 
 
 def create_fixture(suffix, opening_qty=10, purchase_total=50000, min_stock=5):
@@ -167,6 +350,14 @@ def run():
         browser = playwright.chromium.launch(channel="msedge")
         context = browser.new_context(viewport={"width": 1440, "height": 1000}, reduced_motion="reduce")
         page = login(context)
+        page.on("request", capture)
+        if "--hardening" in sys.argv:
+            hardening(page, browser, prod_a, prod_b)
+            for width in (1440, 390):
+                page.set_viewport_size({"width": width, "height": 1000})
+                assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Inventory overflow at {width}px"
+            browser.close()
+            return
 
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))

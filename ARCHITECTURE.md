@@ -6,17 +6,19 @@ Version: `0.x`
 
 Current architecture phase:
 
-**Backend Foundation ticket 12 active (isolated local operational readiness)**
+**Backend Foundation local correctness hardening (approved 2026-10-11)**
+
+Approved local repair scope retains existing feature/server/RPC boundaries: mutation uncertainty and conflict review, exact timezone-aware bounded reports/CSV, server-provided creation defaults, and removal of unreachable mock runtime after replacement checks. New forward migrations and isolated synthetic-data proof are authorized. Cloud, deployment, external SMTP, paid resources, production use, and real-shop data remain excluded.
 
 Implementation approved 2026-10-11 for native forward migration/backup/restore proof and operations documentation, without changing feature boundaries. Tickets 1–11 are completed local prerequisites. SMTP harness is no-send; external delivery remains blocked. Cloud provisioning/deployment, paid resources, production launch, and real-shop data/import remain excluded.
 
 Tickets 1–7 connect auth and feature screens to isolated local Supabase. Ticket 8 implementation approved 2026-10-10 for provider-verified recovery, private session-bound purpose evidence, independent Server Action authorization, and global owner-session revocation before fresh password login. Passwords and tokens remain provider-managed; completion evidence contains no credentials. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
 
-Implementation approval received 2026-10-09 for isolated local Supabase auth/bootstrap only. Invitation-mode setup omits password until verified invitation landing; public provider signup stays disabled. Ticket 2 approval received 2026-10-09 for isolated private product/evidence/retry schema, owner-checked lifecycle and stock/modal RPCs, bounded reads, and real contract tests. Exact arithmetic and transactions remain PostgreSQL-owned. Full recovery, UI/Server Action integration, reports/settings persistence, external SMTP proof, cloud provisioning, and deployment remain outside this ticket.
+Historical ticket 1–2 approval: 2026-10-09 isolated local Supabase auth/bootstrap and stock foundations. Invitation-mode setup omits password until verified invitation landing; public provider signup stays disabled. Ticket 2 approval received 2026-10-09 for isolated private product/evidence/retry schema, owner-checked lifecycle and stock/modal RPCs, bounded reads, and real contract tests. Exact arithmetic and transactions remain PostgreSQL-owned. Full recovery, UI/Server Action integration, reports/settings persistence, external SMTP proof, cloud provisioning, and deployment remain outside this ticket.
 
-Backend target confirmed 2026-10-09: Next.js Server Components/Server Actions, Supabase PostgreSQL/Auth, and Vercel. `docs/BACKEND_PLAN.md` defines delivery/proof gates; `docs/DATABASE.md` and `docs/API_CONTRACT.md` define schema and operation contracts. Local auth and ticket 2 database/RPC foundations are implemented and tested; remaining integration and deployment require separate approval.
+Backend target confirmed 2026-10-09: Next.js Server Components/Server Actions, Supabase PostgreSQL/Auth, and Vercel. `docs/BACKEND_PLAN.md` defines delivery/proof gates; `docs/DATABASE.md` and `docs/API_CONTRACT.md` define schema and operation contracts. Tickets 1–12 implement and verify local auth, persistent feature integration, recovery, and operational proof. Deployment and external-provider gates require separate approval.
 
-This document describes the current frontend architecture and establishes boundaries that should make future backend integration easier.
+This document describes the current feature-oriented frontend and isolated local backend boundaries.
 
 It is intentionally lightweight.
 
@@ -40,10 +42,13 @@ Next.js App Router
    │
    ├── Shared UI
    │
-   └── Mock Data / Mock Services
+   └── Server-only feature queries / Server Actions
+           │
+           ▼
+       Owner-checked PostgreSQL RPCs + Supabase Auth (isolated local)
 ```
 
-There is currently no production backend or persistent database.
+Persistent local PostgreSQL/Auth backs all feature routes. No production backend, hosted database, or deployment has been provisioned.
 
 ---
 
@@ -188,7 +193,7 @@ Domain types and validation are centralized via Zod in `src/features/[feature]/s
 
 - **Single Source of Truth**: Base entity schema defines domain structure (`export const ProductSchema = z.object({...})`).
 - **Inferred Domain Types**: Types are extracted directly via `export type Product = z.infer<typeof ProductSchema>`.
-- **Unified Validation**: The same schemas validate mock data (`Schema.array().parse(MOCK_DATA)`) and form inputs (`react-hook-form` + `@hookform/resolvers/zod`).
+- **Boundary Validation**: Strict Zod schemas validate Server Action inputs and RPC DTOs; native SQL validates again. Retained regression fixtures validate against their feature schemas. Forms use existing React/native controls without a form-library dependency.
 - **Backward Compatibility**: `src/features/[feature]/types.ts` re-exports domain types from schemas, maintaining clean cross-feature imports.
 
 Later:
@@ -219,7 +224,7 @@ Next.js Server Actions / server-only owner queries
 Supabase Auth + session-scoped PostgreSQL authorization RPCs
 ```
 
-Ticket 1 runs against isolated local Supabase. Provisioning credentials stay in a separate server-only admin client; normal owner authorization uses the signed user session plus live `auth.sessions` verification. Proxy refreshes cookies, not business authorization. Invitation OTP sessions can complete initial password setup and retry a failed logout but cannot obtain owner business access; fresh password login is required. Product/inventory/report stores remain mocked.
+Ticket 1 runs against isolated local Supabase. Provisioning credentials stay in a separate server-only admin client; normal owner authorization uses the signed user session plus live `auth.sessions` verification. Proxy refreshes cookies, not business authorization. Invitation OTP sessions can complete initial password setup and retry a failed logout but cannot obtain owner business access; fresh password login is required. Products, Inventory, Dashboard, Reports, and shared Settings use persistent local RPCs; legacy stores are isolated regression fixtures only.
 
 ---
 
@@ -259,15 +264,15 @@ Current ownership:
 - Local React state for modal visibility, selected entity IDs, form drafts, and optimistic feedback.
 - Zustand vanilla stores: retained in `store.ts` for isolated unit/regression test contracts; UI features Products and Inventory now read directly from server props.
 
-Each feature owns its `store.ts`, state/actions, validation, and mock seeds. Existing feature hooks subscribe through narrow selectors and compose local UI state with derived metrics. Business mutations live in named store actions, not component setters. Related data and audit logs update atomically; rejected actions throw errors without modifying state, and forms display errors without closing.
+Retained Products/Inventory `store.ts` and mock seeds belong to isolated regression checks, not runtime state. Runtime feature hooks own URL filters and local UI only. PostgreSQL mutations update balance/evidence/retry results atomically; client forms preserve drafts until a definite outcome and review stale versions explicitly.
 
-`FeatureStoresProvider` in the authenticated dashboard layout creates independent store instances per provider mount. Context carries stable store references only. Navigating between dashboard routes preserves collections; leaving the dashboard or fully reloading resets them to mock seeds. Stores are not persisted and are never read or mutated from React Server Components. Module-level mutable store singletons are not used, so server requests cannot share session state.
-
-Products and Inventory still use independent feature fixtures and identifiers. Their stock models are not unified, and Dashboard/Reports analytics remain mock fixtures. Future backend data belongs in the real data-access boundary rather than being copied into these client stores.
+Authenticated layout has no mock-store provider. Products and Inventory read the same persistent balance; Dashboard and Reports consume authoritative server aggregates. New-product forms receive only unit/minimum defaults from Settings at server boundaries, snapshot defaults on mount, and do not overwrite open drafts when defaults change.
 
 Stock belongs to one shop: product, inventory, movement, and report types have no warehouse field or warehouse filter. Current mock movement types are stock in, stock out, and adjustment (`in/out/adjustment`). The target contracts distinguish opening, receipt, sold, opname, and cost_adjustment; migrate deliberately rather than treat the mock enum as the persistent model. Warehouse/purchase-order routes, modules, provider stores, and transfer controls are removed; stock receipts need no purchase order.
 
-Settings connect to persistent PostgreSQL singleton (`stockos_private.shop_settings`) via owner-checked RPCs (`stockos_get_shop_settings`, `stockos_update_shop_settings`), with monotonic optimistic concurrency control (`version`), idempotency via `mutation_requests`, administrative audit trails (`administrative_events`), and warung scope enforcement (removal of team/notification mock tabs, safe defaults reset without deleting operational data). The existing i18n context remains separate. Do not introduce more shared stores without demonstrated shared-client-state needs.
+Settings connect to persistent PostgreSQL singleton (`stockos_private.shop_settings`) via owner-checked RPCs (`stockos_get_shop_settings`, `stockos_update_shop_settings`), with monotonic optimistic concurrency control (`version`), idempotency via `mutation_requests`, administrative audit trails (`administrative_events`), and warung scope enforcement (removal of team/notification mock tabs, safe defaults reset without deleting operational data). Controlled forms share one local draft with a separate saved baseline and reviewed version. Frozen mutation payload/UUID/intent survives uncertainty; known-commit refresh retry reads only. Dirty incoming snapshots require explicit review, and stale responses cannot lower version. The existing i18n context remains separate. Do not introduce more shared stores without demonstrated shared-client-state needs.
+
+Reports keeps pure calendar/CSV helpers feature-owned. Server pages request bounded screen detail for the active tab and summary-only DTOs for inactive cards. Native RPC statements own full-filter totals, exact money, timezone verification, stable detail ordering, and bounded export overflow probes; CSV enforces incremental UTF-8 size limits. URL pagination resets on filter/tab change. No cross-request cache, streaming API, or separate export endpoint.
 
 ---
 
@@ -400,7 +405,7 @@ This architecture should evolve with the project.
 
 ### Phase 0 — Frontend Foundation
 
-Current implementation phase. Final frontend verification remains tracked in `PROGRESS.md`.
+Historical frontend phase. Current local persistent implementation and verification are tracked in `PROGRESS.md`.
 
 Focus:
 
@@ -411,28 +416,19 @@ Focus:
 
 ### Preparation — Backend Planning
 
-Documentation only, currently authorized. Target design confirmed; `docs/BACKEND_PLAN.md`, `docs/DATABASE.md`, `docs/API_CONTRACT.md`, and `docs/FULLSTACK_SPEC.md` define the agreed behavior, technical contracts, verification, and delivery gates. No runtime changes or executable schemas/migrations.
+Historical documentation-only gate. `docs/BACKEND_PLAN.md`, `docs/DATABASE.md`, `docs/API_CONTRACT.md`, and `docs/FULLSTACK_SPEC.md` define agreed behavior, contracts, verification, and delivery gates. Specification approval alone never authorizes runtime changes, executable migrations, provisioning, or deployment.
 
 ### Phase 1 — Backend Foundation
 
-Tickets 1 (local owner authentication) and 2 (local private stock database/RPC proof) are authorized and implemented. Domain UI integration and production readiness are not delivered; further slices require their own approval.
-
-Will implement the approved design for:
-
-- Production authentication
-- Database
-- Persistent domain model
-- API/data access strategy
-- Validation
-- Authorization
+Tickets 1–12 implement and prove local owner auth/recovery, private stock transactions, persistent feature integrations, synthetic catalog, and local operational readiness. Current approved slice hardens mutation retries/conflicts, exact bounded reports, Settings defaults, and unused runtime cleanup. Production authentication/deployment readiness and external gates remain excluded.
 
 ### Phase 2 — Integration
 
-Replace frontend mock implementations with real persistent services.
+Products, Inventory, Dashboard, Reports, and Settings now use persistent isolated local services. Legacy mock stores remain regression fixtures only.
 
 Architecture decisions should be updated before each major phase begins.
 
-# 17. Confirmed Target Backend — Not Implemented
+# 17. Confirmed Backend Boundaries — Local Implementation, External Gates Open
 
 ## Feature and Infrastructure Ownership
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/features/auth/server";
 import { getDashboard } from "@/features/dashboard/server";
 import { listProducts } from "@/features/products/server";
+import { getShopSettings } from "@/features/settings/server";
 import {
   DashboardHeader,
   OverviewCards,
@@ -13,7 +14,8 @@ import {
   type InventoryHealthData,
   type AttentionItem,
 } from "@/features/dashboard";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
 
 const StockMovementChart = dynamic(
   () =>
@@ -40,9 +42,10 @@ export default async function DashboardPage() {
   const user = await getOwnerSession();
   if (!user) redirect("/login");
 
-  const [dashboardResult, productsResult] = await Promise.all([
+  const [dashboardResult, productsResult, settingsResult] = await Promise.all([
     getDashboard(),
     listProducts({ pageSize: 100 }),
+    getShopSettings(),
   ]);
 
   if (!dashboardResult.ok) {
@@ -68,8 +71,8 @@ export default async function DashboardPage() {
     {
       id: "potential_revenue",
       label: "Potensi Pendapatan",
-      value: formatCurrency(Number(metrics.potentialSellingValue)),
-      rawValue: Number(metrics.potentialSellingValue),
+      value: formatProductMoney(metrics.potentialSellingValue),
+      rawValue: metrics.potentialSellingValue,
       supportingText: "Nilai jual stok tersedia",
       iconName: "revenue",
       variant: "default",
@@ -77,11 +80,11 @@ export default async function DashboardPage() {
     {
       id: "potential_profit",
       label: "Potensi Laba Kotor",
-      value: formatCurrency(Number(metrics.potentialGrossProfit)),
-      rawValue: Number(metrics.potentialGrossProfit),
+      value: formatProductMoney(metrics.potentialGrossProfit),
+      rawValue: metrics.potentialGrossProfit,
       supportingText: "Estimasi laba kotor sebelum operasional",
       iconName: "net_profit",
-      variant: Number(metrics.potentialGrossProfit) < 0 ? "destructive" : "default",
+      variant: metrics.potentialGrossProfit.startsWith("-") ? "destructive" : "default",
     },
     {
       id: "out_of_stock",
@@ -100,17 +103,17 @@ export default async function DashboardPage() {
     healthy: {
       count: health.healthy.count,
       percentage: health.healthy.percentage,
-      value: Number(health.healthy.value),
+      value: health.healthy.value,
     },
     lowStock: {
       count: health.lowStock.count,
       percentage: health.lowStock.percentage,
-      value: Number(health.lowStock.value),
+      value: health.lowStock.value,
     },
     outOfStock: {
       count: health.outOfStock.count,
       percentage: health.outOfStock.percentage,
-      value: Number(health.outOfStock.value),
+      value: health.outOfStock.value,
     },
   };
 
@@ -129,7 +132,8 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full">
       {/* 1. Header with integrated Quick Actions */}
-      <DashboardHeader userName={user?.name} rawProducts={rawProducts} />
+      <DashboardHeader userName={user?.name} rawProducts={rawProducts}
+        creationDefaults={settingsResult.ok ? { defaultUnit: settingsResult.data.defaultUnit, defaultMinStock: settingsResult.data.defaultMinStock } : null} />
 
       {/* 2. Overview Metrics Cards (4 cards) */}
       <OverviewCards metrics={overviewMetrics} />

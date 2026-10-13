@@ -63,7 +63,7 @@ Confirmed target dashboard cards: Total Products, Potensi Pendapatan, Potensi La
 
 Potensi Pendapatan is the selling value of current available stock at current selling prices, assuming all units are sold. Potensi Laba Kotor subtracts the weighted-average purchase-cost value of that stock. Both are current-stock estimates without a month-to-date sales period; negative potential margin remains visible. They are not actual revenue or net profit. Stock Out records sold quantities manually, not payment or actual sales prices; no POS, expense, shipping, or accounting module is approved.
 
-Current frontend still uses demo Revenue/Estimated Net Profit fixtures. Replace those labels/data during authorized integration; this requirement update does not change existing UI code.
+Current Dashboard uses persistent stock potentials from owner-checked PostgreSQL reads. Money remains exact decimal text through display; negative potential gross profit stays visible.
 
 Potential information includes:
 
@@ -151,7 +151,7 @@ Shared settings contain shop profile, IANA timezone (`Asia/Jakarta`, `Asia/Makas
 
 ## 5. Frontend Phase Scope
 
-Backend Foundation ticket 1 is approved for single-owner setup, invitation/email verification, initial password setup, login, resend, and logout using isolated local Supabase. Required auth code, dependencies, local resources, and bootstrap migrations are authorized. Ticket 2 approved 2026-10-09 for isolated local product/stock schema, transactional lifecycle/stock/modal RPCs, bounded reads, and contract proof. Other features remain Frontend Foundation mocks; UI/Server Action integration, full recovery, reports/settings persistence, cloud provisioning, deployment, and real-shop use require separate approval.
+Frontend Foundation is prior work. Tickets 1–11 implement isolated local authentication/recovery and persistent Products, Inventory, Reports, Settings, and Dashboard. Ticket 12 local operations proof is complete. Approved hardening retains these boundaries; cloud, deployment, external SMTP, paid resources, production launch, and real-shop use require separate approval.
 
 Frontend objectives:
 
@@ -162,7 +162,7 @@ Frontend objectives:
 - Build responsive interfaces
 - Build realistic mock interactions
 
-Use mock data where backend data would normally be required.
+Mock data was used during Frontend Foundation. Current operational routes use isolated local persistence; retained mock datasets are regression fixtures only.
 
 Backend implementation should not be inferred solely from temporary frontend mock structures.
 
@@ -288,7 +288,9 @@ These are future considerations and should not automatically be treated as appro
 
 Current development phase:
 
-**Backend Foundation ticket 12 active — operational readiness in isolated local fixtures**
+**Backend Foundation local correctness hardening — approved 2026-10-11**
+
+Authorized repair scope: reliable mutation retry/conflict review, exact shop-local reports, bounded report detail/export, shared new-product defaults, unused-runtime cleanup, and isolated synthetic-data regression proof. Ticket 12 local operations proof is complete; external operational gates remain blocked. No cloud, deployment, external SMTP, paid resources, production launch, or real-shop data.
 
 Tickets 1–11 connect authentication and all feature screens to local Supabase and verify the sample warung catalog. Implementation approved 2026-10-11 for local forward migration and independent backup/restore proof, environment/secrets separation, capacity/cost evaluation, and operations/recovery runbook. External SMTP delivery remains blocked; only a no-send readiness harness is approved. Cloud provisioning, deployment, paid resources, real-shop data/import, production launch, and domain feature changes remain excluded.
 
@@ -296,18 +298,18 @@ Implemented:
 
 - Authentication UI
 - Local Supabase single-owner authentication
-- Local private product/stock database, lifecycle/stock/modal RPCs, and bounded reads; not wired into feature UI
+- Local private product/stock database, lifecycle/stock/modal RPCs, and bounded reads wired into feature UI
 - Protected dashboard area
 - Dashboard UI
-- Product catalog, add/edit/delete, and stock-in/out flows
+- Persistent product catalog, add/edit/archive/reactivate, and stock-in/out flows
 - Brief success animation only after successful product creation
 - Single-shop inventory levels, adjustments, and movement history
-- Mock reports for valuation, movement, restock risk, and supplier deliveries
-- Settings UI with browser-local preferences and mock team roles
+- Persistent valuation, recorded movement, and threshold-based low-stock reports
+- Persistent shop profile/timezone/creation defaults and browser-local display/language preferences; no team roles
 
 Active dashboard navigation: Dashboard, Products, Inventory, Reports, Settings. No warehouse or purchase-order module.
 
-Local owner auth and ticket 2 product/stock database/RPC foundations are implemented and tested in isolated Supabase. Product and inventory UI collections remain independent session-scoped mocks; dashboard and report analytics remain fixtures. Settings preferences alone use browser-local storage. UI persistence integration and production deployment are not delivered.
+Local Supabase Auth/PostgreSQL is authoritative for all five feature routes. Products and Inventory share one persistent stock balance; Dashboard/Reports consume owner-checked aggregates. Browser storage contains display/language preferences only. Retained mock stores serve regression checks, not application data. Production deployment is not delivered.
 
 ## 13. Backend Preparation — Documentation Only
 

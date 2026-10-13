@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { InventorySettings } from "../types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,22 +11,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useI18n } from "@/lib/i18n/context";
 
 interface InventorySettingsFormProps {
-  initialValues: InventorySettings;
+  values: InventorySettings;
+  disabled?: boolean;
   onChange: (updated: Partial<InventorySettings>) => void;
 }
 
-export function InventorySettingsForm({ initialValues, onChange }: InventorySettingsFormProps) {
+export function InventorySettingsForm({ values: formData, disabled = false, onChange }: InventorySettingsFormProps) {
   const { t } = useI18n();
-  const [formData, setFormData] = React.useState<InventorySettings>(initialValues);
-
-  const handleChange = <K extends keyof InventorySettings>(field: K, value: InventorySettings[K]) => {
-    const next = { ...formData, [field]: value };
-    setFormData(next);
-    onChange(next);
-  };
+  const handleChange = <K extends keyof InventorySettings>(field: K, value: InventorySettings[K]) => onChange({ [field]: value });
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <fieldset disabled={disabled} className="grid gap-6 md:grid-cols-2">
       {/* Defaults for New Products */}
       <Card className="border-[3px] border-ink bg-white shadow-hard-sm rounded-none">
         <CardHeader className="border-b-[3px] border-ink pb-4">
@@ -60,8 +54,8 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
               type="number"
               min={0}
               max={1000000000}
-              value={formData.defaultMinStock}
-              onChange={(e) => handleChange("defaultMinStock", Math.max(0, parseInt(e.target.value) || 0))}
+              value={Number.isNaN(formData.defaultMinStock) ? "" : formData.defaultMinStock}
+              onChange={(e) => handleChange("defaultMinStock", e.target.valueAsNumber)}
               className="h-9 font-mono text-xs input-focus border-[3px] border-ink rounded-none"
             />
             <p className="text-[11px] text-ink/60">
@@ -75,6 +69,7 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
             </Label>
             <div className="flex gap-2">
               <Select
+                disabled={disabled}
                 value={["Pcs", "Kg", "Box", "Liter", "Pack", "Roll", "Bungkus", "Botol"].includes(formData.defaultUnit) ? formData.defaultUnit : "custom"}
                 onValueChange={(v) => {
                   if (v && v !== "custom") handleChange("defaultUnit", v);
@@ -96,6 +91,8 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
                 </SelectContent>
               </Select>
               <Input
+                id="defaultUnit"
+                aria-label={t.settings.defaultUnitMeasure}
                 value={formData.defaultUnit}
                 onChange={(e) => handleChange("defaultUnit", e.target.value)}
                 placeholder="Nama satuan (mis. Pcs)"
@@ -176,6 +173,6 @@ export function InventorySettingsForm({ initialValues, onChange }: InventorySett
           </div>
         </CardContent>
       </Card>
-    </div>
+    </fieldset>
   );
 }

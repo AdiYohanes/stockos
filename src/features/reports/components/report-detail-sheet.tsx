@@ -3,7 +3,8 @@
 import * as React from "react";
 import { X, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { MovementVelocityItem, ReorderRiskItem } from "../types";
 
@@ -135,11 +136,11 @@ export function ReportDetailSheet({
                 </div>
                 <div className="flex justify-between py-1 border-b border-ink">
                   <span className="text-muted-foreground">{t.inventory.unitCost || "Modal Satuan"}:</span>
-                  <span className="font-bold">{formatCurrency(reorderItem.unitCost)}</span>
+                  <span className="font-bold">{formatProductMoney(reorderItem.unitCost)}</span>
                 </div>
                 <div className="flex justify-between py-1 pt-2 font-bold text-sm">
                   <span>Est. Total Modal:</span>
-                  <span className="text-[#543afd]">{formatCurrency(reorderItem.totalReorderCost)}</span>
+                  <span className="text-[#543afd]">{formatProductMoney(reorderItem.totalReorderCost)}</span>
                 </div>
               </div>
 

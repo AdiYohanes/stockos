@@ -1,8 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { updateShopSettings } from "./server";
-import type { SettingsMutationResult } from "./schemas/settings-rpc.schema";
+import { getShopSettings, updateShopSettings } from "./server";
+import type { SettingsMutationResult, ShopSettingsReadResult } from "./schemas/settings-rpc.schema";
+
+export async function getShopSettingsAction(): Promise<ShopSettingsReadResult> {
+  return getShopSettings({}, true);
+}
 
 export async function updateShopSettingsAction(input: unknown): Promise<SettingsMutationResult> {
   const result = await updateShopSettings(input);

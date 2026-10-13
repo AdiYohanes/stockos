@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ProductsContainer } from "@/features/products";
 import { listProducts, getProductMetrics, getTextSuggestions } from "@/features/products/server";
+import { getShopSettings } from "@/features/settings/server";
 import { ListProductsInputSchema } from "@/features/products/schemas/product-rpc.schema";
 import type { ProductFilterState } from "@/features/products/types";
 
@@ -27,12 +28,13 @@ export default async function ProductsPage({ searchParams }: {
     searchQuery: input.search ?? "", category: input.category ?? "", status: input.health ?? "all", archive: input.archive ?? "active",
     sortField: input.sort ?? "name", sortOrder: input.direction ?? "asc", page: input.page ?? 1, pageSize: input.pageSize ?? 25,
   };
-  const [catalog, metrics, suggestions] = await Promise.all([
-    listProducts(input), getProductMetrics({ archive: filterState.archive }), getTextSuggestions({ kind: "category" }),
+  const [catalog, metrics, suggestions, settings] = await Promise.all([
+    listProducts(input), getProductMetrics({ archive: filterState.archive }), getTextSuggestions({ kind: "category" }), getShopSettings(),
   ]);
-  const failure = [catalog, metrics, suggestions].find((result) => !result.ok);
+  const failure = [catalog, metrics, suggestions, settings].find((result) => !result.ok);
   if (failure && !failure.ok && failure.code === "UNAUTHENTICATED") redirect("/login");
   return <ProductsContainer filterState={filterState} catalog={catalog.ok ? catalog.data : null}
     metrics={metrics.ok ? metrics.data : null} categories={suggestions.ok ? suggestions.data : []}
+    creationDefaults={settings.ok ? { defaultUnit: settings.data.defaultUnit, defaultMinStock: settings.data.defaultMinStock } : null}
     failure={failure && !failure.ok ? failure : null} />;
 }

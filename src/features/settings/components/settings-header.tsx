@@ -12,6 +12,7 @@ interface SettingsHeaderProps {
   updatedAt: string;
   version?: string;
   isSaving?: boolean;
+  disabled?: boolean;
   onSave: () => void;
   onResetModalOpen: () => void;
 }
@@ -22,6 +23,7 @@ export function SettingsHeader({
   updatedAt,
   version,
   isSaving = false,
+  disabled = false,
   onSave,
   onResetModalOpen,
 }: SettingsHeaderProps) {
@@ -84,8 +86,8 @@ export function SettingsHeader({
             variant="outline"
             size="sm"
             onClick={onResetModalOpen}
-            disabled={isSaving}
-            className="h-9 border-black font-mono text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-800 active:translate-y-px"
+            disabled={disabled || isSaving}
+            className="h-9 border-black font-mono text-xs font-semibold text-ink hover:bg-amber-50 hover:text-amber-950 active:translate-y-px"
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{" "}
             {t.settings.resetSystemData}
@@ -94,11 +96,11 @@ export function SettingsHeader({
           <Button
             size="sm"
             onClick={onSave}
-            disabled={!hasUnsavedChanges || isSaving}
+            disabled={!hasUnsavedChanges || disabled || isSaving}
             className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0] active:translate-y-px disabled:opacity-50 disabled:shadow-none"
           >
             <Save className={`mr-1.5 h-3.5 w-3.5 ${isSaving ? "animate-spin" : ""}`} />{" "}
-            {isSaving ? "Menyimpan..." : t.settings.saveChanges}
+            {isSaving ? t.products.persistent.pending : t.settings.saveChanges}
           </Button>
         </div>
       </div>
@@ -115,7 +117,7 @@ export function SettingsHeader({
         </div>
 
         {lastSavedMessage ? (
-          <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+          <div role="status" className="flex items-center gap-1.5 text-emerald-700 font-semibold">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             <span>{lastSavedMessage}</span>
           </div>

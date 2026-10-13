@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, ShieldAlert, RefreshCw, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
+import { DialogRoot, DialogPortal, DialogBackdrop, DialogPopup, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface SystemResetModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirmReset: () => void;
   isPending?: boolean;
+  children?: React.ReactNode;
 }
 
 export function SystemResetModal({
@@ -19,6 +21,7 @@ export function SystemResetModal({
   onClose,
   onConfirmReset,
   isPending = false,
+  children,
 }: SystemResetModalProps) {
   const { t } = useI18n();
   const [confirmText, setConfirmText] = React.useState("");
@@ -30,23 +33,22 @@ export function SystemResetModal({
   const handleReset = () => {
     if (!isConfirmed || isPending) return;
     onConfirmReset();
-    setConfirmText("");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-md rounded-none border-1.5 border-black bg-white shadow-neo overflow-hidden animate-in zoom-in-95">
+    <DialogRoot open={isOpen} onOpenChange={open => { if (!open && !isPending) onClose(); }}>
+      <DialogPortal><DialogBackdrop />
+      <DialogPopup className="max-w-md rounded-none border-[3px] border-ink bg-white shadow-hard-lg overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-ink bg-amber-50 px-5 py-4">
           <div className="flex items-center gap-2 text-amber-700">
             <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0" />
-            <h2 className="font-heading text-base font-bold text-slate-900">
-              Reset Standar Pengaturan Warung
-            </h2>
+            <DialogTitle className="font-heading text-base font-bold text-slate-900">{t.settings.resetTitle}</DialogTitle>
           </div>
           <button
             type="button"
             onClick={onClose}
+            aria-label={t.common.cancel}
             disabled={isPending}
             className="rounded-none p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-900 disabled:opacity-50"
           >
@@ -56,9 +58,7 @@ export function SystemResetModal({
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Tindakan ini akan mengembalikan profil warung, zona waktu, dan ambang batas bawaan pembuatan produk ke standar awal (Pcs, 15 unit, WIB).
-          </p>
+          <DialogDescription className="text-xs text-slate-600 leading-relaxed">{t.settings.resetWarningDesc}</DialogDescription>
 
           <div className="rounded-none border border-emerald-200 bg-emerald-50 p-3.5 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
@@ -87,6 +87,8 @@ export function SystemResetModal({
           </div>
         </div>
 
+        {children && <div className="px-5 pb-4 space-y-3">{children}</div>}
+
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 border-t border-ink bg-slate-50 px-5 py-3.5">
           <Button
@@ -111,10 +113,10 @@ export function SystemResetModal({
             className="h-9 border-1.5 border-black bg-amber-600 font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-amber-700 disabled:opacity-40 disabled:shadow-none"
           >
             <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />{" "}
-            {isPending ? "Mereset..." : "Reset Standar Toko"}
+            {isPending ? t.products.persistent.pending : t.settings.resetSubmit}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogPopup></DialogPortal>
+    </DialogRoot>
   );
 }

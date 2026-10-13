@@ -49,19 +49,25 @@ import {
 } from "../src/features/dashboard/schemas/dashboard-rpc.schema";
 
 // Reports RPC schema validations
-assert.ok(ValuationReportInputSchema.safeParse({}).success);
-assert.ok(ValuationReportInputSchema.safeParse({ search: "kopi", category: "Minuman" }).success);
+assert.ok(ValuationReportInputSchema.safeParse({ mode: "screen" }).success);
+assert.ok(ValuationReportInputSchema.safeParse({ mode: "screen", search: "kopi", category: "Minuman" }).success);
 assert.equal(ValuationReportInputSchema.safeParse({ unknownKey: true }).success, false);
 
-assert.ok(MovementReportInputSchema.safeParse({ startDate: "2026-09-01", endDate: "2026-10-01" }).success);
+assert.ok(MovementReportInputSchema.safeParse({ mode: "screen", startDate: "2026-09-01", endDate: "2026-10-01", expectedTimezone: "Asia/Jakarta" }).success);
+assert.equal(MovementReportInputSchema.safeParse({ startDate: "2026-09-01", endDate: "2026-10-01" }).success, false);
+assert.ok(MovementReportInputSchema.safeParse({ mode: "summary", startDate: "2026-09-01", endDate: "2026-10-01", expectedTimezone: "Asia/Makassar" }).success);
+assert.equal(ValuationReportInputSchema.safeParse({ mode: "summary", pageSize: 100 }).success, false);
+assert.equal(LowStockReportInputSchema.safeParse({ mode: "export", page: 1 }).success, false);
+assert.equal(LowStockReportInputSchema.safeParse({ mode: "screen", pageSize: 101 }).success, false);
 assert.equal(MovementReportInputSchema.safeParse({ startDate: "bad-date", endDate: "2026-10-01" }).success, false);
 assert.equal(MovementReportInputSchema.safeParse({}).success, false);
 
-assert.ok(LowStockReportInputSchema.safeParse({}).success);
-assert.ok(LowStockReportInputSchema.safeParse({ search: "beras" }).success);
+assert.ok(LowStockReportInputSchema.safeParse({ mode: "screen" }).success);
+assert.ok(LowStockReportInputSchema.safeParse({ mode: "screen", search: "beras" }).success);
 
 assert.ok(ExportReportInputSchema.safeParse({ kind: "valuation" }).success);
-assert.ok(ExportReportInputSchema.safeParse({ kind: "movements", startDate: "2026-09-01", endDate: "2026-10-01" }).success);
+assert.ok(ExportReportInputSchema.safeParse({ kind: "movements", startDate: "2026-09-01", endDate: "2026-10-01", expectedTimezone: "Asia/Jakarta" }).success);
+assert.equal(ExportReportInputSchema.safeParse({ kind: "movements", expectedTimezone: "America/New_York" }).success, false);
 assert.equal(ExportReportInputSchema.safeParse({ kind: "unsupported" }).success, false);
 
 // Settings RPC schema validations (Ticket 6)

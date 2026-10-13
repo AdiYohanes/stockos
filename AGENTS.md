@@ -21,7 +21,9 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 12, Operational Readiness (isolated local proof and runbook)**
+**Implementation phase: Backend Foundation — local correctness hardening (approved 2026-10-11)**
+
+Implementation request authorizes the local repair plan `whimsical-humming-cray.md`: mutation retry/conflict guards, report accuracy and bounded reads/CSV, Settings-driven product defaults, targeted unused-runtime cleanup, and isolated synthetic-data regression proof. Use new forward migrations only. Cloud, deployment, external SMTP, paid resources, production use, and real-shop data remain excluded. Ticket 12 local operational readiness is completed; its external gates remain blocked.
 
 Ticket 12 implementation approved 2026-10-11 for environment/secrets separation, forward migration proof, independent local backup/restore drill, capacity/cost evaluation, and recovery/operations runbook. SMTP is harness-only: external delivery proof remains blocked until provider/recipient and sending authorization are supplied. Tickets 9–11 are completed prerequisites. Cloud provisioning, Vercel deployment, paid resources, production launch, real-shop data/import, and domain feature changes are excluded.
 
