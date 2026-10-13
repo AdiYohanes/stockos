@@ -60,13 +60,13 @@ def http(path, body=None, token=None, admin=False, method="POST"):
             text = response.read()
             return json.loads(text) if text else None
     except HTTPError as e:
-        err_body = e.read().decode("utf-8", errors="replace")
-        raise AssertionError(f"Fixture provider request rejected ({e.code}): {err_body}") from None
+        e.read()
+        raise AssertionError(f"Fixture provider request rejected ({e.code}); body suppressed") from None
 
 
 def rpc(name, data):
     result = http(f"/rest/v1/rpc/stockos_{name}", {"p_input": data}, TOKEN)
-    assert result.get("ok") is True, f"Public RPC rejected: {result}"
+    assert result.get("ok") is True, f"Public RPC rejected: {result.get('code', 'unknown')}"
     return result["data"]
 
 
@@ -112,7 +112,19 @@ def cleanup():
     products = "ARRAY[" + ",".join(quote(value) for value in PRODUCTS) + "]::uuid[]" if PRODUCTS else "ARRAY[]::uuid[]"
     user = quote(USER) + "::uuid" if USER else "NULL::uuid"
     sql(f"""BEGIN;
-      LOCK TABLE stockos_private.owner_registration, stockos_private.shop_settings IN EXCLUSIVE MODE;
+      LOCK TABLE stockos_private.owner_registration, stockos_private.shop_settings, stockos_private.products,
+        stockos_private.inventory_events, stockos_private.administrative_events, stockos_private.mutation_requests IN EXCLUSIVE MODE;
+      DO $guard$ BEGIN
+        IF EXISTS (SELECT 1 FROM stockos_private.owner_registration WHERE id <> 1 OR
+          (state <> 'unclaimed' AND (email IS DISTINCT FROM {quote(EMAIL)} OR auth_user_id IS DISTINCT FROM {user})))
+          OR EXISTS (SELECT 1 FROM stockos_private.shop_settings WHERE id <> 1 OR name <> {quote(SHOP)})
+          OR EXISTS (SELECT 1 FROM auth.users WHERE id IS DISTINCT FROM {user} OR email <> {quote(EMAIL)})
+          OR EXISTS (SELECT 1 FROM stockos_private.products WHERE NOT (id = ANY({products})))
+          OR EXISTS (SELECT 1 FROM stockos_private.inventory_events WHERE NOT (product_id = ANY({products})) OR actor_id IS DISTINCT FROM {user})
+          OR EXISTS (SELECT 1 FROM stockos_private.administrative_events WHERE actor_id IS DISTINCT FROM {user} OR (product_id IS NOT NULL AND NOT (product_id = ANY({products}))))
+          OR EXISTS (SELECT 1 FROM stockos_private.mutation_requests WHERE actor_id IS DISTINCT FROM {user})
+        THEN RAISE EXCEPTION 'Refuse cleanup of unknown fixture records'; END IF;
+      END $guard$;
       DELETE FROM stockos_private.inventory_events WHERE product_id = ANY({products}) OR actor_id = {user};
       DELETE FROM stockos_private.administrative_events WHERE product_id = ANY({products}) OR actor_id = {user};
       DELETE FROM stockos_private.products WHERE id = ANY({products});
@@ -201,7 +213,7 @@ def run():
     assert "Makanan" in cat_names and "Minuman" in cat_names
 
     # Test RPC: Movement
-    mov = rpc("get_movement_report", {"startDate": "2026-09-01", "endDate": "2026-10-15"})
+    mov = rpc("get_movement_report", {"mode": "screen", "startDate": "2026-09-01", "endDate": "2026-10-15", "expectedTimezone": "Asia/Jakarta"})
     assert mov["summary"]["totalStockInQty"] >= 10
     assert mov["summary"]["totalStockOutQty"] >= 5
     assert mov["summary"]["totalOpnameDelta"] == 1
@@ -236,8 +248,8 @@ def run():
         expect(page.get_by_role("cell", name="Makanan")).to_be_visible()
         expect(page.get_by_role("cell", name="Minuman")).to_be_visible()
 
-        # 3. Switch to Stock Movement tab
-        page.get_by_role("button", name=re.compile(r"(Stock Movement|Pergerakan)", re.I)).click()
+        # 3. Switch to Stock Movement tab (anchored: metric card "Volume Pergerakan …" must not match)
+        page.get_by_role("button", name=re.compile(r"^(Stock Movement|Pergerakan Stok)$", re.I)).click()
         page.wait_for_selector(f"text={prod_a['sku']}", timeout=10000)
         expect(page.get_by_text(prod_a["sku"]).first).to_be_visible()
         expect(page.get_by_text("+10").first).to_be_visible()
@@ -253,10 +265,72 @@ def run():
         # 5. Open Export Modal
         page.get_by_role("button", name=re.compile(r"(Export|Ekspor)", re.I)).first.click()
         expect(page.get_by_text("Export Data Laporan")).to_be_visible()
-        expect(page.get_by_text(re.compile(r"RFC 4180", re.I))).to_be_visible()
-        # Close modal
-        page.get_by_role("button", name=re.compile(r"(Batal|Cancel)", re.I)).click()
+        export_dialog = page.get_by_role("dialog")
+        expect(export_dialog.get_by_text(re.compile(r"10.000 baris", re.I))).to_be_visible()
+        expect(export_dialog.get_by_text(re.compile(r"hanya halaman terlihat", re.I))).to_be_visible()
+        with page.expect_download() as downloading:
+            page.get_by_role("button", name="Unduh CSV", exact=True).click()
+        download = downloading.value
+        assert download.suggested_filename.startswith("stockos-low-stock-")
+        csv_content = Path(download.path()).read_text(encoding="utf-8")
+        assert prod_b["sku"] in csv_content and prod_c["sku"] in csv_content
+        expect(page.get_by_role("status")).to_contain_text("Unduhan dimulai")
+        page.get_by_role("button", name=re.compile(r"(Tutup|Close)", re.I)).click()
 
+        # Literal name/SKU/%/_ filters and CSV use identical result membership.
+        sql(f"UPDATE stockos_private.products SET name='Literal %_' WHERE id={quote(prod_c['id'])}::uuid")
+        for tab in ("velocity", "reorder"):
+            for query in (prod_c["sku"], "Literal %_", "%", "_"):
+                from urllib.parse import urlencode
+                page.goto(BASE + "/reports?" + urlencode({"tab": tab, "q": query}))
+                expect(page.get_by_role("cell", name=prod_c["sku"], exact=True)).to_be_visible()
+                expect(page.get_by_role("cell", name=prod_b["sku"], exact=True)).to_have_count(0)
+                page.get_by_role("button", name=re.compile(r"(Export|Ekspor)", re.I)).first.click()
+                with page.expect_download() as filtered_download:
+                    page.get_by_role("button", name="Unduh CSV", exact=True).click()
+                filtered_csv = Path(filtered_download.value.path()).read_text(encoding="utf-8")
+                assert prod_c["sku"] in filtered_csv and prod_b["sku"] not in filtered_csv
+                page.get_by_role("button", name=re.compile(r"(Tutup|Close)", re.I)).click()
+
+        # A failed Server Action must keep export dialog open and permit explicit retry.
+        page.get_by_role("button", name=re.compile(r"(Export|Ekspor)", re.I)).first.click()
+        def reject_action(route):
+            if route.request.method == "POST" and route.request.headers.get("next-action"):
+                route.abort("failed")
+            else:
+                route.continue_()
+        page.route("**/*", reject_action)
+        page.get_by_role("button", name="Unduh CSV", exact=True).click()
+        expect(page.get_by_role("alert")).to_be_visible()
+        expect(page.get_by_role("dialog")).to_be_visible()
+        expect(page.get_by_role("button", name="Unduh CSV", exact=True)).to_be_enabled()
+        errors.clear()  # Intentional aborted Server Action tested above, not an unrelated runtime defect.
+        page.unroute("**/*", reject_action)
+        with page.expect_download():
+            page.get_by_role("button", name="Unduh CSV", exact=True).click()
+        expect(page.get_by_role("status")).to_contain_text("Unduhan dimulai")
+        page.get_by_role("button", name=re.compile(r"(Tutup|Close)", re.I)).click()
+
+        # Existing fixture owns additional synthetic low-stock rows for bounded UI pages.
+        bulk_ids = [str(uuid.uuid4()) for _ in range(103)]
+        PRODUCTS.update(bulk_ids)
+        values = ",".join(f"({quote(id)}::uuid,{quote(PREFIX + '-PAGE-' + str(index))},'Pagination proof','Proof','Pcs',1,5)" for index, id in enumerate(bulk_ids))
+        sql("INSERT INTO stockos_private.products(id,sku,name,category,unit,selling_price,min_stock) VALUES " + values)
+        page.goto(BASE + "/reports?tab=reorder&q=Pagination%20proof&pageSize=25")
+        expect(page.locator("tbody tr")).to_have_count(25)
+        page.get_by_role("button", name=re.compile(r"^(Selanjutnya|Next)$")).click()
+        page.wait_for_url(re.compile(r"page=2"))
+        expect(page.locator("tbody tr")).to_have_count(25)
+        page.locator('input[type="text"]').fill(prod_c["sku"])
+        page.wait_for_url(lambda url: "page=2" not in url and prod_c["sku"] in url)
+        expect(page.get_by_role("cell", name=prod_c["sku"], exact=True)).to_be_visible()
+
+        page.set_viewport_size({"width": 390, "height": 844})
+        for tab in ("valuation", "velocity", "reorder"):
+            page.goto(BASE + "/reports?tab=" + tab)
+            page.wait_for_selector("table")
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), f"Mobile overflow: {tab}"
+        assert not errors, "Browser runtime errors occurred"
         browser.close()
         assert not errors, f"Page errors logged during test: {errors}"
 

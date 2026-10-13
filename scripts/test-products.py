@@ -179,6 +179,11 @@ def action_result(text):
     raise AssertionError("Actual action response missing safe result envelope")
 
 
+def close_context(context):
+    context.unroute_all(behavior="wait")
+    context.close()
+
+
 def direct(context, request, payload=None):
     args = json.loads(request.post_data)
     if payload is not None:
@@ -283,19 +288,22 @@ def full(page, context, browser, item, create_request):
     assert history(item) == before
     anonymous = browser.new_context()
     assert direct(anonymous, create_request)["code"] == "UNAUTHENTICATED"
-    anonymous.close()
+    close_context(anonymous)
     other_context = browser.new_context()
     other = login(other_context)
     # Two real sessions: stale draft remains open after metadata changed elsewhere.
     row(other, item).get_by_role("button", name=re.compile(r"^(Edit|Ubah)$")).click()
     other.locator("#edit-selling-price").fill("77777")
     item, _ = edit(page, item, 88888)
+    stale = dict(json.loads(edit_request.post_data)[0], requestId=str(uuid.uuid4()))
+    print("REGRESSION secondary POST /products before context shutdown", flush=True)
+    assert direct(other_context, edit_request, stale)["code"] == "VERSION_CONFLICT"
     other.get_by_role("dialog").locator('button[type="submit"]').click()
     expect(other.get_by_role("alert")).to_be_visible(timeout=20000)
     assert other.locator("#edit-selling-price").input_value() == "77777"
     assert product(item["sku"])["sellingPrice"] == "88888"
-    other_context.close()
-    stale = dict(json.loads(edit_request.post_data)[0], requestId=str(uuid.uuid4()))
+    close_context(other_context)
+    print("REGRESSION primary POST /products after secondary context shutdown", flush=True)
     assert direct(context, edit_request, stale)["code"] == "VERSION_CONFLICT"
     # Replay old committed receipt after later sale/edit: old snapshot must not replace current state.
     before = history(item)
@@ -333,6 +341,49 @@ def full(page, context, browser, item, create_request):
     print("PASS: zero/free opening, duplicate names, carton receipt, sold/cost, price edit, strict/anonymous actions, two-session conflict, lost-response retry/replay")
 
 
+def creation_defaults(page):
+    settings = rpc("get_shop_settings", {})
+    request_id = str(uuid.uuid4())
+    REQUESTS.add(request_id)
+    payload = {key: settings[key] for key in ("name", "ownerName", "address", "phone", "timezone")}
+    payload.update(requestId=request_id, expectedVersion=settings["version"], defaultUnit="Bungkus", defaultMinStock=27)
+    rpc("update_shop_settings", payload)
+    created = []
+    for path in ("/products", "/"):
+        page.goto(BASE + path)
+        for width in (1440, 390):
+            page.set_viewport_size({"width": width, "height": 1000})
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Defaults route {path} overflow at {width}px"
+        page.set_viewport_size({"width": 1440, "height": 1000})
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+        expect(page.locator("#product-unit")).to_have_value("Bungkus")
+        expect(page.locator("#product-min-stock")).to_have_value("27")
+        page.locator("#product-unit").fill("Botol")
+        page.locator("#product-min-stock").fill("3")
+        sku = f"{PREFIX}-DEFAULT-{'HOME' if path == '/' else 'PRODUCTS'}"
+        for field, value in {"name": "Creation defaults proof", "sku": sku, "category": "Browser proof", "sell": "10000"}.items():
+            page.locator(f"#product-{field}").fill(value)
+        page.get_by_role("dialog").locator('button[type="submit"]').click()
+        expect(page.get_by_role("heading", name=re.compile(r"Produk Berhasil Ditambahkan|Product Added Successfully"))).to_be_visible(timeout=30000)
+        item = product(sku)
+        assert item["unit"] == "Botol" and item["minStock"] == 3
+        created.append(sku)
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Lain|Add Another", re.I)).click()
+        expect(page.locator("#product-unit")).to_have_value("Bungkus")
+        expect(page.locator("#product-min-stock")).to_have_value("27")
+        page.keyboard.press("Escape")
+        expect(page.get_by_role("dialog")).not_to_be_visible()
+    latest = rpc("get_shop_settings", {})
+    request_id = str(uuid.uuid4())
+    REQUESTS.add(request_id)
+    payload.update(requestId=request_id, expectedVersion=latest["version"], defaultUnit="Pcs", defaultMinStock=15)
+    rpc("update_shop_settings", payload)
+    for sku in created:
+        item = product(sku)
+        assert item["unit"] == "Botol" and item["minStock"] == 3, "New Settings changed existing product"
+    print("PASS: Settings defaults on Products/Dashboard, user overrides, Add Another, existing products unchanged, desktop/mobile")
+
+
 def run():
     provision()
     with sync_playwright() as playwright:
@@ -341,17 +392,21 @@ def run():
         page = login(context)
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
+        if "--defaults" in sys.argv:
+            creation_defaults(page)
+            browser.close()
+            return
         item, request = add(page, "VERTICAL", 10, 30000)
         assert item["currentStock"] == 10 and item["inventoryCostValue"] == "30000.000000"
         page.reload()
         page.goto(BASE + "/inventory")
-        expect(page.locator("body")).to_contain_text(re.compile(r"demo", re.I))
+        expect(page.locator("body")).not_to_contain_text(re.compile(r"demo", re.I))
         row(page, item)
         second = browser.new_context()
         other = login(second)
         row(other, item)
         assert product(item["sku"])["id"] == item["id"]
-        second.close()
+        close_context(second)
         print("PASS: verified login, actual action create, exact opening cost, reload/navigation/new-session persistence")
         if "--vertical" not in sys.argv:
             full(page, context, browser, item, request)

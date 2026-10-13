@@ -2,13 +2,17 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 12 — approved local Operational Readiness slice completed 2026-10-11; external operational gates remain blocked. Scope: isolated local forward migration and backup/restore proof, environment/secrets separation, capacity/cost evaluation, and recovery/operations runbook. SMTP harness only; external delivery proof blocked. No cloud provisioning/deployment, paid resources, production launch, real-shop data/import, or domain feature changes.
+Implementation: Backend Foundation local correctness hardening — approved 2026-10-11 through `/implement` for plan `whimsical-humming-cray.md`. Active scope: mutation guards/retry/conflict review, exact shop-local reports, shared product defaults, bounded report reads/CSV, targeted runtime cleanup, and isolated synthetic-data regression proof. New forward migrations only. No cloud, deployment, external SMTP, paid resources, production launch, or real-shop data/import.
+
+Ticket 12 local Operational Readiness completed 2026-10-11; external operational gates remain blocked.
 
 Tickets 1–11 completed local prerequisites; all feature domains use local Supabase PostgreSQL/Auth with the authentic 18-product warung catalog verified across routes. Ticket 11 lint/type/build/browser checks passed; ticket 12 local Auth/PostgreSQL operations proof, CLI self-checks and regression checks pass.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
-## Completed
+## Completed — Historical Frontend Foundation
+
+The list below records earlier frontend work, not current runtime capabilities. Later Backend Foundation ticket sections supersede mock auth/financial/settings/report behavior.
 
 - [x] Authentication UI, mock login, and protected dashboard.
 - [x] Dashboard: mock product totals, revenue, estimated net profit, out-of-stock summary, movement chart, attention list, quick actions, and stock health. Financial cards share a month-to-date demo period; net profit subtracts cost of goods sold and operating expenses. Low-stock alerts remain in stock health and the attention list.
@@ -28,11 +32,12 @@ Preparation: Backend Planning/specification — target confirmed 2026-10-09. Sup
 
 ## Data Boundaries
 
-- Products and Inventory use independent fixtures/stores; their balances are not synchronized across features.
-- Dashboard and Reports use mock analytics, not live store aggregates.
-- Settings persist in browser localStorage; Products and Inventory remain session-scoped.
-- Supplier metadata and report summaries remain. No standalone supplier management screen is active.
-- No production backend, database, authentication, or authorization has been added.
+- Products and Inventory share one authoritative local PostgreSQL stock balance through signed owner-checked RPCs.
+- Dashboard and Reports read persistent stock potentials, health, and immutable movement evidence.
+- Shared Settings persist in PostgreSQL; display/language preferences stay browser-local.
+- Retained Products/Inventory mock stores serve isolated regression checks, not runtime data.
+- Supplier remains optional product text; no supplier-management screen exists.
+- No production resources, external SMTP, deployment, or real-shop data have been introduced.
 
 ## Verification — 2026-10-08
 
@@ -64,8 +69,22 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 
 ## In Progress
 
-- Backend Foundation tickets 1 and 2 are verified against isolated local Supabase. UI/Server Action integration, full recovery, reports/settings persistence, external SMTP deliverability, cloud provisioning, and production deployment remain pending separate approval gates.
-- Final verification of ESLint warning cleanup on legacy frontend files remains pending.
+- Local correctness hardening: mutation retry/conflict review, exact shop-local Reports, creation defaults, bounded report detail/export, and unused-runtime cleanup.
+- Full isolated regression proof remains active. Two-axis review fixes are verified; static checks and production build pass. Prior tickets verify local persistence/recovery; external SMTP, cloud provisioning, deployment, and real-shop launch gates remain open.
+
+## Local Correctness Hardening — 2026-10-13
+
+- Inventory dialogs retain frozen retry requests and block closing while pending/uncertain/refresh-failed. Opname conflict review adopts the complete current product snapshot, preserves notes, and requires a fresh count.
+- Settings uses controlled baseline/draft/reviewed version state, frozen save/reset intent, read-only retry after known commits, and monotonic snapshot/review guards. Products and Dashboard receive narrow creation defaults from Settings; existing products are not rewritten.
+- Forward migrations `20261011000000_report_accuracy.sql` and `20261011010000_bounded_reports.sql` implement exact money, literal filters, shop-local dates/timezone checks, Dashboard 30-day boundaries, strict screen/summary/export modes, bounded pages, and export overflow probes. CSV remains exact, formula-safe, incremental, and limited to 10,000 rows/5 MiB. Chart Number conversion is restricted to bounded visual ratios.
+- Removed unreachable runtime providers/modals/mock modules/UI primitives and `react-hook-form`/`@hookform/resolvers`; retained Products/Inventory regression stores and catalog fixtures. Production static bundles contain no `FeatureStoresProvider`, `react-hook-form`, `zustand`, `useProductsStore`, or `useInventoryStore` matches.
+- `npm run check`, `npm run typecheck`, `npm run lint -- --max-warnings 0`, `npm run build`, and `git diff --check` pass. Node checks still emit `MODULE_TYPELESS_PACKAGE_JSON` warnings; ESLint has zero warnings.
+- Seeded CLI forward upgrade, unchanged domain/evidence/retry hashes, durable receipt replay, no-op migration, clean CLI migration replay, and private grants/RLS checks pass. Earlier targeted live Inventory/defaults proofs pass.
+- Full nine-suite proof run (2026-10-13): auth, stock, recovery, reports-contract, products, defaults, inventory completed; reports and settings initially failed on ambiguous Playwright selectors (test-harness defects, not application defects — metric cards and toolbar tabs share label fragments). Selectors anchored to toolbar tabs and export dialog; targeted reruns pass for reports and settings with verified cleanup. Final combined full run PASS_LOCAL_ONLY with coverage "full": all nine suites completed in one run, no failed or skipped suites, cleanup PASS, fixture/identity/retention guards verified.
+- Products disposal failure `APIRequestContext.post: Route.fulfill: Fetch response has been disposed` reproduced twice and proven a harness lifecycle race (in-flight route handler outliving context close), not an application bug; fixed with a drain-before-close helper (`unroute_all(behavior="wait")`) and a two-context regression assertion. Direct `APIRequestContext` writes now pass origin/identity/redirect guards (307/308 refused, `max_redirects`/`max_retries` zeroed).
+- Evidence runs classify as PASS_LOCAL_ONLY/FAIL_LOCAL_ONLY with requested/completed/failed/not-run suites, failure phase, coverage, sanitized source baseline, and cleanup verified before PASS is printed; runner self-test covers classification and write-guard rejections.
+- Review verified fixes for Settings stale-review downgrade, chart precision, proof HTTP/browser write identity guards, and provider seed redirect handling. Runner self-check covers rejected redirects, replaced resource identities, cleanup separation, and reserved/excluded/exhausted port selection. Final full nine-suite outcome recorded above.
+- No cloud, deployment, external SMTP delivery, paid resources, production launch, or real-shop data. Browser checks are targeted behavioral proofs, not a full keyboard/contrast/visual audit.
 
 ## Backend Foundation — Ticket 1 Auth (2026-10-09)
 
