@@ -26,8 +26,10 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
       case "products":
         return t.dashboard.totalProducts;
       case "revenue":
+      case "potential_revenue":
         return t.dashboard.revenue;
       case "net_profit":
+      case "potential_profit":
         return t.dashboard.estimatedNetProfit;
       case "out_of_stock":
         return t.products.outOfStock;
@@ -41,8 +43,10 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
       case "products":
         return t.dashboard.acrossCategories;
       case "revenue":
+      case "potential_revenue":
         return t.dashboard.revenueSupportingText;
       case "net_profit":
+      case "potential_profit":
         return t.dashboard.netProfitSupportingText;
       case "out_of_stock":
         return t.dashboard.zeroUnitsAvailable;

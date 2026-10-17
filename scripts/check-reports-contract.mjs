@@ -123,6 +123,11 @@ async function create(suffix, name, qty = 1, price = "100") {
 const dates = { startDate: "2026-10-01", endDate: "2026-10-08", expectedTimezone: "Asia/Jakarta" };
 async function check() {
   await provision();
+  const emptyDashboard = await good("get_dashboard");
+  for (const group of ["healthy", "lowStock", "outOfStock"]) {
+    assert.equal(BigInt(emptyDashboard.health[group].value), 0n, `Empty ${group} selling value`);
+    assert.equal(emptyDashboard.health[group].count, 0);
+  }
   const big = await create("BIG", "Besar", 1_000_000_000, "1000000000000");
   const literal = await create("LITERAL", "Literal %_", 1);
   await create("NORMAL", "Literal normal", 1);
@@ -226,7 +231,22 @@ async function check() {
   assert.equal(activity.data.length, 4);
   assert.equal(activity.data[0].stockIn, 2, "First bucket covers today-29 and today-28, excluding today-30");
   assert.ok(activity.data.every(bucket => bucket.period.includes("–")), "Actual date-range labels required");
-  console.log("Reports contract: exact numeric/literal search/timezone/date/paging/10000 boundary/security passed");
+
+  // Health values are available stock selling values, not unit prices or purchase costs.
+  await create("HEALTHY", "Health healthy", 10, "700");
+  await create("LOW", "Health low", 2, "900");
+  await create("EMPTY", "Health empty", 0, "1100");
+  const healthDashboard = await good("get_dashboard");
+  for (const [group, increase] of [["healthy", 7000n], ["lowStock", 1800n], ["outOfStock", 0n]]) {
+    assert.equal(BigInt(healthDashboard.health[group].value) - BigInt(dashboard.health[group].value), increase, `${group} available stock selling value`);
+    assert.equal(healthDashboard.health[group].count, dashboard.health[group].count + 1, `${group} product count`);
+  }
+  assert.equal(BigInt(healthDashboard.health.outOfStock.value), 0n, "Zero stock has zero selling value despite positive prices");
+  assert.equal(["healthy", "lowStock", "outOfStock"].reduce((total, group) => total + BigInt(healthDashboard.health[group].value), 0n), BigInt(healthDashboard.metrics.potentialSellingValue), "Health values reconcile with stock potential");
+  const archived = await create("ARCHIVED", "Health archived", 0, "2300");
+  await good("archive_product", { requestId: randomUUID(), productId: archived.id, expectedMetadataVersion: archived.metadataVersion, expectedStockVersion: archived.stockVersion });
+  assert.deepEqual((await good("get_dashboard")).health, healthDashboard.health, "Archived products do not affect health values, counts or percentages");
+  console.log("Reports contract: exact numeric/literal search/timezone/date/paging/10000 boundary/security/dashboard health passed");
 }
 let error;
 try { await check(); } catch (caught) { error = caught; }
