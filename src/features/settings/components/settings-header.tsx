@@ -5,11 +5,13 @@ import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings, Database } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
+import type { TimezoneCode } from "../types";
 
 interface SettingsHeaderProps {
   hasUnsavedChanges: boolean;
   lastSavedMessage: string | null;
   updatedAt: string;
+  timezone: TimezoneCode;
   version?: string;
   isSaving?: boolean;
   disabled?: boolean;
@@ -21,6 +23,7 @@ export function SettingsHeader({
   hasUnsavedChanges,
   lastSavedMessage,
   updatedAt,
+  timezone,
   version,
   isSaving = false,
   disabled = false,
@@ -36,11 +39,12 @@ export function SettingsHeader({
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        timeZone: timezone,
       });
     } catch {
-      return "08:00:00";
+      return "—";
     }
-  }, [updatedAt, language]);
+  }, [updatedAt, language, timezone]);
 
   return (
     <div className="flex flex-col gap-4 border-b border-ink pb-4">
@@ -111,7 +115,7 @@ export function SettingsHeader({
           <span className="text-slate-500">
             {t.settings.lastUpdated}
           </span>
-          <span className="font-semibold text-slate-900" suppressHydrationWarning>
+          <span className="font-semibold text-slate-900">
             {formattedDate}
           </span>
         </div>

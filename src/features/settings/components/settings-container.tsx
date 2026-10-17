@@ -143,8 +143,8 @@ export function SettingsContainer({
       if (!committed.current) {
         if (!request.current) {
           if (!intent) return;
-          const fields = intent === "reset" ? { name: "Warung Berkah", ownerName: draft.ownerName.trim() || baseline.ownerName,
-            phone: null, address: null, timezone: "Asia/Jakarta" as const, defaultUnit: "Pcs", defaultMinStock: 15 } : {
+          const fields = intent === "reset" ? { name: baseline.name, ownerName: baseline.ownerName,
+            phone: baseline.phone, address: baseline.address, timezone: baseline.timezone, defaultUnit: "Pcs", defaultMinStock: 15 } : {
             name: draft.name.trim(), ownerName: draft.ownerName.trim(), phone: draft.phone.trim() || null,
             address: draft.address.trim() || null, timezone: draft.timezone,
             defaultUnit: draft.defaultUnit.trim(), defaultMinStock: draft.defaultMinStock };
@@ -186,7 +186,7 @@ export function SettingsContainer({
         const saved = request.current?.intent;
         setBaseline(latest);
         setExpectedVersion(latest.version);
-        setDraft(settingsDraft(latest));
+        setDraft(previous => saved === "reset" ? { ...previous, defaultUnit: latest.defaultUnit, defaultMinStock: latest.defaultMinStock } : settingsDraft(latest));
         setCurrent(null);
         setConflict(false);
         setRefreshFailed(false);
@@ -233,6 +233,7 @@ export function SettingsContainer({
         hasUnsavedChanges={hasUnsavedChanges}
         lastSavedMessage={saveMessage}
         updatedAt={updatedAt}
+        timezone={baseline.timezone}
         version={currentVersion}
         isSaving={pending}
         disabled={blocked || conflict}

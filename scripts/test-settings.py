@@ -144,11 +144,26 @@ def run():
         assert settings(g)["version"] == committed["version"]
         page.unroute("**/settings*", capture_refresh)
 
+        page.locator("#ownerName").fill("Pemilik Pengujian")
+        page.locator("#address").fill("Alamat pengujian sintetis")
+        page.get_by_role("combobox").click()
+        page.get_by_role("option", name="WITA — Asia/Makassar (UTC+8)").click()
+        save(page)
+        profile_fields = ("name", "ownerName", "phone", "address", "timezone")
+        saved_profile = {key: settings(g)[key] for key in profile_fields}
+
         button(page, "Aturan Stok & Valuasi|Stock Rules & Valuation").click()
         page.locator("#defaultLowStockThreshold").fill("27")
         page.locator("#defaultUnit").fill("Bungkus")
         save(page)
         assert settings(g)["defaultMinStock"] == 27
+        button(page, "Profil Usaha|Store Profile").click()
+        dirty_profile = {"companyName": "Warung Draft Belum Disimpan", "ownerName": "Pemilik Draft",
+                         "phone": "08333333333", "address": "Alamat draft belum disimpan"}
+        for field, value in dirty_profile.items():
+            page.locator("#" + field).fill(value)
+        page.get_by_role("combobox").click()
+        page.get_by_role("option", name="WIT — Asia/Jayapura (UTC+9)").click()
         button(page, "Reset Data & Standar|Reset System Data").click()
         page.locator("#confirmReset").fill("RESET")
         lost.clear()
@@ -169,8 +184,20 @@ def run():
         expect(dialog).not_to_be_visible(timeout=30000)
         assert settings(g)["version"] == committed["version"]
         assert settings(g)["defaultMinStock"] == 15 and settings(g)["defaultUnit"] == "Pcs"
+        assert {key: settings(g)[key] for key in profile_fields} == saved_profile, "Defaults reset must preserve saved shop profile and timezone"
+        for field, value in dirty_profile.items():
+            expect(page.locator("#" + field)).to_have_value(value)
+        expect(page.get_by_role("combobox")).to_contain_text("Asia/Jayapura")
+        expect(button(page, "^Simpan Pengaturan$|^Save Settings$")).to_be_enabled()
+        button(page, "Aturan Stok & Valuasi|Stock Rules & Valuation").click()
         expect(page.locator("#defaultLowStockThreshold")).to_have_value("15")
         expect(page.locator("#defaultUnit")).to_have_value("Pcs")
+        page.reload()
+        button(page, "Profil Usaha|Store Profile").click()
+        for field, key in (("companyName", "name"), ("ownerName", "ownerName"), ("phone", "phone"), ("address", "address")):
+            expect(page.locator("#" + field)).to_have_value(saved_profile[key])
+        expect(page.get_by_role("combobox")).to_contain_text("Asia/Makassar")
+        expect(button(page, "^Simpan Pengaturan$|^Save Settings$")).to_be_disabled()
         for width in (1440, 390):
             page.set_viewport_size({"width": width, "height": 1000})
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Settings overflow"
