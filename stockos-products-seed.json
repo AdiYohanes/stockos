@@ -6,9 +6,9 @@
     "unit": "Pcs",
     "minStock": 0,
     "sellingPrice": "5000",
-    "openingQuantity": 24,
-    "purchaseTotal": "97500",
-    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+    "openingQuantity": 48,
+    "purchaseTotal": "195000",
+    "description": "Nama sumber menggabungkan beberapa varian. Akumulasi stok: 24 pcs (modal Rp97.500) + restock 24 pcs (modal Rp97.500)."
   },
   {
     "sku": "AIC-002",
@@ -27,19 +27,19 @@
     "unit": "Pcs",
     "minStock": 0,
     "sellingPrice": "3000",
-    "openingQuantity": 100,
-    "purchaseTotal": "160000"
+    "openingQuantity": 150,
+    "purchaseTotal": "240000",
+    "description": "Akumulasi stok: 100 pcs (modal Rp160.000) + restock 50 pcs (modal Rp80.000). Total 150 pcs."
   },
   {
     "sku": "AIC-004",
-    "name": "Aice Sundae Chocolate / Strawberry",
+    "name": "Aice Sundae Choco",
     "category": "Makanan Ringan",
     "unit": "Pcs",
     "minStock": 0,
     "sellingPrice": "5000",
     "openingQuantity": 48,
-    "purchaseTotal": "194400",
-    "description": "Nama sumber menggabungkan beberapa varian; stok dan modal belum dipisah per varian."
+    "purchaseTotal": "194400"
   },
   {
     "sku": "AIC-005",
@@ -274,6 +274,17 @@
     "purchaseTotal": "80200"
   },
   {
+    "sku": "JLY-001",
+    "name": "Jelly Panjang",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 10,
+    "purchaseTotal": "7000",
+    "description": "Permen jelly stik panjang kemasan individuan."
+  },
+  {
     "sku": "PRM-001",
     "name": "Lolly Jelly Candy",
     "category": "Makanan Ringan",
@@ -285,7 +296,7 @@
   },
   {
     "sku": "PRM-002",
-    "name": "Cokelat Sikat Gigi",
+    "name": "Permen Varian Awal Lainnya",
     "category": "Makanan Ringan",
     "unit": "Pcs",
     "minStock": 0,
@@ -365,6 +376,39 @@
     "purchaseTotal": "40000"
   },
   {
+    "sku": "PRM-010",
+    "name": "Permen Sikat",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "45000",
+    "description": "Permen sikat kemasan kecil, varian permen lokal warung."
+  },
+  {
+    "sku": "PRM-011",
+    "name": "Permen Kipas",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "35000",
+    "description": "Permen kipas warna-warni kemasan kecil, varian permen lokal warung."
+  },
+  {
+    "sku": "PRM-012",
+    "name": "Permen Kampus",
+    "category": "Makanan Ringan",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "2000",
+    "openingQuantity": 30,
+    "purchaseTotal": "45000",
+    "description": "Permen kampus gula asam kemasan kecil, varian permen lokal warung."
+  },
+  {
     "sku": "TMB-001",
     "name": "Wota",
     "category": "Minuman",
@@ -397,7 +441,7 @@
   },
   {
     "sku": "TMB-004",
-    "name": "Cimory Gelas",
+    "name": "Item Tambahan Awal Lainnya",
     "category": "Minuman",
     "unit": "Pcs",
     "minStock": 0,
@@ -414,5 +458,38 @@
     "sellingPrice": "3000",
     "openingQuantity": 48,
     "purchaseTotal": "41000"
+  },
+  {
+    "sku": "TMB-006",
+    "name": "Gelas 16 oz",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "11500",
+    "openingQuantity": 4,
+    "purchaseTotal": "38000",
+    "description": "Gelas plastik 16 oz untuk es dan minuman dingin."
+  },
+  {
+    "sku": "TMB-007",
+    "name": "Sedotan Running Kecil",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "10000",
+    "openingQuantity": 1,
+    "purchaseTotal": "8100",
+    "description": "Sedotan running kecil berwarna untuk minuman dingin, termasuk paket aksesori."
+  },
+  {
+    "sku": "TMB-008",
+    "name": "Sagu Mutiara",
+    "category": "Minuman",
+    "unit": "Pcs",
+    "minStock": 0,
+    "sellingPrice": "3500",
+    "openingQuantity": 2,
+    "purchaseTotal": "4400",
+    "description": "Sagu mutiara siap masak sebagai topping es dan minuman."
   }
 ]

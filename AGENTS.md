@@ -21,6 +21,10 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
+**Opening-stock import approved 2026-10-17:** prepare a guarded operator CLI for the exact existing 48-row `stockos-products-seed.json` into project `ohltpkxtucchqezkgfok`. Owner runs apply privately with normal password authentication; durable request IDs and resume are mandatory. This supersedes the earlier real-import exclusion only for this batch, not production launch, deployment, paid resources, email sending, destructive cleanup, or local proof runners against Cloud. Resend SMTP was configured separately by the owner; sending remains unapproved. See `docs/OPERATIONS.md`.
+
+**Narrow exception approved 2026-10-17:** configure the existing dedicated private-test Supabase Cloud project `ohltpkxtucchqezkgfok`, apply reviewed existing forward migrations, and connect the local Next.js app. Supabase Auth built-in mail is test-only; confirm the eligible organization-team inbox and sending permission before invitation/recovery. No new project, tier change, Vercel deployment, custom SMTP, Clerk, real-shop import/use, reset, or hosted seed/proof runner. Historical local-only approvals below remain scoped to their original slices. See `docs/OPERATIONS.md` for the Cloud/local procedure.
+
 **Implementation phase: Backend Foundation — local correctness hardening (approved 2026-10-11)**
 
 Implementation request authorizes the local repair plan `whimsical-humming-cray.md`: mutation retry/conflict guards, report accuracy and bounded reads/CSV, Settings-driven product defaults, targeted unused-runtime cleanup, and isolated synthetic-data regression proof. Use new forward migrations only. Cloud, deployment, external SMTP, paid resources, production use, and real-shop data remain excluded. Ticket 12 local operational readiness is completed; its external gates remain blocked.
