@@ -22,19 +22,19 @@ export function UserMenu({ user }: UserMenuProps) {
     .slice(0, 2);
 
   return (
-    <div className="flex items-center gap-2.5 sm:gap-3">
-      <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-slate-100 font-mono tabular-nums text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {initials || <UserIcon className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />}
+    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center border-[2px] border-ink bg-paper font-mono tabular-nums text-xs font-bold text-ink">
+          {initials || <UserIcon className="h-3.5 w-3.5 text-ink" />}
         </div>
-        <div className="hidden flex-col text-left sm:flex">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-foreground">{displayName}</span>
-            <span className="rounded-sm border border-slate-200 bg-slate-100 px-1 py-0.2 font-mono tabular-nums text-[9px] font-medium uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
+        <div className="hidden min-w-0 max-w-[180px] xl:max-w-none flex-col text-left sm:flex">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-xs font-bold text-foreground">{displayName}</span>
+            <span className="shrink-0 border border-ink/40 bg-paper px-1 py-0.5 font-mono tabular-nums text-[9px] font-bold uppercase tracking-wider text-ink/70">
               {displayRole}
             </span>
           </div>
-          <span className="text-[11px] font-mono tabular-nums text-muted-foreground">{displayEmail}</span>
+          <span className="truncate text-[11px] font-mono tabular-nums text-muted-foreground">{displayEmail}</span>
         </div>
       </div>
 

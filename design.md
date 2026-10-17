@@ -1,6 +1,6 @@
 ---
 name: StockOS
-description: Hard Neobrutalist operational inventory management and Mini ERP
+description: Hard Neobrutalist stock management for one small shop
 ---
 
 <!-- SEED: established with the user before implementation; re-run /impeccable document once there's code to capture the actual tokens and components. -->
@@ -35,7 +35,7 @@ The palette is aggressive, high-contrast, and strictly limited to maximize impac
 - **Healthy / In-Stock** (Vibrant Green: `#00e676` or similar)
 - **Warning / Low Stock** (Bright Orange: `#ff9100`)
 - **Critical / Out of Stock** (Loud Red: `#ff1744`)
-- **Info / Transfer** (Electric Blue: `#2979ff`)
+- **Info / Stock Activity** (Electric Blue: `#2979ff`)
 
 ## Typography
 

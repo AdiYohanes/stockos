@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { Package, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "../format";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import type { ProductMetrics } from "../types";
@@ -30,7 +31,7 @@ export function ProductsMetrics({
       id: "all" as const,
       title: t.products.totalCatalog,
       value: formatNumber(metrics.totalProducts),
-      meta: `${t.products.valuation}: ${formatCurrency(metrics.totalValuation)}`,
+      meta: `${t.products.persistent.inventoryCostValue}: ${formatProductMoney(metrics.totalValuation)}`,
       icon: Package,
       statusDot: null,
     },
@@ -70,6 +71,7 @@ export function ProductsMetrics({
           <button
             key={item.id}
             type="button"
+            aria-pressed={isSelected}
             onClick={() => onSelectStatus && onSelectStatus(item.id)}
             className={cn(
               "press group relative flex flex-col justify-between p-4 sm:p-5 text-left transition-colors cursor-pointer border-[3px] border-ink shadow-hard-sm",

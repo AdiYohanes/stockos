@@ -21,7 +21,25 @@ Avoid introducing enterprise ERP complexity unless it is explicitly required by 
 
 ## Current Development Phase
 
-**Implementation phase: Backend Foundation — ticket 1, single-owner authentication only**
+**Opening-stock import approved 2026-10-17:** prepare a guarded operator CLI for the exact existing 48-row `stockos-products-seed.json` into project `ohltpkxtucchqezkgfok`. Owner runs apply privately with normal password authentication; durable request IDs and resume are mandatory. This supersedes the earlier real-import exclusion only for this batch, not production launch, deployment, paid resources, email sending, destructive cleanup, or local proof runners against Cloud. Resend SMTP was configured separately by the owner; sending remains unapproved. See `docs/OPERATIONS.md`.
+
+**Narrow exception approved 2026-10-17:** configure the existing dedicated private-test Supabase Cloud project `ohltpkxtucchqezkgfok`, apply reviewed existing forward migrations, and connect the local Next.js app. Supabase Auth built-in mail is test-only; confirm the eligible organization-team inbox and sending permission before invitation/recovery. No new project, tier change, Vercel deployment, custom SMTP, Clerk, real-shop import/use, reset, or hosted seed/proof runner. Historical local-only approvals below remain scoped to their original slices. See `docs/OPERATIONS.md` for the Cloud/local procedure.
+
+**Implementation phase: Backend Foundation — local correctness hardening (approved 2026-10-11)**
+
+Implementation request authorizes the local repair plan `whimsical-humming-cray.md`: mutation retry/conflict guards, report accuracy and bounded reads/CSV, Settings-driven product defaults, targeted unused-runtime cleanup, and isolated synthetic-data regression proof. Use new forward migrations only. Cloud, deployment, external SMTP, paid resources, production use, and real-shop data remain excluded. Ticket 12 local operational readiness is completed; its external gates remain blocked.
+
+Ticket 12 implementation approved 2026-10-11 for environment/secrets separation, forward migration proof, independent local backup/restore drill, capacity/cost evaluation, and recovery/operations runbook. SMTP is harness-only: external delivery proof remains blocked until provider/recipient and sending authorization are supplied. Tickets 9–11 are completed prerequisites. Cloud provisioning, Vercel deployment, paid resources, production launch, real-shop data/import, and domain feature changes are excluded.
+
+Ticket 11 implementation completed 2026-10-11: authentic Indonesian warung wording validation across UI routes and translation dictionaries (eliminated remaining logistics terms in favor of warung terminology), canonical categories and units autocomplete integration in product modals, automated Playwright browser validation across all 5 routes (Dashboard, Products, Inventory, Reports, Settings), verified financial valuations and health metrics, desktop (1440px) and mobile (390px) responsive layout checks with zero horizontal overflow, and dedicated local launcher script (`scripts/launch-warung-proof.py`). Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+
+Ticket 10 implementation completed 2026-10-11: small-shop (warung) wording validation across i18n translations (eliminated enterprise/industrial remnants), canonical warung categories and base units definition, representative 18-product authentic Indonesian small-shop catalog conforming to `CreateProductInputSchema`, automated TDD test validation script (`scripts/check-warung-catalog.mjs`), and local Supabase seeding script (`scripts/seed-warung-catalog.mjs`). Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+
+Ticket 9 implementation completed 2026-10-11: full repository zero-warning/zero-error ESLint cleanup, private schema function grant fixes (`stockos_private.shop_settings_dto`), Next.js production build, domain store/metric and schema validations, and two-axis code review. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+
+Ticket 8 implementation approved 2026-10-10: provider-verified owner recovery, session-bound invitation/recovery purpose checks, password completion, global owner-session revocation, and real isolated local Auth/browser proof. Recovery requires fresh password login after completion. Cloud, external SMTP, deployment, and real-shop use remain outside this slice.
+
+Ticket 7 implementation approved 2026-10-10: persistent Dashboard reads (`stockos_get_dashboard`), authoritative Server Components, glossary-defined Potensi Pendapatan and Potensi Laba Kotor, live inventory health distributions, bounded attention items, 7d/30d movement activity, and quick actions wired to persistent mutation modals with optimistic refresh. Cloud, deployment, and real-shop use remain outside this slice.
 
 **Other features: Frontend Foundation mocks; remaining backend planning is not implementation authorization**
 
@@ -29,7 +47,7 @@ Explicit implementation approval received 2026-10-09 for secret-protected owner 
 
 Backend target is confirmed for one owner/warung, Supabase PostgreSQL/Auth, Next.js Server Components/Server Actions, and Vercel. Documentation/specification preparation and GitHub issue publication are authorized, not implementation. Read `docs/BACKEND_PLAN.md` for gates, `docs/DATABASE.md` for constraints/transactions, `docs/API_CONTRACT.md` for operation boundaries, `docs/FULLSTACK_SPEC.md` for acceptance/testing, and `GLOSSARY.md` for domain terms. Distinguish approved target from actual mock runtime.
 
-Backend application code, migrations, authentication, infrastructure, and dependencies are permitted only within the explicitly approved ticket 1 scope above. All other backend work requires separate explicit approval. Existing frontend verification gaps remain open.
+Ticket 2 implementation approved 2026-10-09: private products, inventory/administrative evidence, durable mutation requests, owner-checked product lifecycle and stock/modal RPCs, bounded product/history reads, and real isolated local Supabase contract tests. Local disposable proof resources and the minimum auth migration replay fix are authorized. UI/Server Action integration, password recovery, reports/settings persistence, cloud provisioning, deployment, and real-shop use are not authorized. Existing frontend verification gaps remain open.
 
 Current implemented scope:
 
@@ -38,9 +56,18 @@ Current implemented scope:
 - Feature flows
 - Responsive behavior
 - Mock data
-- Local Supabase owner authentication (ticket 1); provider/application verification in progress
+- Local Supabase owner authentication (ticket 1)
+- Local private product/stock schema and owner-checked lifecycle/stock/modal RPCs (ticket 2)
+- Local Products persistent backend integration (ticket 3)
+- Local Inventory persistent backend integration (ticket 4)
+- Local Reports persistent backend integration (ticket 5)
+- Local Settings persistent backend integration (ticket 6)
+- Local Dashboard persistent backend integration (ticket 7)
+- Local owner password recovery with all-session revocation (ticket 8)
+- Local private fullstack release & comprehensive verification (ticket 9 / Gate D)
+- Sample warung catalog & wording validation (ticket 10)
 
-Product/inventory/report persistence and production readiness are not implemented. Authentication no longer uses mock cookies; other feature data remains mocked.
+Authentication, products, inventory, reports, settings, and dashboard use local Supabase PostgreSQL; production readiness/deployment is not implemented.
 
 Do not move into backend implementation unless explicitly requested.
 
@@ -315,7 +342,7 @@ Do not treat temporary frontend types as final database models.
 
 ## Authentication
 
-Authentication is currently development-only and mocked.
+Authentication uses isolated local Supabase (ticket 1), not mock cookies. Remaining feature UI data is mocked; production auth/deployment is not authorized.
 
 Keep authentication logic isolated inside the established authentication feature.
 

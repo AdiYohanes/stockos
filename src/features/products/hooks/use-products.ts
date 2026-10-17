@@ -1,267 +1,36 @@
 "use client";
 
-import * as React from "react";
-import type {
-  Product,
-  ProductFilterState,
-  ProductMetrics,
-  ProductSortField,
-  ProductStatus,
-} from "../types";
-import { useProductsStore } from "@/components/providers/feature-stores-provider";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import type { ProductFilterState, ProductSortField } from "../types";
 
-export interface UseProductsReturn {
-  products: Product[];
-  filteredProducts: Product[];
-  paginatedProducts: Product[];
-  metrics: ProductMetrics;
-  filterState: ProductFilterState;
-  totalPages: number;
-  totalFilteredCount: number;
-  selectedProduct: Product | null;
-  productToEdit: Product | null;
-  productToDelete: Product | null;
-  hasActiveFilters: boolean;
+export function useProducts(filterState: ProductFilterState) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
 
-  // State setters
-  setSelectedProduct: (product: Product | null) => void;
-  setProductToEdit: (product: Product | null) => void;
-  setProductToDelete: (product: Product | null) => void;
-  setSearchQuery: (query: string) => void;
-  setCategory: (category: string) => void;
-  setStatus: (status: "all" | ProductStatus) => void;
-  setSorting: (field: ProductSortField) => void;
-  setPage: (page: number) => void;
-  resetFilters: () => void;
-
-  // CRUD actions
-  addProduct: (productData: import("../schemas/product.schema").CreateProductInput) => Product;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  recordMovement: (
-    productId: string,
-    type: "in" | "out",
-    quantity: number,
-    reference: string,
-    note?: string
-  ) => void;
-}
-
-const INITIAL_FILTER_STATE: ProductFilterState = {
-  searchQuery: "",
-  category: "all",
-  status: "all",
-  sortField: "name",
-  sortOrder: "asc",
-  page: 1,
-  pageSize: 10,
-};
-
-export function useProducts(): UseProductsReturn {
-  const products = useProductsStore((state) => state.products);
-  const addProduct = useProductsStore((state) => state.addProduct);
-  const updateProduct = useProductsStore((state) => state.updateProduct);
-  const deleteProduct = useProductsStore((state) => state.deleteProduct);
-  const recordMovement = useProductsStore((state) => state.recordMovement);
-  const [filterState, setFilterState] = React.useState<ProductFilterState>(INITIAL_FILTER_STATE);
-
-  // Selected IDs for modals / drawers
-  const [selectedProductId, setSelectedProductId] = React.useState<string | null>(null);
-  const [productToEditId, setProductToEditId] = React.useState<string | null>(null);
-  const [productToDeleteId, setProductToDeleteId] = React.useState<string | null>(null);
-  const productToEdit = products.find((product) => product.id === productToEditId) ?? null;
-  const productToDelete = products.find((product) => product.id === productToDeleteId) ?? null;
-  const setProductToEdit = (product: Product | null) => setProductToEditId(product?.id ?? null);
-  const setProductToDelete = (product: Product | null) => setProductToDeleteId(product?.id ?? null);
-
-  // Derive selected product from current products state
-  const selectedProduct = React.useMemo(() => {
-    if (!selectedProductId) return null;
-    return products.find((p) => p.id === selectedProductId) || null;
-  }, [products, selectedProductId]);
-
-  const setSelectedProduct = (product: Product | null) => {
-    setSelectedProductId(product ? product.id : null);
-  };
-
-  // Derived Metrics from master products list
-  const metrics: ProductMetrics = React.useMemo(() => {
-    let inStock = 0;
-    let lowStock = 0;
-    let outOfStock = 0;
-    let totalVal = 0;
-
-    for (const p of products) {
-      if (p.status === "out_of_stock" || p.currentStock === 0) {
-        outOfStock++;
-      } else if (p.status === "low_stock" || p.currentStock <= p.minStock) {
-        lowStock++;
-      } else {
-        inStock++;
-      }
-      totalVal += p.currentStock * (p.unitPrice || 0);
-    }
-
-    return {
-      totalProducts: products.length,
-      inStockCount: inStock,
-      lowStockCount: lowStock,
-      outOfStockCount: outOfStock,
-      totalValuation: totalVal,
-    };
-  }, [products]);
-
-  // Filtering
-  const filteredProducts = React.useMemo(() => {
-    const query = filterState.searchQuery.trim().toLowerCase();
-
-    return products.filter((item) => {
-      // 1. Search filter (Name, SKU, or Barcode)
-      if (query) {
-        const matchesName = item.name.toLowerCase().includes(query);
-        const matchesSku = item.sku.toLowerCase().includes(query);
-        const matchesBarcode = item.barcode ? item.barcode.toLowerCase().includes(query) : false;
-        const matchesCategory = item.category.toLowerCase().includes(query);
-        if (!matchesName && !matchesSku && !matchesBarcode && !matchesCategory) {
-          return false;
-        }
-      }
-
-      // 2. Category filter
-      if (filterState.category !== "all" && item.category !== filterState.category) {
-        return false;
-      }
-
-      // 3. Status filter
-      if (filterState.status !== "all" && item.status !== filterState.status) {
-        return false;
-      }
-
-      return true;
+  function update(updates: Record<string, string | number>) {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === "" || (value === "all" && key !== "archive") ||
+          (key === "archive" && value === "active") || (key === "page" && value === 1) ||
+          (key === "sort" && value === "name") || (key === "order" && value === "asc")) {
+        params.delete(key);
+      } else params.set(key, String(value));
     });
-  }, [products, filterState]);
-
-  // Sorting
-  const sortedProducts = React.useMemo(() => {
-    const sorted = [...filteredProducts];
-    const { sortField, sortOrder } = filterState;
-
-    sorted.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "name":
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case "sku":
-          comparison = a.sku.localeCompare(b.sku);
-          break;
-        case "category":
-          comparison = a.category.localeCompare(b.category);
-          break;
-        case "stock":
-          comparison = a.currentStock - b.currentStock;
-          break;
-        case "price":
-          comparison = (a.unitPrice || 0) - (b.unitPrice || 0);
-          break;
-        case "createdAt":
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-        default:
-          comparison = 0;
-      }
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-    return sorted;
-  }, [filteredProducts, filterState]);
-
-  // Pagination
-  const totalFilteredCount = sortedProducts.length;
-  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / filterState.pageSize));
-
-  const effectivePage = Math.min(filterState.page, totalPages);
-  const paginatedProducts = React.useMemo(() => {
-    const startIndex = (effectivePage - 1) * filterState.pageSize;
-    return sortedProducts.slice(startIndex, startIndex + filterState.pageSize);
-  }, [sortedProducts, effectivePage, filterState.pageSize]);
-
-  const hasActiveFilters =
-    filterState.searchQuery !== "" ||
-    filterState.category !== "all" ||
-    filterState.status !== "all";
-
-  // Filter setters
-  const setSearchQuery = (query: string) => {
-    setFilterState((prev) => ({ ...prev, searchQuery: query, page: 1 }));
-  };
-
-  const setCategory = (category: string) => {
-    setFilterState((prev) => ({ ...prev, category, page: 1 }));
-  };
-
-  const setStatus = (status: "all" | ProductStatus) => {
-    setFilterState((prev) => ({ ...prev, status, page: 1 }));
-  };
-
-  const setSorting = (field: ProductSortField) => {
-    setFilterState((prev) => {
-      if (prev.sortField === field) {
-        return {
-          ...prev,
-          sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
-      page: 1,
-        };
-      }
-      return {
-        ...prev,
-        sortField: field,
-        sortOrder: "asc",
-        page: 1,
-      };
-    });
-  };
-
-  const setPage = (page: number) => {
-    setFilterState((prev) => ({ ...prev, page: Math.max(1, Math.min(page, totalPages)) }));
-  };
-
-  const resetFilters = () => {
-    setFilterState((prev) => ({
-      ...prev,
-      searchQuery: "",
-      category: "all",
-      status: "all",
-          page: 1,
-    }));
-  };
+    startTransition(() => router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }));
+  }
 
   return {
-    products,
-    filteredProducts,
-    paginatedProducts,
-    metrics,
-    filterState: { ...filterState, page: effectivePage },
-    totalPages,
-    totalFilteredCount,
-    selectedProduct,
-    productToEdit,
-    productToDelete,
-    hasActiveFilters,
-
-    setSelectedProduct,
-    setProductToEdit,
-    setProductToDelete,
-    setSearchQuery,
-    setCategory,
-    setStatus,
-    setSorting,
-    setPage,
-    resetFilters,
-
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    recordMovement,
+    pending,
+    hasActiveFilters: Boolean(filterState.searchQuery || filterState.category || filterState.status !== "all" || filterState.archive !== "active"),
+    setSearchQuery: (q: string) => update({ q: q.trim(), page: 1 }),
+    setCategory: (category: string) => update({ category, page: 1 }),
+    setStatus: (status: ProductFilterState["status"]) => update({ status, page: 1 }),
+    setArchive: (archive: ProductFilterState["archive"]) => update({ archive, page: 1 }),
+    setSorting: (sort: ProductSortField) => update({ sort, order: filterState.sortField === sort && filterState.sortOrder === "asc" ? "desc" : "asc", page: 1 }),
+    setPage: (page: number) => update({ page }),
+    resetFilters: () => startTransition(() => router.replace(pathname, { scroll: false })),
   };
 }

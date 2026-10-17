@@ -18,6 +18,20 @@ export function InventoryHeader({
   onOpenAdjustmentModal,
 }: InventoryHeaderProps) {
   const { t } = useI18n();
+
+  const [search, setSearch] = React.useState({ source: searchQuery, value: searchQuery });
+  if (search.source !== searchQuery) {
+    setSearch({ source: searchQuery, value: searchQuery });
+  }
+
+  React.useEffect(() => {
+    if (search.value === searchQuery) return;
+    const timer = setTimeout(() => {
+      onSearchChange(search.value);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [search.value, searchQuery, onSearchChange]);
+
   return (
     <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-8">
       <div>
@@ -35,8 +49,8 @@ export function InventoryHeader({
           <input
             className="input-focus w-full sm:w-64 px-3 py-3 bg-transparent font-body text-sm text-ink placeholder:text-ink/50"
             placeholder={t.inventory.searchStockPlaceholder}
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={search.value}
+            onChange={(e) => setSearch({ source: searchQuery, value: e.target.value })}
           />
         </div>
         <button

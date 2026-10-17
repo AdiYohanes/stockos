@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, RotateCcw, PieChart, Activity, AlertCircle, Building2 } from "lucide-react";
+import { Search, RotateCcw, PieChart, Activity, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface ReportsToolbarProps {
   selectedCategory: string;
   onCategoryChange: (cat: string) => void;
   onResetFilters: () => void;
+  categories?: string[];
 }
 
 export function ReportsToolbar({
@@ -26,15 +27,15 @@ export function ReportsToolbar({
   selectedCategory,
   onCategoryChange,
   onResetFilters,
+  categories = [],
 }: ReportsToolbarProps) {
   const { t } = useI18n();
-  const hasActiveFilters = searchQuery !== "" || selectedCategory !== "all";
+  const hasActiveFilters = searchQuery !== "" || (selectedCategory !== "all" && selectedCategory !== "");
 
   const TABS: { id: ReportTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: "valuation", label: t.reports.tabValuation || "Stock Valuation", icon: PieChart },
     { id: "velocity", label: t.reports.tabMovement || "Stock Movement", icon: Activity },
     { id: "reorder", label: t.reports.tabLowStock || "Low Stock Items", icon: AlertCircle },
-    { id: "performance", label: "Supplier Deliveries", icon: Building2 }, // Fallback if no translation
   ];
 
   return (
@@ -86,11 +87,11 @@ export function ReportsToolbar({
             className="h-9 rounded-none border-[3px] border-ink bg-white px-3 font-mono text-xs font-semibold text-foreground focus:border-black focus:outline-none focus:ring-1 focus:ring-[#543afd]"
           >
             <option value="all">{t.common.all || "All Categories"}</option>
-            <option value="Electronics & Sensors">Electronics & Sensors</option>
-            <option value="Industrial Tools">Industrial Tools</option>
-            <option value="Raw Materials">Raw Materials</option>
-            <option value="Packaging Materials">Packaging Materials</option>
-            <option value="Safety Gear & Apparel">Safety Gear & Apparel</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
 
           {/* Reset Filters button */}

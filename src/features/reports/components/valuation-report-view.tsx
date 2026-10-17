@@ -12,8 +12,11 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
+import { useI18n } from "@/lib/i18n/context";
 import type { ValuationSummary } from "../types";
+import { moneyChartShare } from "../chart";
 
 interface ValuationReportViewProps {
   summary: ValuationSummary;
@@ -22,6 +25,7 @@ interface ValuationReportViewProps {
 const emptySubscribe = () => () => {};
 
 export function ValuationReportView({ summary }: ValuationReportViewProps) {
+  const { t } = useI18n();
   const isMounted = React.useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -32,9 +36,10 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
     return summary.categories.map((c) => ({
       name: c.categoryName.split(" ")[0], // short name for x-axis
       fullName: c.categoryName,
-      cost: c.totalCost,
-      retail: c.totalRetailValue,
-      margin: c.totalRetailValue - c.totalCost,
+      cost: moneyChartShare(c.totalCost, [summary.totalCost, summary.totalValuation]),
+      retail: moneyChartShare(c.totalRetailValue, [summary.totalCost, summary.totalValuation]),
+      costExact: c.totalCost,
+      retailExact: c.totalRetailValue,
     }));
   }, [summary]);
 
@@ -45,21 +50,22 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
         <CardHeader className="border-b border-ink pb-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="font-heading text-base font-bold text-foreground">
-              Inventory Asset Valuation by Category
+              {t.reports.valuationByCategory}
             </CardTitle>
             <div className="flex items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-none bg-[#543afd]" />
-                <span className="text-muted-foreground">Asset Cost</span>
+                <span className="text-muted-foreground">{t.reports.assetCost}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-none bg-[#09090b]" />
-                <span className="text-muted-foreground">Retail Value</span>
+                <span className="h-3 w-3 rounded-none bg-[#a23cb8]" />
+                <span className="text-muted-foreground">{t.reports.retailValue}</span>
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          <p className="mb-3 font-mono text-xs text-muted-foreground">{t.reports.chartScale}</p>
           <div className="h-[280px] w-full">
             {isMounted ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -67,7 +73,8 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }} />
                   <YAxis
-                    tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                    domain={[0, 100]}
+                    tickFormatter={(val) => `${val}%`}
                     tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
                   />
                   <Tooltip
@@ -78,21 +85,20 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                         <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{data.fullName}</p>
                           <div className="space-y-1">
-                            <p className="text-[#543afd]">Total Cost: {formatCurrency(data.cost)}</p>
-                            <p className="text-[#09090b]">Retail Value: {formatCurrency(data.retail)}</p>
-                            <p className="font-bold text-[#15803d]">Margin: {formatCurrency(data.margin)}</p>
+                            <p className="text-foreground">{t.reports.totalCost}: {formatProductMoney(data.costExact)}</p>
+                            <p className="text-[#09090b]">{t.reports.retailValue}: {formatProductMoney(data.retailExact)}</p>
                           </div>
                         </div>
                       );
                     }}
                   />
-                  <Bar dataKey="cost" fill="#543afd" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="retail" fill="#09090b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="cost" fill="#543afd" />
+                  <Bar dataKey="retail" fill="#a23cb8" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex h-full items-center justify-center text-xs font-mono text-muted-foreground">
-                Loading valuation chart...
+                {t.common.loading || "Loading valuation chart..."}
               </div>
             )}
           </div>
@@ -103,7 +109,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
       <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
         <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
-            Category Asset & Margin Breakdown
+            {t.reports.categoryBreakdown}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -111,13 +117,13 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
                 <TableRow className="border-b border-ink">
-                  <TableHead className="font-mono text-xs font-bold text-foreground">Category Name</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">SKUs</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Units</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Cost</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Retail Value</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Margin %</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground">Valuation Share</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.category || "Category Name"}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.sku || "SKUs"}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.quantity || "Total Units"}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.totalCost}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.retailValue}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.marginPercent}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.reports.valuationShare}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -133,14 +139,14 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                       {formatNumber(cat.stockQty)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right font-bold text-[#543afd]">
-                      {formatCurrency(cat.totalCost)}
+                      {formatProductMoney(cat.totalCost)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right font-bold text-foreground">
-                      {formatCurrency(cat.totalRetailValue)}
+                      {formatProductMoney(cat.totalRetailValue)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right">
                       <span className="inline-flex rounded-none bg-[#dcfce7] px-1.5 py-0.5 font-bold text-[#15803d]">
-                        +{cat.marginPercent}%
+                        {cat.marginPercent}%
                       </span>
                     </TableCell>
                     <TableCell>

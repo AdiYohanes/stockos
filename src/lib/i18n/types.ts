@@ -107,6 +107,18 @@ export interface Translations {
     welcomeBack: string;
   };
   products: {
+    persistent: {
+      create: string; restock: string; lookup: string; selectProduct: string; search: string;
+      openingQuantity: string; purchaseTotal: string; cartonMode: string; cartonCount: string; unitsPerCarton: string;
+      shelfLocation: string; reference: string; receipt: string; sold: string; archive: string; reactivate: string;
+      archiveHelp: string; zeroStockRequired: string; archivedHelp: string; identityLocked: string;
+      retry: string; uncertain: string; pending: string; conflict: string; reviewCurrent: string; reviewed: string;
+      currentState: string; metadataVersion: string; stockVersion: string; inventoryCostValue: string;
+      averagePurchaseCost: string; potentialSellingValue: string; potentialGrossProfit: string; history: string;
+      opening: string; opname: string; cost_adjustment: string; before: string; after: string; previous: string; next: string;
+      refreshError: string; invalidQuantity: string; selectRequired: string; freeCostHelp: string;
+      archived: string; allArchives: string; localData: string; inventoryDemo: string; errors: Record<string, string>;
+    };
     title: string;
     subtitle: string;
     badgeText: string;
@@ -204,6 +216,14 @@ export interface Translations {
     subtitle: string;
     badgeText: string;
     adjustStock: string;
+    costCorrection: {
+      title: string; description: string; replacement: string; reason: string;
+      moneyHelp: string; invalidTotal: string; reasonRequired: string; zeroStock: string;
+    };
+    quantityCorrection: {
+      title: string; description: string; original: string; parent: string;
+      invalidCount: string; foundTotal: string; foundHelp: string; invalidFoundTotal: string;
+    };
     batchCode: string;
     location: string;
     availableStock: string;
@@ -292,12 +312,11 @@ export interface Translations {
     noMovementsFoundDesc: string;
     // Detail sheet
     stockHealthGauge: string;
-    ofMaxCap: string;
+    ofMaxScale: string;
     onHand: string;
     available: string;
     storageBin: string;
     minReorderThreshold: string;
-    maxStorageCapacity: string;
     valuationUnitEconomics: string;
     unitCost: string;
     totalStockValuation: string;
@@ -360,6 +379,48 @@ export interface Translations {
     exportPdf: string;
     exportCsv: string;
     dateRange: string;
+    pagination: string;
+    retry: string;
+    categories: string;
+    products: string;
+    printVisible: string;
+    exportTitle: string;
+    fileFormat: string;
+    exportLimits: string;
+    downloadStarted: string;
+    downloadCsv: string;
+    printPage: string;
+    processing: string;
+    chartScale: string;
+    potentialGrossProfit: string;
+    movementVolume: string;
+    stockAlerts: string;
+    cost: string;
+    sold: string;
+    received: string;
+    opening: string;
+    low: string;
+    empty: string;
+    valuationByCategory: string;
+    assetCost: string;
+    retailValue: string;
+    totalCost: string;
+    marginPercent: string;
+    valuationShare: string;
+    categoryBreakdown: string;
+    trendInVsOut: string;
+    colOpening: string;
+    colStockIn: string;
+    colStockOut: string;
+    colOpnameDelta: string;
+    colCurrentStock: string;
+    colLastMovement: string;
+    movementPerProduct: string;
+    noMovementData: string;
+    lookupPage: string;
+    lookupNarrow: string;
+    lookupNext: string;
+    lookupPrev: string;
   };
   settings: {
     title: string;
@@ -375,6 +436,11 @@ export interface Translations {
     language: string;
     saveChanges: string;
     settingsSaved: string;
+    persistentConflict: string;
+    loadCurrent: string;
+    resetSaved: string;
+    resetTitle: string;
+    resetSubmit: string;
     devModeText: string;
     resetWarningMessage: string;
     resetWarningDetails: string;
@@ -517,8 +583,17 @@ export interface Translations {
     invitationExpired: string;
     showPassword: string;
     hidePassword: string;
-    recoveryUnavailableTitle: string;
-    recoveryUnavailableDescription: string;
+    recoveryTitle: string;
+    recoverySubtitle: string;
+    invalidRecovery: string;
+    resetRequestTitle: string;
+    resetRequestSubtitle: string;
+    resetRequestButton: string;
+    resetRequestPending: string;
+    resetRequestSent: string;
+    resetRequestAcknowledgement: string;
+    requestNewRecoveryLink: string;
+    forgotPassword: string;
     errors: Record<string, string>;
   };
   modals: {

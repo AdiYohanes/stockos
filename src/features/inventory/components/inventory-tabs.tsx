@@ -26,6 +26,7 @@ export function InventoryTabs({
       {/* Tab 1: Stock Levels */}
       <button
         type="button"
+        data-tab="stock_levels"
         onClick={() => onTabChange("stock_levels")}
         className={cn(
           "px-4 py-3 flex items-center gap-2 border-r-[3px] border-ink transition-colors cursor-pointer",
@@ -44,6 +45,7 @@ export function InventoryTabs({
       {/* Tab 2: Movements */}
       <button
         type="button"
+        data-tab="movements"
         onClick={() => onTabChange("movements")}
         className={cn(
           "px-4 py-3 flex items-center gap-2 transition-colors cursor-pointer",

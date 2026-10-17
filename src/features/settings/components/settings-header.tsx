@@ -1,15 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings } from "lucide-react";
+import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
+import type { TimezoneCode } from "../types";
 
 interface SettingsHeaderProps {
   hasUnsavedChanges: boolean;
   lastSavedMessage: string | null;
   updatedAt: string;
+  timezone: TimezoneCode;
+  version?: string;
+  isSaving?: boolean;
+  disabled?: boolean;
   onSave: () => void;
   onResetModalOpen: () => void;
 }
@@ -18,6 +23,10 @@ export function SettingsHeader({
   hasUnsavedChanges,
   lastSavedMessage,
   updatedAt,
+  timezone,
+  version,
+  isSaving = false,
+  disabled = false,
   onSave,
   onResetModalOpen,
 }: SettingsHeaderProps) {
@@ -30,11 +39,12 @@ export function SettingsHeader({
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        timeZone: timezone,
       });
     } catch {
-      return "08:00:00";
+      return "—";
     }
-  }, [updatedAt, language]);
+  }, [updatedAt, language, timezone]);
 
   return (
     <div className="flex flex-col gap-4 border-b border-ink pb-4">
@@ -54,6 +64,14 @@ export function SettingsHeader({
               >
                 {t.settings.badgeText}
               </Badge>
+              {version && (
+                <Badge
+                  variant="outline"
+                  className="border-black bg-slate-200 font-mono text-[12px] text-slate-800"
+                >
+                  Rev {version}
+                </Badge>
+              )}
               {hasUnsavedChanges && (
                 <Badge className="animate-pulse border-black bg-amber-400 font-mono text-[13px] uppercase tracking-wider text-black shadow-neo-sm">
                   <AlertCircle className="mr-1 h-3.5 w-3.5" />{" "}
@@ -72,7 +90,8 @@ export function SettingsHeader({
             variant="outline"
             size="sm"
             onClick={onResetModalOpen}
-            className="h-9 border-black font-mono text-xs font-semibold text-slate-700 hover:bg-red-50 hover:text-red-700 active:translate-y-px"
+            disabled={disabled || isSaving}
+            className="h-9 border-black font-mono text-xs font-semibold text-ink hover:bg-amber-50 hover:text-amber-950 active:translate-y-px"
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{" "}
             {t.settings.resetSystemData}
@@ -81,10 +100,11 @@ export function SettingsHeader({
           <Button
             size="sm"
             onClick={onSave}
-            disabled={!hasUnsavedChanges}
+            disabled={!hasUnsavedChanges || disabled || isSaving}
             className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0] active:translate-y-px disabled:opacity-50 disabled:shadow-none"
           >
-            <Save className="mr-1.5 h-3.5 w-3.5" /> {t.settings.saveChanges}
+            <Save className={`mr-1.5 h-3.5 w-3.5 ${isSaving ? "animate-spin" : ""}`} />{" "}
+            {isSaving ? t.products.persistent.pending : t.settings.saveChanges}
           </Button>
         </div>
       </div>
@@ -95,19 +115,20 @@ export function SettingsHeader({
           <span className="text-slate-500">
             {t.settings.lastUpdated}
           </span>
-          <span className="font-semibold text-slate-900" suppressHydrationWarning>
+          <span className="font-semibold text-slate-900">
             {formattedDate}
           </span>
         </div>
 
         {lastSavedMessage ? (
-          <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+          <div role="status" className="flex items-center gap-1.5 text-emerald-700 font-semibold">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             <span>{lastSavedMessage}</span>
           </div>
         ) : (
-          <span className="text-[11px] text-slate-500">
-            {t.settings.devModeText}
+          <span className="text-[11px] text-slate-600 flex items-center gap-1.5">
+            <Database className="h-3.5 w-3.5 text-[#543afd]" />
+            Tersimpan di Supabase PostgreSQL
           </span>
         )}
       </div>

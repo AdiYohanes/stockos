@@ -4,11 +4,11 @@ export interface OverviewMetric {
   id: string;
   label: string;
   value: string;
-  rawValue: number;
+  rawValue: number | string;
   change?: string;
   trend?: MetricTrend;
   supportingText?: string;
-  iconName: "products" | "value" | "low_stock" | "out_of_stock";
+  iconName: "products" | "revenue" | "net_profit" | "out_of_stock";
   variant?: "default" | "warning" | "destructive" | "success";
 }
 
@@ -29,7 +29,7 @@ export interface StockMovementData {
 export interface HealthDistribution {
   count: number;
   percentage: number;
-  value: number;
+  value: string;
 }
 
 export interface InventoryHealthData {
@@ -52,13 +52,4 @@ export interface AttentionItem {
   unit: string;
   status: AttentionStatus;
   lastRestocked: string;
-}
-
-
-export interface QuickActionItem {
-  id: string;
-  title: string;
-  description: string;
-  icon: "plus" | "arrow-down" | "arrow-up";
-  badge?: string;
 }

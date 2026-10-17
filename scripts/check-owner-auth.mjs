@@ -8,12 +8,13 @@ import { setTimeout as delay } from "node:timers/promises";
 // Usage: node scripts/check-owner-auth.mjs <local-supabase-status.json>
 // status file: output of `supabase status -o json`; keys never printed.
 const status = JSON.parse(readFileSync(process.argv[2], "utf8").replace(/^﻿/, ""));
-assert.equal(status.API_URL, "http://127.0.0.1:55431", "Refuse nonfixture API URL");
+assert.ok(["http://127.0.0.1:55431", "http://127.0.0.1:55641"].includes(status.API_URL), "Refuse nonfixture API URL");
 assert.equal(typeof status.ANON_KEY, "string", "Missing local anon key");
 assert.equal(typeof status.SERVICE_ROLE_KEY, "string", "Missing local service key");
 assert.ok(status.ANON_KEY.length && status.SERVICE_ROLE_KEY.length, "Empty local keys");
-const container = "supabase_db_stockos-auth";
-const mailUrl = "http://127.0.0.1:55434";
+const project = status.API_URL.endsWith(":55641") ? "stockos-recovery-proof" : "stockos-auth";
+const container = `supabase_db_${project}`;
+const mailUrl = project === "stockos-recovery-proof" ? "http://127.0.0.1:55644" : "http://127.0.0.1:55434";
 const runId = randomUUID();
 const emails = Array.from({ length: 6 }, () => `owner-${randomUUID()}@example.test`);
 const createdUsers = new Set();
@@ -34,7 +35,7 @@ function docker(args) {
 function assertContainer() {
   const [inspection] = JSON.parse(docker(["inspect", container]));
   assert.equal(inspection.Name, `/${container}`, "Wrong fixture container");
-  assert.equal(inspection.Config.Labels?.["com.supabase.cli.project"], "stockos-auth", "Wrong fixture project label");
+  assert.equal(inspection.Config.Labels?.["com.supabase.cli.project"], project, "Wrong fixture project label");
   assert.equal(inspection.State.Running, true, "Fixture database is not running");
 }
 
@@ -267,6 +268,8 @@ try {
   assert.ok(invitation.access_token && invitation.refresh_token, "Invite missing session");
   assert.ok(claims(invitation.access_token).amr.some((entry) => entry.method === "otp"), "Invitation AMR is not OTP");
   assert.equal((await request("/auth/v1/verify", { body: { token_hash: hash, type: "invite" } })).ok, false, "Invite replay accepted");
+  forbidden(await rpc("owner_invitation", {}, invitation.access_token, status.ANON_KEY), "Unregistered OTP invitation");
+  success(await rpc("register_password_purpose", { p_user: invited.id, p_session: claims(invitation.access_token).session_id, p_purpose: "invite" }), "Verified invitation purpose registration");
   assert.deepEqual(success(await rpc("owner_invitation", {}, invitation.access_token, status.ANON_KEY), "Invitation owner context"), { id: invited.id, email: ownerEmail, name: "StockOS auth test" });
   forbidden(await rpc("owner_session", {}, invitation.access_token, status.ANON_KEY), "OTP cannot authorize owner session");
   assert.equal(success(await rpc("pending_owner", { p_email: ownerEmail }), "Confirmed email no longer pending"), null);

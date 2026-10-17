@@ -2,11 +2,23 @@
 
 ## Current Phase
 
-Implementation: Backend Foundation ticket 1 — single-owner setup, invitation/email verification, initial password setup, login, resend, and logout. Explicit approval received 2026-10-09; isolated local Supabase only. Other features remain frontend mocks.
+GitHub synchronization verification — 2026-10-17: `npm run check`, `npm run typecheck`, zero-warning ESLint, production build, opening-import offline self-test/dry-run, changed Python syntax checks and `git diff --check` pass. Existing Node module-type notices remain. Changed files and nine previously unpushed commits were scanned for common credential patterns with no matches; this is not a comprehensive secret audit. Local MCP configuration stays ignored. Full isolated browser/database proof was not rerun in this synchronization slice. GitHub deployment history reports the latest Production attempt (2026-10-09) failed and the latest prior Preview (2026-10-11) succeeded; branch publication is not production deployment or launch approval.
+
+Opening-stock exception approved 2026-10-17: guarded owner-operated CLI for the exact existing 48-row source into Cloud project `ohltpkxtucchqezkgfok`. Owner completed setup independently after the configuration work below; latest read-only preflight found one confirmed bound owner/session, zero products and zero inventory events. No agent email/bootstrap. `scripts/import-opening-stock.mjs` now provides offline dry-run/self-test and guarded interactive apply/resume; no opening stock has been written by this slice. Offline self-test/dry-run, typecheck, zero-warning lint, existing fast checks and diff whitespace check pass (preexisting Node module-type and line-ending notices remain). Review found cancellation/EOF cleanup defects; both fixed with regression checks. Offline tests also cover installed SDK auth routes, private input/paste, manifest fsync failure before product RPC, same-ID replay and populated/tampered snapshots. Authenticated hosted execution and final hosted totals are pending owner-run apply; real Windows terminal and hosted-session cleanup remain unproven until that run. Normal owner password session, immutable external manifest, same-ID replay and authoritative verification are required. Local seeders remain local-only; production launch/deployment, further email and hosted backup/restore gates remain blocked.
+
+Private-test Cloud/local configuration approved 2026-10-17 for existing project `ohltpkxtucchqezkgfok`; Next.js stays local. Read-only preflight confirms no application tables, migrations or Auth users/sessions, PostgreSQL 17.11, active project in `ap-northeast-2`. CLI access verified; all 11 reviewed existing migrations applied without seeds/roles and repeat dry-run reports up to date. Hosted checks confirm zero products/Auth users, all private tables have RLS, no direct private table/helper grants for anon/authenticated, and no anonymous StockOS RPC grants. API exposure restricted to public; public signup disabled, minimum password 12 and exact localhost callback configured. Initial Free/default-email template restriction resolved after owner configured Resend custom SMTP: required invite/recovery template subjects and content applied, declared config diff zero; SMTP enabled/host/465/test sender checked without printing credentials. Owner confirmed local credentials saved privately and authorized environment switch: five ignored `.env.local` variables now target Cloud, using matching legacy anon/service-role keys and a unique setup secret. Hosted Auth settings reachable, public signup disabled/email confirmations required, anonymous Dashboard RPC denied (401/42501). Existing localhost app login/signup rendered and input interaction passed in Edge with no page errors; screenshot inspected. Existing port-3000 process preserved. No form submission, email, hosted owner, authenticated browser/recovery or SMTP delivery proof: user explicitly declined sending. Local typecheck, zero-warning lint and fast checks pass; existing Node module-type notices remain. Existing StockOS Next.js process was identity-checked and restarted on localhost:3000 with the Cloud environment. Browser setup/login render and anonymous Dashboard redirect pass after restart; setup screenshot inspected, no submission/email or page errors. Authenticated hosted behavior remains unverified until owner setup. Resend test sender is limited to the Resend account inbox until a domain is verified. No new project, paid changes, deployment, real-shop data/import or production-readiness claim.
+
+Implementation: Backend Foundation local correctness hardening — approved 2026-10-11 through `/implement` for plan `whimsical-humming-cray.md`. Active scope: mutation guards/retry/conflict review, exact shop-local reports, shared product defaults, bounded report reads/CSV, targeted runtime cleanup, and isolated synthetic-data regression proof. New forward migrations only. No cloud, deployment, external SMTP, paid resources, production launch, or real-shop data/import.
+
+Ticket 12 local Operational Readiness completed 2026-10-11; external operational gates remain blocked.
+
+Tickets 1–11 completed local prerequisites; all feature domains use local Supabase PostgreSQL/Auth with the authentic 18-product warung catalog verified across routes. Ticket 11 lint/type/build/browser checks passed; ticket 12 local Auth/PostgreSQL operations proof, CLI self-checks and regression checks pass.
 
 Preparation: Backend Planning/specification — target confirmed 2026-10-09. Supabase PostgreSQL/Auth, Next.js server boundaries, Vercel, and single-owner inventory scope are approved design choices. Implementation, migrations, dependencies, provisioning, and deployment are not authorized by documentation/spec approval.
 
-## Completed
+## Completed — Historical Frontend Foundation
+
+The list below records earlier frontend work, not current runtime capabilities. Later Backend Foundation ticket sections supersede mock auth/financial/settings/report behavior.
 
 - [x] Authentication UI, mock login, and protected dashboard.
 - [x] Dashboard: mock product totals, revenue, estimated net profit, out-of-stock summary, movement chart, attention list, quick actions, and stock health. Financial cards share a month-to-date demo period; net profit subtracts cost of goods sold and operating expenses. Low-stock alerts remain in stock health and the attention list.
@@ -26,11 +38,12 @@ Preparation: Backend Planning/specification — target confirmed 2026-10-09. Sup
 
 ## Data Boundaries
 
-- Products and Inventory use independent fixtures/stores; their balances are not synchronized across features.
-- Dashboard and Reports use mock analytics, not live store aggregates.
-- Settings persist in browser localStorage; Products and Inventory remain session-scoped.
-- Supplier metadata and report summaries remain. No standalone supplier management screen is active.
-- No production backend, database, authentication, or authorization has been added.
+- Products and Inventory share one authoritative local PostgreSQL stock balance through signed owner-checked RPCs.
+- Dashboard and Reports read persistent stock potentials, health, and immutable movement evidence.
+- Shared Settings persist in PostgreSQL; display/language preferences stay browser-local.
+- Retained Products/Inventory mock stores serve isolated regression checks, not runtime data.
+- Supplier remains optional product text; no supplier-management screen exists.
+- No production resources, external SMTP, deployment, or real-shop data have been introduced.
 
 ## Verification — 2026-10-08
 
@@ -62,8 +75,69 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 
 ## In Progress
 
-- Backend Foundation Ticket 1 completed and verified against local Supabase. Full recovery, Gate A stock transactions and persistence, external SMTP deliverability proof, cloud provisioning, and production deployment remain pending separate approval gates.
-- Final verification of ESLint warning cleanup on legacy frontend files remains pending.
+- Local correctness hardening: mutation retry/conflict review, exact shop-local Reports, creation defaults, bounded report detail/export, and unused-runtime cleanup.
+- Full isolated regression proof remains active. Two-axis review fixes are verified; static checks and production build pass. Prior tickets verify local persistence/recovery; external SMTP, cloud provisioning, deployment, and real-shop launch gates remain open.
+
+## Local Correctness Hardening — 2026-10-13
+
+- Inventory dialogs retain frozen retry requests and block closing while pending/uncertain/refresh-failed. Opname conflict review adopts the complete current product snapshot, preserves notes, and requires a fresh count.
+- Settings uses controlled baseline/draft/reviewed version state, frozen save/reset intent, read-only retry after known commits, and monotonic snapshot/review guards. Products and Dashboard receive narrow creation defaults from Settings; existing products are not rewritten.
+- Forward migrations `20261011000000_report_accuracy.sql` and `20261011010000_bounded_reports.sql` implement exact money, literal filters, shop-local dates/timezone checks, Dashboard 30-day boundaries, strict screen/summary/export modes, bounded pages, and export overflow probes. CSV remains exact, formula-safe, incremental, and limited to 10,000 rows/5 MiB. Chart Number conversion is restricted to bounded visual ratios.
+- Removed unreachable runtime providers/modals/mock modules/UI primitives and `react-hook-form`/`@hookform/resolvers`; retained Products/Inventory regression stores and catalog fixtures. Production static bundles contain no `FeatureStoresProvider`, `react-hook-form`, `zustand`, `useProductsStore`, or `useInventoryStore` matches.
+- `npm run check`, `npm run typecheck`, `npm run lint -- --max-warnings 0`, `npm run build`, and `git diff --check` pass. Node checks still emit `MODULE_TYPELESS_PACKAGE_JSON` warnings; ESLint has zero warnings.
+- Seeded CLI forward upgrade, unchanged domain/evidence/retry hashes, durable receipt replay, no-op migration, clean CLI migration replay, and private grants/RLS checks pass. Earlier targeted live Inventory/defaults proofs pass.
+- Full nine-suite proof run (2026-10-13): auth, stock, recovery, reports-contract, products, defaults, inventory completed; reports and settings initially failed on ambiguous Playwright selectors (test-harness defects, not application defects — metric cards and toolbar tabs share label fragments). Selectors anchored to toolbar tabs and export dialog; targeted reruns pass for reports and settings with verified cleanup. Final combined full run PASS_LOCAL_ONLY with coverage "full": all nine suites completed in one run, no failed or skipped suites, cleanup PASS, fixture/identity/retention guards verified.
+- Products disposal failure `APIRequestContext.post: Route.fulfill: Fetch response has been disposed` reproduced twice and proven a harness lifecycle race (in-flight route handler outliving context close), not an application bug; fixed with a drain-before-close helper (`unroute_all(behavior="wait")`) and a two-context regression assertion. Direct `APIRequestContext` writes now pass origin/identity/redirect guards (307/308 refused, `max_redirects`/`max_retries` zeroed).
+- Evidence runs classify as PASS_LOCAL_ONLY/FAIL_LOCAL_ONLY with requested/completed/failed/not-run suites, failure phase, coverage, sanitized source baseline, and cleanup verified before PASS is printed; runner self-test covers classification and write-guard rejections.
+- Review verified fixes for Settings stale-review downgrade, chart precision, proof HTTP/browser write identity guards, and provider seed redirect handling. Runner self-check covers rejected redirects, replaced resource identities, cleanup separation, and reserved/excluded/exhausted port selection. Final full nine-suite outcome recorded above.
+- No cloud, deployment, external SMTP delivery, paid resources, production launch, or real-shop data. Browser checks are targeted behavioral proofs, not a full keyboard/contrast/visual audit.
+
+## P2 Review Follow-up — Dashboard Health (2026-10-13)
+
+- Forward migration `20261013000000_dashboard_zero_stock_value.sql` fixes the out-of-stock health selling-value aggregate: zero available stock now contributes zero, not its unit selling price. Other Dashboard behavior, DTOs, UI, and historical migrations remain unchanged.
+- Real signed RPC regression in `scripts/check-reports-contract.mjs` reproduced RED (`1100n` instead of `0n`), then passed GREEN for empty health groups, healthy/low/zero-stock selling values, exact potential reconciliation, and archived-product exclusion.
+- `python -I scripts/launch-hardening-proof.py --run --only reports-contract` finishes `PASS_LOCAL_ONLY`, coverage **partial**, cleanup **PASS**; seeded forward upgrade, durable/no-op replay, clean migration replay, and native grants pass. Protected evidence: `%TEMP%/stockos-hardening-ej7hrg0n/evidence.json`.
+- Seeder safety/partial-failure exit checks, `npm run check`, typecheck, zero-warning ESLint, production build, and `git diff --check` pass. Existing Node module-type and Git line-ending notices remain. Full nine-suite/browser proof not rerun; no cloud, external SMTP, deployment, or real-shop data.
+
+## P2 Review Follow-up — Settings Defaults Reset (2026-10-13)
+
+- Reset restores only product-creation defaults (`Pcs`/`15`), preserving saved shop profile/timezone and unsaved local profile drafts. Save behavior, frozen mutation payload/intent, conflict/review, uncertain-result retry, and read-only refresh after commit remain unchanged. Indonesian/English reset warnings now match this scope.
+- Real browser/Server Action regression in `scripts/test-settings.py` reproduced RED (`Defaults reset must preserve saved shop profile and timezone`), then passed GREEN: saved profile/non-Jakarta timezone preserved, dirty profile/timezone retained without saving, defaults reset, identical lost-response retry with no replay version increment, persisted reload, existing conflict/refresh checks, and 1440/390px without horizontal overflow.
+- `python -I scripts/launch-hardening-proof.py --run --only settings` finishes `PASS_LOCAL_ONLY`, coverage **partial**, cleanup **PASS**; seeded forward upgrade/replay, clean migration replay, and native grants pass. Protected evidence: `%TEMP%/stockos-hardening-v5mr53ma/evidence.json`.
+- `npm run check`, typecheck, zero-warning ESLint, production build, and `git diff --check` pass. Existing Node module-type and Git line-ending notices remain. Full nine-suite proof not rerun; no cloud, external SMTP, deployment, or real-shop data.
+- Three of five original P2 items verified locally (seeder failure exit, Dashboard zero-stock value, Settings defaults reset). Remaining: inventory cost-correction UI and quantity-correction links to original events.
+
+## P2 Review Follow-up — Inventory Cost Correction (2026-10-14)
+
+- Added a separate cost-correction action in stock rows and the detail valuation section. Each opening reads the current Product DTO before rendering an editable form; exact decimal-string valuation is displayed without float conversion. Replacement whole-IDR total and a required reason change present cost only, preserving quantity, selling price, metadata, and prior history. Existing action/RPC/schema and mutation helper remain unchanged; no new dependency or migration.
+- Real browser/Server Action and signed owner read-RPC proof reproduced the missing-entrypoint RED, then GREEN. Review also reproduced oversized input truncation (`10000000000000` became `1000000000000`); removing the input `maxLength` preserves the full invalid value for rejection. Validation, zero-stock/zero-cost behavior, both entrypoints, frozen identical lost-response replay, double-click/close guards, newer live state after replay, two-session version conflict, read-only latest-state retry, explicit full-snapshot review with a new UUID, known-commit read-only retry, initial-read failure/retry, keyboard focus, and reload pass.
+- Initial-read failure injection originally aborted only one request, allowing a successful read to render the form; the harness now rejects all matching initial reads until retry. Mobile screenshot clipping during resize was transient; waiting for actual popup bounds proves 16px gutters at 390px without changing shared Dialog. Desktop/mobile screenshots inspected; no page errors in the main hardening context. Routes are drained before context teardown.
+- `python -I scripts/launch-hardening-proof.py --run --only inventory` finishes **PASS_LOCAL_ONLY**, coverage **partial**, cleanup **PASS**. Seeded forward upgrade, durable/no-op replay, clean migration replay, and native grants pass. Final protected evidence: `%TEMP%/stockos-hardening-vdtibtk9/evidence.json` (baseline HEAD `a501af16abe645b083853ea8ef5be07f049811bb`, diff SHA-256 `49b289f898a45a1dc6cc09668bc1dc7772592875ca20d32c376f776b9e54c026`, including untracked source).
+- Proof self-test, seeder safety, `npm run check`, typecheck, zero-warning ESLint, production build, Python syntax, and `git diff --check` pass. Existing Node module-type and Git line-ending notices remain. Full nine-suite proof not rerun; no cloud, deployment, external SMTP, paid resources, or real-shop data.
+- **Four of five original P2 items verified locally.** Remaining: quantity-correction links to original events (P2 #5), requiring a separate plan/implementation approval. No commit or push.
+
+## Project Health Plan — Slice A/B/C/D (2026-10-14)
+
+Implemented per user instruction from `docs/PROJECT_HEALTH_PLAN.md` (audit dated 2026-10-14). All local verification; no cloud, deployment, external SMTP, paid resources, or real-shop data.
+
+- **H1 exact money**: `InventoryItem` replaced float `unitCost` with exact decimal strings `inventoryCostValue`/`averagePurchaseCost`; adapter passes DTO values through; detail sheet displays authoritative total via `formatProductMoney` without recomputation. Mock data converted to exact totals. Regression edge case (stock 1,000,000,000, total `"1.000000"`, average `"0.000000"` → must display Rp 1, not Rp 0) added to `check-domain-stores.cjs` covering adapter/type boundary, Reports BigInt reorder cost, and valuation string passthrough.
+- **H2/H3 operations drill**: synthetic rollback probe version now derived uniquely (max existing + 1) with collision guard; `evidence.json` written in `finally` after cleanup with `cleanup` outcomes array — status is `PASS_LOCAL_ONLY` only when every fixture cleanup passed, `FAIL_CLEANUP` otherwise; failed drills write `FAIL` evidence. Self-test extended for probe selection, collision refusal, and evidence-status mapping. Windows drill fixed to use absolute System32 `whoami.exe` (Git Bash PATH resolution previously failed preflight).
+- **Fresh operations drill PASS**: forward migration, independent dump/restore, owner/session/grant/replay checks, cleanup verified (zero leftover fixtures); evidence `PASS_LOCAL_ONLY`, restore 4568ms.
+- **H4 accessibility**: inventory detail sheet refactored to shared `Sheet` (Base UI dialog semantics, focus containment/return, accessible close, Escape); Escape fallback handler and custom overlay removed; capacity claim dropped.
+- **H5 locale/controls**: dashboard overview cards handle `potential_revenue`/`potential_profit` IDs through existing dictionaries; stock-movement/stock-adjustment modal validation copy now uses `t.products.persistent` keys; valuation + movement report headers/legends/empty states dictionary-driven (new `reports.*` keys in both languages); inert List/Grid toggle removed; fabricated `maxStorageCapacity` label removed (`ofMaxCap` → `ofMaxScale` "visual scale"); restock lookup now shows page/total bounds with prev/next paging — never fetches unbounded.
+- **H6 proof/reproducibility**: `check:seeder` + `check:operations` (self-test only; `--run` stays out of fast checks) added to `npm run check`; README rewritten (runtime versions Node 22.20.0/npm 11.6.1/Python 3.14.6/Playwright 1.62.0/Docker 29.4.1, local backend setup, safe proof commands, credential warning, blocked gates); CHECKPOINT/PROGRESS updated for linked quantity correction now in working tree.
+- Rounded-bar token leak in valuation chart removed (`radius={[4,4,0,0]}` deleted).
+- **Slice C browser lifecycle proof**: new `--lifecycle` suite in `scripts/test-products.py` covering zero-stock archive prerequisite, nonzero-stock dialog rejection, identity (sku/id) and history retention across archive/reactivate, detail-sheet disabled movement/edit for archived products, reload/cross-route persistence, idempotent archive replay (`replayed: true`), guard-order regressions (`PRODUCT_ARCHIVED` before `VERSION_CONFLICT` on archived rows), reactivate version bump, and lost-response uncertain state with frozen retry payload/ID. Registered in launcher suites; run 3 PASS with products.
+- **Slice C production mode in existing launcher**: `--prod` flag on `scripts/launch-hardening-proof.py` performs isolated `next build --webpack` + `next start` in the same copied app directory with the same synthetic env, readiness poll, guards, and finally-cleanup — no second harness.
+- Verification: typecheck, zero-warning ESLint, production build, `check:domain` (incl. new H1 regression), `check:reports`, `check:seeder`, `check:operations --self-test`, operations `--run` PASS_LOCAL_ONLY. Slice C browser proof rerun (`--only products --only lifecycle`) PASS; `--run --prod` (isolated `next build` + `next start`, same synthetic env) with lifecycle suite PASS; full nine-suite browser proof not rerun for this slice.
+
+## Hydration Correctness — 2026-10-15
+
+- Reproduced Settings timestamp divergence twice with an isolated synthetic owner: browser UTC displayed a time seven hours behind the saved Asia/Jakarta shop timezone. Existing `suppressHydrationWarning` concealed the difference; client navigation also displayed ambient browser time.
+- Settings header now formats `updatedAt` with the saved baseline timezone, not an unsaved draft or host default. Removed timestamp suppression and replaced fabricated fallback time with an unavailable marker. Mutation/retry/conflict state is unchanged.
+- Added `hydration` browser suite to the existing guarded launcher: diagnostics attached before auth, protected route loads/reloads/client navigation, report/inventory tabs, 404, persisted/invalid/blocked language storage, alternate browser timezones, actual timestamp assertions, timezone-select keyboard focus, and Settings 1440px/390px overflow checks. Development hydration + existing Settings suites pass (`PASS_LOCAL_ONLY`, partial coverage, cleanup PASS; `%TEMP%/stockos-hardening-zuumxo4j/evidence.json`). All five language/storage cases report zero hydration warnings and page errors; Settings screenshots inspected. Production hydration suite also passes (`--prod`, isolated build/start; `%TEMP%/stockos-hardening-t6yd3rr6/evidence.json`, partial coverage, cleanup PASS). No full-suite or production-readiness claim. Expected unknown-route 404 console errors remain; development also logged one CSS preload warning, neither is a hydration failure.
+- Formatter checks pass for Indonesian/English, all three supported shop zones and three ambient timezones. Typecheck, zero-warning ESLint, fast checks, production build, Python syntax, and `git diff --check` pass. No cloud, external SMTP, deployment, real-shop data, commit or push.
+- 2026-10-16 follow-up removed root `<html>`/`<body>` hydration suppression and restored SSR for the inventory detail sheet. Hydration proof now opens/closes that sheet against a synthetic product; development and production each pass all five language/storage + timezone cases with zero hydration diagnostics/page errors (`%TEMP%/stockos-hardening-5d593b8l/evidence.json`, `%TEMP%/stockos-hardening-kllda9ij/evidence.json`; partial hydration-only coverage, cleanup PASS). Fixture port selection now rejects ports with active TCP listeners because Windows bind probes alone did not detect Docker-published ports. `bis_skin_checked` remains external browser-extension DOM mutation, not StockOS output; no suppression or DOM cleanup was added.
 
 ## Backend Foundation — Ticket 1 Auth (2026-10-09)
 
@@ -76,9 +150,158 @@ Documentation checks: local links, whitespace, and required `/to-spec` headings 
 - [x] Verified via isolated Supabase PostgreSQL RPCs (`node scripts/check-owner-auth.mjs` PASS) and Playwright browser smoke tests (`scripts/test-login.py` PASS, `scripts/test-shop-scope.py` PASS).
 - [x] TypeScript check (`tsc --noEmit`) and Next.js build (`next build`) pass with 0 errors.
 
+## Backend Foundation — Ticket 2 Stock RPC (2026-10-09)
+
+- Private `products`, `inventory_events`, `administrative_events`, and durable successful `mutation_requests`; native bounds, references, RLS, restrictive table/helper grants, fixed-search-path owner RPCs.
+- Product create/opening, metadata edit, archive/reactivation; exact receipt/sold/opname/modal costing, revision conflicts, linked evidence, canonical retry results, request-first locks, and atomic rollback. Product/history reads are bounded and return decimal/revision strings.
+- `node scripts/check-stock-foundation.mjs <dedicated-status.json>` passes against disposable `stockos-stock-proof` (API 55541, DB 55542, Mailpit 55544). Coverage includes exact spec examples/final-unit residual, free goods/cartons, lifecycle, stale revisions/replays, concurrent oversell/same-request/SKU/archive-receipt races, strict inputs, pagination, OTP/unbound/expired/revoked access, grants, and injected evidence failure with successful retry. Captured fixture data cleared after tests; original `stockos-auth` resource untouched.
+- Auth baseline GRANT typo corrected without adding an endpoint. Supabase reset to auth migration followed by `migration up` passes; full clean migration reset and subsequent RPC checks pass on empty dedicated fixture only.
+- Existing `check-owner-auth.mjs` passes when its fixed fixture identity/ports are adapted in memory to the dedicated stock proof resource; provider signup remains disabled.
+- `node scripts/check-domain-stores.cjs` (includes `test-schemas.ts`), `node scripts/check-dashboard-metrics.cjs`, `npx tsc --noEmit --pretty false`, `npm run build`, focused zero-warning script ESLint, and `git diff --check` pass.
+- Full `npm run lint` fails on unrelated existing frontend: four unescaped quotes in dashboard `stock-in-modal.tsx:181,184`, effect state copies in `inventory-header.tsx:25` and `products-toolbar.tsx:41`; 10 existing warnings. These files remain outside ticket 2.
+- Two-axis code review completed against ticket 2 scope. No confirmed standard/spec defects remain; spec suggestions for omitted unit/minStock conflict with the required-input contract, and settings evidence belongs to a later approved slice. Operation branching/replay duplication retained instead of adding speculative abstractions. Review follow-up tightened native success/count null checks and fixture ownership; affected checks pass again.
+- Browser smoke not rerun: no UI integration or UI changes in this ticket. Reports/settings/recovery/cloud/real-shop readiness are not delivered.
+
+## Backend Foundation — Ticket 3 Products Integration (2026-10-10)
+
+- [x] Connected Products frontend to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_list_products`, `stockos_get_product`, `stockos_create_product`, `stockos_update_product`, `stockos_archive_product`, `stockos_reactivate_product`, `stockos_record_stock_in`, `stockos_record_stock_out`, `stockos_product_metrics`, `stockos_text_suggestions`).
+- [x] Server-authoritative catalog reading URL search parameters (`search`, `category`, `status`, `archive`, `sort`, `page`, `pageSize`) with default pageSize 25, maximum 100.
+- [x] Product detail sheet fetching by ID, with separately paginated inventory history without unbound embedded arrays.
+- [x] Product creation with optional opening stock and mandatory purchase total for positive stock (zero IDR allowed for free goods).
+- [x] Restock by explicit ID/SKU selection using `stockos_record_stock_in`.
+- [x] Carton mode calculating base quantity via `cartonCount * unitsPerCarton`.
+- [x] Metadata edit guarded by `expectedMetadataVersion`; SKU and unit locked once inventory history exists; selling price changes do not alter inventory valuation.
+- [x] Zero-stock archive and reactivation using `metadataVersion` and `stockVersion`.
+- [x] Sold-only Stock Out using `stockos_record_stock_out`.
+- [x] Native PostgreSQL read RPCs migration `20261010000000_product_reads.sql` providing catalog metrics and prefix suggestions with fixed search path and restrictive grants.
+- [x] Strict Zod validation (`product-rpc.schema.ts`), exact 6-decimal money formatting (`formatProductMoney()`), and request-scoped signed Supabase client (`createSessionClient()`).
+- [x] Mutation resilience: client-generated UUID, frozen request payload, exact requestId retry on uncertain network failures; conflicts preserve drafts and require review.
+- [x] Verified via `scripts/test-products.py` against Edge headless: real pointer clicks, login, creation, opening valuation, page reload/new session persistence, carton restock, sold movements, price edit without valuation change, two-session conflict review, lost-response retry/replay, detail sheet focus trap/Escape, desktop (1440px) and mobile (390px) responsive layout with no horizontal overflow, and fixture cleanup.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit --pretty false` PASS, `npm run build` PASS, focused ESLint on Products PASS (0 errors, 0 warnings), `git diff --check` PASS.
+- [x] Products UI connected to persistent backend; Inventory UI moved to persistent backend in Ticket 4.
+
+## Backend Foundation — Ticket 4 Inventory Integration (2026-10-10)
+
+- [x] Connected Inventory frontend (`/inventory`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_list_products`, `stockos_list_inventory_events`, `stockos_record_stock_in`, `stockos_record_stock_out`, `stockos_record_opname`, `stockos_adjust_inventory_cost`, `stockos_product_metrics`, `stockos_text_suggestions`).
+- [x] Server-authoritative reads using URL search parameters (`tab`, `q`, `category`, `status`, `type`, `sort`, `order`, `page`, `pageSize`) via Next.js App Router Server Component (`src/app/(dashboard)/inventory/page.tsx`).
+- [x] Removed demo notice banner (`inventoryDemo`) from inventory header.
+- [x] Physical Stok Opname (`stockos_record_opname`) in `stock-adjustment-modal.tsx` with physical count verification, calculated delta feedback, zero-diff evidence retention, whole-IDR `foundPurchaseTotal` requirement when prior stock was zero, and `expectedStockVersion` concurrency checks.
+- [x] Stock In (`stockos_record_stock_in`) in `stock-movement-modal.tsx` supporting carton mode (`cartonCount * unitsPerCarton`), whole-IDR `purchaseTotal`, free goods handling (0 IDR), and note/reference tracking.
+- [x] Sold-only Stock Out (`stockos_record_stock_out`) in `stock-movement-modal.tsx` with positive integer quantity and reference.
+- [x] Movement audit trail tab (`inventory-movements-table.tsx`) reading server-paginated `stockos_list_inventory_events` with type/date filters and pagination.
+- [x] Item detail sheet (`inventory-detail-sheet.tsx`) fetching live item-specific event logs via `listInventoryEventsAction({ productId })`.
+- [x] Preserved `store.ts` and `mock-data.ts` to satisfy regression check scripts (`check-domain-stores.cjs`).
+- [x] Verified via `scripts/test-inventory.py` against Edge headless: real pointer clicks, login, persistent catalog balances, physical count opname discrepancy (+2 Pcs), carton stock in (+10 Pcs), sold stock out (-5 Pcs), movements audit trail with live transaction references, detail sheet live history, mobile (390px) and desktop (1440px) responsive layout with no horizontal overflow, and clean fixture cleanup.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/inventory`).
+- [x] Dashboard/Reports/Settings remain mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 5 Reports Integration (2026-10-10)
+
+- [x] Connected Reports frontend (`/reports`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_get_valuation_report`, `stockos_get_movement_report`, `stockos_get_low_stock_report`).
+- [x] Removed unsupported supplier performance tab from UI and Server navigation, retaining stock-based Valuation, Movement Velocity, and Low-Stock Reorder Risk views.
+- [x] Server-authoritative reads using URL search parameters (`tab`, `timeframe`, `q`, `category`) with parallel data fetching via Next.js App Router Server Component (`src/app/(dashboard)/reports/page.tsx`).
+- [x] RFC 4180 CSV export (`exportReportAction`) with formula injection neutralization (`='`, `+'`, `-'`, `@'`), 10,000-row limit, and 5 MiB size cap.
+- [x] Migration `20261010010000_reports_reads.sql`: owner-checked, security-definer, restricted search path, strict JSON validation (`allowed_keys`), and granular grants to `authenticated`.
+- [x] Slide-over inspection sheet wired to live entity selections with reactive derived state.
+- [x] Verified via `scripts/test-reports.py` against Edge headless: owner setup, product creation, movements/opname recordings, RPC output validation, browser navigation across all tabs, search/category filtering, and RFC 4180 export modal confirmation.
+- [x] Suite passes: `scripts/check-stock-foundation.mjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/reports`).
+- [x] Dashboard remains mocked; Settings connected to persistent backend in Ticket 6. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 6 Settings Integration (2026-10-10)
+
+- [x] Connected Settings frontend (`/settings`) to persistent local Supabase backend via signed Server Actions and owner-checked PostgreSQL RPCs (`stockos_get_shop_settings`, `stockos_update_shop_settings`).
+- [x] Server-authoritative reads via Next.js App Router Server Component (`src/app/(dashboard)/settings/page.tsx`) with verified owner session enforcement.
+- [x] Migration `20261010020000_settings_persistence.sql`: alters `mutation_requests` to support `update_shop_settings`, alters `administrative_events` to make `product_id` nullable and support `settings_updated`, creates singleton DTO and RPC functions with optimistic concurrency control (`expectedVersion`) and SHA-256 idempotency caching.
+- [x] Optimistic Concurrency Control (OCC): Monotonic `version` checking prevents lost updates across tabs/sessions, surfacing clear conflict warnings while preserving the owner's modified form draft.
+- [x] Client UUID idempotency: Client-generated UUID `requestId` returns cached results on replay without duplicate administrative audit logging.
+- [x] Administrative audit trail: State transitions logged in `stockos_private.administrative_events` capturing before/after snapshots.
+- [x] Warung scope enforcement (Stories 38–39): Removed unsupported mock team management and notification simulation tabs, removed fake accounting toggles (FIFO/LIFO, multi-currency, negative stock, batch expiry), and ensured system reset returns creation defaults without wiping operational product or stock data.
+- [x] Suite passes: `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/settings`), focused ESLint on Settings PASS (0 errors, 0 warnings).
+- [x] Dashboard UI data remains mocked. Cloud provisioning, deployment, and real-shop use remain outside this slice.
+
+## Backend Foundation — Ticket 7 Dashboard Integration (2026-10-10)
+
+- [x] Connected Dashboard frontend (`/`) to persistent local Supabase backend via Server Component data fetching and owner-checked PostgreSQL RPC `stockos_get_dashboard`.
+- [x] Replaced demo month-to-date financial cards with glossary-defined Potensi Pendapatan (`current_stock * selling_price`) and Potensi Laba Kotor (Potensi Pendapatan minus weighted-average inventory cost value).
+- [x] Migration `20261010030000_dashboard_reads.sql`: owner-checked, security-definer, restricted search path, strict JSON validation (`allowed_keys`), timezone-aware intervals (`stockos_private.shop_settings.timezone`), aggregating active products, stock health, attention list, recent events, and 7d/30d movements in the shop timezone.
+- [x] Strict Zod validation (`dashboard-rpc.schema.ts`), decimal string parsing, and server-only query helper `getDashboard()`.
+- [x] Live Inventory Health distribution (healthy, low stock, out of stock) with Rupiah formatting.
+- [x] Bounded Need Attention table populated from live `current_stock <= min_stock` active products.
+- [x] Stock Movement Chart accepting live 7d and 30d inbound/outbound volume with net flow calculations.
+- [x] Wired Dashboard quick actions (`ProductAddModal` and `StockMovementModal`) with optimistic router refresh on commit.
+- [x] Suite passes: `scripts/test-schemas.ts` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `npx tsc --noEmit` PASS, `npm run build` PASS (dynamic server-rendered `/`), focused ESLint on Dashboard PASS (0 errors, 0 warnings).
+
+## Backend Foundation — Ticket 8 Password Recovery (2026-10-10)
+
+- Implementation approved for isolated local recovery and all-owner-session revocation; cloud/external SMTP/deployment remain excluded.
+- Public TDD seam: real Auth/PostgreSQL RPC and browser. Browser RED confirmed: `/reset` had no `#email` input and displayed recovery unavailable.
+- [x] Real reset/new-password/login actions and translated invite/recovery UI; private purpose evidence binds live OTP session, confirmed owner, expiry, and completion phase. Concurrent writes fail closed; confirmed completion retries revocation only. Global sign-out precedes login success; recovery OTP cannot access business RPCs.
+- [x] `node scripts/check-owner-recovery.mjs <recovery-status.json>` PASS: invitation/recovery isolation, expired/private evidence, concurrent completion, native password update, all old JWT/refresh token denial, fresh login. `node scripts/check-owner-auth.mjs <recovery-status.json>` PASS: invitation/auth regression.
+- [x] `python -I scripts/test-recovery.py http://localhost:3004 <recovery-status.json>` PASS against real Auth/PostgreSQL and Edge: generic owner/unknown acknowledgement; Auth outage errors/draft retry; healthy-Auth SMTP failure without enumeration; same-password rejection; global revocation failure and revoke-only retry with changed draft; direct anonymous/password-session/unbound action denial and live recovery-to-invitation action denial; invitation-to-recovery action uses a stale invitation session (live cross-purpose isolation proved at RPC seam, not that action path); ambiguous password-write/evidence failure, fail-closed retry, and successful fresh recovery with different password; callback malformed/duplicate/unsafe redirect/replay denial; old browser-session denial; keyboard password toggle; 1440/390/320px without overflow.
+- [x] `node scripts/check-domain-stores.cjs`, `node scripts/check-dashboard-metrics.cjs`, `npx tsc --noEmit --pretty false`, focused auth/scripts ESLint `--max-warnings 0`, `npm run build`, and `git diff --check` PASS. Two-axis code review fixes include unexpected-error trace IDs, feature-owned callback logic, and explicit partial-outcome warning. Tiny existing auth getter duplication retained without new abstraction.
+- Full repository verification is **not green**: `npm run lint` reports 6 unrelated errors (Dashboard unescaped entities; Inventory cascading effects) and 4 unused-binding warnings. `scripts/check-stock-foundation.mjs` fails its broad private-function grant assertion because existing `stockos_private.shop_settings_dto` remains callable; recovery private helper/table grants pass. No unrelated code/grant fix included. Other feature browser suites retain existing fixture/port assumptions and were not rerun against recovery fixture.
+- Next.js 16.3 development logging exposed fixture action arguments before configuration fix. `next.config.ts` now disables Server Function/incoming-request logging to avoid password/callback-token output; earlier disposable fixture credentials were revoked/deleted, never production credentials. Existing Auth/stock proof resources and `.env.local` unchanged. Shared infrastructure health failures return retryable errors; account-specific delivery failures remain generic acknowledgement, which does not confirm delivery.
+- Isolated local proof only; external SMTP deliverability, cloud provisioning, deployment, and real-shop use remain unverified/outside scope.
+
+## Backend Foundation — Ticket 9 Gate D Private Fullstack Release & Comprehensive Verification (2026-10-11)
+
+- [x] Resolved all 6 ESLint errors and 4 warnings across dashboard modals (`stock-in-modal.tsx`, `add-product-modal.tsx`) and inventory components (`inventory-detail-sheet.tsx`, `inventory-header.tsx`, `stock-adjustment-modal.tsx`, `stock-movement-modal.tsx`).
+- [x] Full repository ESLint clean: `npm run lint -- --max-warnings 0` passes with 0 errors and 0 warnings.
+- [x] Fixed private schema grant leak: revoked `EXECUTE` on `stockos_private.shop_settings_dto` from `public, anon, authenticated` via forward migration `supabase/migrations/20261010050000_settings_private_grants.sql` (preserving migration history immutability).
+- [x] TypeScript clean: `npx tsc --noEmit --pretty false` passes with 0 errors.
+- [x] Production build clean: `npm run build` compiles all dynamic and static App Router routes without error.
+- [x] Domain stores and schema verification clean: `node scripts/check-domain-stores.cjs`, `node scripts/check-dashboard-metrics.cjs`, and `npx tsx scripts/test-schemas.ts` pass cleanly.
+- [x] Git cleanliness: `git diff --check` passes with no whitespace issues.
+- [x] Two-axis code review completed across Standards and Spec axes.
+- [x] Local private fullstack codebase verification completed for Ticket 9. Gate D operational requirements (cloud provisioning, external SMTP deliverability, deployment runtime limits, backup/restore drill) remain unverified open gaps before real-shop release.
+
+## Backend Foundation — Ticket 10 Sample Catalog & Wording Validation (2026-10-11)
+
+- [x] Validated small-shop (warung) wording compliance across `src/lib/i18n/translations/id.ts` and `en.ts`, removing legacy enterprise/industrial placeholders (e.g. "PT Logistik Nusantara", "Acme Logistics Corp", "MITRA PABRIK", "Jl. Industri Utama", industrial email/addresses).
+- [x] Defined canonical Indonesian warung categories (`WARUNG_CATEGORIES`) and base units (`WARUNG_UNITS`) in `src/features/products/constants.ts`, re-exported by `sample-warung-catalog.ts` for fixture consumers.
+- [x] Created representative 18-product authentic Indonesian small-shop catalog (`SAMPLE_WARUNG_PRODUCTS`) with whole IDR pricing, carton/unit ratios, sembako/FMCG staples, and stock health distributions (16 in stock, 1 low stock, 1 out of stock).
+- [x] Implemented sample catalog metrics calculator `getSampleCatalogMetrics()` providing total inventory valuation, potential revenue, and potential gross profit.
+- [x] Created automated TDD test script `scripts/check-warung-catalog.mjs` asserting zero enterprise wording in translations and verifying that all 18 sample products strictly conform to `CreateProductInputSchema`.
+- [x] Created `scripts/seed-warung-catalog.mjs` supporting both dry-run schema validation and live local Supabase seeding via `stockos_create_product` RPC.
+- [x] Full regression suite passes: `scripts/check-warung-catalog.mjs` PASS, `scripts/check-dashboard-metrics.cjs` PASS, `scripts/check-domain-stores.cjs` PASS, `scripts/test-schemas.ts` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
+
+## Backend Foundation — Ticket 11 Local Catalog & Wording Validation (2026-10-11)
+
+- [x] Validated small-shop wording across translation dictionaries, eliminating logistics terms (`pengiriman (KELUAR)`, `pengiriman masuk`, `dispatch (OUT)` in favor of `barang terjual (KELUAR)`, `barang masuk`, `sold goods (OUT)`).
+- [x] Integrated canonical `WARUNG_CATEGORIES` and `WARUNG_UNITS` autocompletion datalists into `ProductAddModal` and `EditProductModal`, without importing sample catalog data into production forms.
+- [x] Local proof scripts resolve repository paths relative to their own files and clean up scratch directories after server shutdown; sample catalog imports support native Node.js TypeScript seeding.
+- [x] Fixed PostgreSQL ISO 8601 timestamptz with timezone offset (`+00:00`) parsing in Zod datetime schemas (`dashboard-rpc.schema.ts`, `product-rpc.schema.ts`, `settings-rpc.schema.ts`).
+- [x] Created `scripts/launch-warung-proof.py`: Dedicated launcher provisioning owner and 18 warung catalog products in local test environment on `http://localhost:3002`.
+- [x] Created `scripts/test-warung-catalog.py`: End-to-end automated Playwright browser test driving Microsoft Edge headless through login and all 5 primary routes (Dashboard, Products, Inventory, Reports, Settings).
+- [x] Verified exact financial valuations against PostgreSQL state: Total modal Rp 4.726.850, Potensi Pendapatan Rp 5.457.500, Potensi Laba Kotor Rp 730.650, health distribution (16 in stock, 1 low stock, 1 out of stock).
+- [x] Verified responsive layouts at desktop (1440px) and mobile (390px) viewports with zero horizontal overflow.
+- [x] Negative assertions confirmed zero enterprise/logistics wording across all screens.
+- [x] Regression suite clean: `scripts/check-warung-catalog.mjs` PASS, `scripts/test-warung-catalog.py` PASS, `npx tsc --noEmit` PASS (0 errors), `npm run lint -- --max-warnings 0` PASS (0 warnings, 0 errors), `npm run build` PASS.
+
+## Backend Foundation — Ticket 12 Operational Readiness (2026-10-11)
+
+- [x] Approved local-only scope; SMTP preflight is no-send and external delivery remains blocked.
+- [x] Added `docs/OPERATIONS.md`: environment/secrets, forward migration/failure recovery, backup/Auth restore, monitoring/incident responsibilities, capacity/cost and release gates.
+- [x] Added `scripts/check-smtp-readiness.mjs`: missing/valid config returns BLOCKED (exit 2), unsafe config returns exit 1; `--self-test` verifies redaction, exact recipient allowlist, bounded fields and public-secret rejection without network/email.
+- [x] Added guarded native `scripts/check-operations.mjs`: exclusive lock, retained resource denial, pinned container identity, owner-only external dump folder, migration retry/failure rollback, archive/checksum/grants/Auth/session/retry checks.
+- [x] Final real local proof `node scripts/check-operations.mjs --run` PASS after review fixes: forward migration/no-op/failed-DDL rollback, consistent archive and corruption rejection, exact domain/settings/evidence/retry restore, pre/post quarantine live-session control, old JWT/refresh denial, fresh owner login and private function/table RLS grants. Restore plus validation: 4,536 ms (local fixture only, not production RTO). Source and target fixtures stopped; sensitive dump/status artifacts retained outside repository for review.
+- [x] Regression: domain stores, dashboard metrics, warung catalog, schema checks, TypeScript, full zero-warning ESLint, production build and `git diff --check` passed. Catalog check emits existing Node `MODULE_TYPELESS_PACKAGE_JSON` warning; ESLint has no warnings.
+- [x] Two-axis review fixes: refuse retained volumes/concurrent runners; release lock on setup failure; retain Auth sequence state; constrain unsupported MFA inventory; check archive integrity before mutation; distinguish live-session denial from outage/invalid signing keys.
+- [x] Standards/Spec review follow-up has no remaining material findings in the reviewed changes. No UI/browser suite rerun: no UI/domain feature changes.
+- [ ] External SMTP, off-host encrypted backup/restore, budget/region/operator approval and hosted runtime/deployment remain open. Ticket 12 does not authorize or prove production readiness.
+
+## Deployment Preparation — Track B (2026-10-13)
+
+- `/implement @DEPLOY_PLAN.md` completes local repository preparation only; owner decisions A1–A5, hosted provisioning/deployment, sending, backup custody and launch gates remain open.
+- Phase 0/B1: committed 74 hardening paths in `0047656`. Shared Select restyling and three unrelated seed files remain uncommitted, untouched and outside this slice. Two-axis hardening review: Standards 0 material findings; Spec 1 unrelated shared-UI redesign, excluded from commit rather than discarded.
+- B2: `.env.example` now contains five empty hosted server values, with local URL instructions kept separate. Runtime variable inventory in `docs/OPERATIONS.md` covers app, provider SMTP, operator tooling and backup/recovery custody without credentials. Owner selected existing encrypted password-manager vault; exact product/account/custodian and recovery access remain A1/A5 prerequisites.
+- B3: draft hosted procedure records approval gates, forward-only migrations, private Preview/Production isolation, Node/server runtime, exact `/auth/confirm` allowlist and custom invite/recovery templates, SMTP acceptance, capacity/backup evidence and failure/redeploy rules. Full recovery proof waits for reachable approved app origin; global revocation pauses same-owner authenticated smoke, followed by fresh login.
+- Verification before Phase 0: `npm run typecheck`, `npm run lint -- --max-warnings 0`, `npm run check`, `npm run build` and `git diff --check` PASS. Existing Node `MODULE_TYPELESS_PACKAGE_JSON` and Git LF/CRLF conversion notices remain; ESLint has zero warnings. Checks/build use local working tree, including retained Select styling, not a clean checkout of the scoped commit.
+- Track B two-axis review: Standards 0 material findings; Spec 0 material findings. Template validation confirms exactly five blank hosted variables, document links, callback/vault/draft gates and whitespace. TDD not applicable to documentation-only Track B; no runtime feature or dependency added.
+- Fresh `python -I scripts/launch-hardening-proof.py --run` completes **PASS_LOCAL_ONLY**, coverage **full**, all nine suites (auth, stock, recovery, reports-contract, products, defaults, inventory, reports, settings), no failed/not-run suites, cleanup **PASS**. Seeded forward upgrade, durable/no-op replay, clean migration replay and native grants PASS. Protected sanitized evidence: `%TEMP%/stockos-hardening-_drmm2ka/evidence.json`; tested baseline `d0a128d4231ed6b81209e0317f8a68a887a3587e` plus diff SHA-256 `d74d8897985c2190daad6c53fcead3bd63c6a9fb2b78360f0f3e4a9053832204` and untracked source. Runner captured working tree before scoped commit; this is not clean-commit proof. Final Track B `npm run typecheck` and `npm run check` reruns PASS. No cloud/deploy/real SMTP compatibility claimed, no resources purchased, no real-shop data/import.
+
 ## Next
 
-- [ ] Validate small-shop wording and sample catalog with users.
-- [ ] Finish pending frontend verification before claiming the frontend is fully verified.
-- [ ] Follow confirmed `docs/BACKEND_PLAN.md` after separate implementation approval; verify provider/operational gates without expanding scope.
-- [ ] Start Backend Foundation only after explicit implementation approval and phase updates.
+- [ ] Supply authorized SMTP provider/sender/test inbox before real external delivery proof.
+- [ ] Confirm named recovery responsibility, backup storage/key custody/retention and service budget/region before separately approved provisioning/deployment.
+- [ ] No production launch or real-shop import until operational gates are proven and explicitly authorized.

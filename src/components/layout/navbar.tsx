@@ -47,9 +47,9 @@ export function Navbar({ user }: NavbarProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <LanguageToggle />
-        <span className="hidden md:block font-mono text-[10px] uppercase tracking-widest text-foreground/50">
+        <span className="hidden md:block min-w-0 max-w-[240px] truncate font-mono text-[10px] uppercase tracking-widest text-foreground/50">
           {user.name} / {t.auth.ownerRole}
         </span>
         <UserMenu user={user} />

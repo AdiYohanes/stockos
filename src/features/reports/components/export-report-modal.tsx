@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Download, FileText, CheckCircle2, X } from "lucide-react";
+import { Download, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DialogRoot, DialogPortal, DialogBackdrop, DialogPopup, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { ReportTab } from "../types";
 import { useI18n } from "@/lib/i18n/context";
@@ -11,126 +12,60 @@ interface ExportReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   activeTab: ReportTab;
-  onExport: (type: ReportTab) => void;
+  onExport: (format: "csv" | "print") => Promise<boolean>;
+  isExporting?: boolean;
+  error?: string | null;
 }
 
-export function ExportReportModal({
-  isOpen,
-  onClose,
-  activeTab,
-  onExport,
-}: ExportReportModalProps) {
+export function ExportReportModal({ isOpen, onClose, activeTab, onExport, isExporting = false, error = null }: ExportReportModalProps) {
   const { t } = useI18n();
   const [selectedFormat, setSelectedFormat] = React.useState<"csv" | "print">("csv");
-  const [isExported, setIsExported] = React.useState(false);
-
-  if (!isOpen) return null;
-
-  const handleDownload = () => {
-    if (selectedFormat === "print") {
-      window.print();
-    } else {
-      onExport(activeTab);
+  const [started, setStarted] = React.useState(false);
+  const pending = React.useRef(false);
+  const handleDownload = async () => {
+    if (pending.current) return;
+    pending.current = true;
+    setStarted(false);
+    try {
+      if (await onExport(selectedFormat)) {
+        if (selectedFormat === "print") onClose();
+        else setStarted(true);
+      }
+    } finally {
+      pending.current = false;
     }
-    setIsExported(true);
-    setTimeout(() => {
-      setIsExported(false);
-      onClose();
-    }, 1200);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-none border-2 border-black bg-white p-6 shadow-neo animate-in fade-in zoom-in-95">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-ink pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-none border-[3px] border-ink bg-[#543afd] text-white shadow-neo-sm">
-              <Download className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="font-heading text-base font-bold text-foreground">Export Report Data</h2>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                Dataset: {activeTab}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-none p-1 text-slate-500 hover:bg-slate-100 hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
+  return <DialogRoot open={isOpen} onOpenChange={(open) => { if (!open && !isExporting) onClose(); }}>
+    <DialogPortal>
+      <DialogBackdrop className="print:hidden" />
+      <DialogPopup className="print:hidden max-w-md rounded-none border-[3px] border-ink bg-white p-6 shadow-hard">
+        <div className="border-b border-ink pb-3">
+          <DialogTitle className="font-heading text-base font-bold">{t.reports.exportTitle}</DialogTitle>
+          <DialogDescription className="mt-1 font-mono text-xs text-muted-foreground">
+            {activeTab === "valuation" ? t.reports.tabValuation : activeTab === "velocity" ? t.reports.tabMovement : t.reports.tabLowStock}
+          </DialogDescription>
         </div>
-
-        {/* Form Options */}
-        <div className="my-5 space-y-4 font-mono text-xs">
-          <div>
-            <label className="block font-bold text-foreground mb-1.5">Export Format</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedFormat("csv")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-none border p-3 font-bold transition-all",
-                  selectedFormat === "csv"
-                    ? "border-black bg-[#543afd] text-white shadow-neo-sm"
-                    : "border-slate-300 bg-[#f8f9fa] text-slate-700 hover:bg-slate-200"
-                )}
-              >
-                <FileText className="h-4 w-4" />
-                <span>{t.reports.exportCsv || "CSV Spreadsheet"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedFormat("print")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-none border p-3 font-bold transition-all",
-                  selectedFormat === "print"
-                    ? "border-black bg-[#543afd] text-white shadow-neo-sm"
-                    : "border-slate-300 bg-[#f8f9fa] text-slate-700 hover:bg-slate-200"
-                )}
-              >
-                <FileText className="h-4 w-4" />
-                <span>{t.reports.exportPdf || "Print Summary"}</span>
-              </button>
-            </div>
+        <fieldset disabled={isExporting} className="my-5 space-y-4 font-mono text-xs">
+          <legend className="mb-2 font-bold">{t.reports.fileFormat}</legend>
+          <div className="grid grid-cols-2 gap-3">
+            {(["csv", "print"] as const).map((format) => <button key={format} type="button" aria-pressed={selectedFormat === format} onClick={() => { setSelectedFormat(format); setStarted(false); }}
+              className={cn("press flex items-center justify-center gap-2 border-[3px] p-3 font-bold focus-visible:outline-2 focus-visible:outline-offset-4", selectedFormat === format ? "border-ink bg-[#543afd] text-white shadow-hard-sm" : "border-ink bg-white")}>
+              <FileText className="h-4 w-4" />{format === "csv" ? t.reports.exportCsv : t.reports.exportPdf}
+            </button>)}
           </div>
-
-          <div className="rounded-none border-[3px] border-ink bg-[#f8f9fa] p-3 text-[11px] text-muted-foreground space-y-1">
-            <p className="font-bold text-foreground">Export Scope Notice:</p>
-            <p>Export file includes filtered search terms and selected category filters currently active in the workspace.</p>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-2 border-t border-ink pt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-[3px] border-ink bg-white font-mono text-xs font-bold hover:bg-slate-100"
-          >
-            {t.common.cancel || "Cancel"}
-          </Button>
-          <Button
-            onClick={handleDownload}
-            disabled={isExported}
-            className="border-[1.5px] border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo hover:bg-[#462ee0]"
-          >
-            {isExported ? (
-              <>
-                <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-300" />
-                {t.common.success || "Exported!"}
-              </>
-            ) : (
-              <>
-                <Download className="mr-1.5 h-4 w-4" />
-                {selectedFormat === "csv" ? (t.reports.exportCsv || "Download CSV") : (t.reports.exportPdf || "Print View")}
-              </>
-            )}
+          <p className="border-[3px] border-ink bg-muted p-3">{t.reports.exportLimits}</p>
+        </fieldset>
+        {error && <p role="alert" className="mb-4 font-mono text-xs text-red-800">{error}</p>}
+        {started && <p role="status" className="mb-4 font-mono text-xs">{t.reports.downloadStarted}</p>}
+        <div className="flex justify-end gap-2 border-t border-ink pt-4">
+          <Button variant="outline" onClick={onClose} disabled={isExporting}>{t.common.close}</Button>
+          <Button onClick={handleDownload} disabled={isExporting || started}>
+            {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+            {isExporting ? t.reports.processing : selectedFormat === "csv" ? t.reports.downloadCsv : t.reports.printPage}
           </Button>
         </div>
-      </div>
-    </div>
-  );
+      </DialogPopup>
+    </DialogPortal>
+  </DialogRoot>;
 }
