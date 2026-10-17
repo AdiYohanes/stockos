@@ -80,7 +80,11 @@ if (!statusFile || !fs.existsSync(statusFile) || !accessToken) {
 }
 
 const status = JSON.parse(fs.readFileSync(statusFile, "utf8").replace(/^﻿/, ""));
-const apiUrl = status.API_URL;
+assert.ok(typeof status.API_URL === "string" && URL.canParse(status.API_URL), "Refuse invalid API origin");
+const api = new URL(status.API_URL);
+assert.ok(api.protocol === "http:" && api.hostname === "127.0.0.1"
+  && [api.origin, `${api.origin}/`].includes(status.API_URL), "Refuse non-local API origin");
+const apiUrl = api.origin;
 const anonKey = status.ANON_KEY;
 
 console.log(`Connecting to local Supabase at ${apiUrl}...`);
@@ -107,6 +111,7 @@ for (const p of SAMPLE_WARUNG_PRODUCTS) {
 
   const res = await fetch(`${apiUrl}/rest/v1/rpc/stockos_create_product`, {
     method: "POST",
+    redirect: "error",
     headers: {
       "Content-Type": "application/json",
       apikey: anonKey,
@@ -125,3 +130,4 @@ for (const p of SAMPLE_WARUNG_PRODUCTS) {
 }
 
 console.log(`\nSeeding completed: ${seededCount}/${SAMPLE_WARUNG_PRODUCTS.length} products created.`);
+if (seededCount !== SAMPLE_WARUNG_PRODUCTS.length) process.exitCode = 1;

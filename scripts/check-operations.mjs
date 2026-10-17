@@ -26,6 +26,21 @@ function guard(target) {
   assert.equal(target.createdByRun, true, 'Refuse existing resource');
 }
 
+// Synthetic rollback probe must be unique against every real migration and sort after the latest.
+function probeMigration(migrations) {
+  assert.ok(migrations.length, 'No migrations');
+  const latest = migrations.at(-1).split('_')[0];
+  assert.ok(/^\d{14}$/.test(latest), 'Unexpected migration version');
+  const version = String(BigInt(latest) + 1n).padStart(14, '0');
+  assert.ok(!migrations.some((name) => name.startsWith(version)), 'Probe version collision');
+  return { version, name: `${version}_operations_failure.sql` };
+}
+
+// Evidence must never claim PASS when any cleanup step failed.
+function evidenceStatus(cleanupOk) {
+  return cleanupOk ? 'PASS_LOCAL_ONLY' : 'FAIL_CLEANUP';
+}
+
 function command(binary, args, options = {}) {
   try {
     return execFileSync(binary, args, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 300_000, maxBuffer: 32 * 1024 * 1024, ...options });
@@ -51,7 +66,18 @@ async function selfTest() {
     assert.equal(result.status, 1, 'Unsafe target rejected');
     assert.ok(!(result.stdout + result.stderr).includes('never-print-this-secret'), 'No secret in output');
   }
-  console.log('PASS operations target guards');
+  // Probe selection: unique successor of the latest real version, never colliding.
+  const probe = probeMigration(['20261013000000_dashboard_zero_stock_value.sql']);
+  assert.equal(probe.version, '20261013000001');
+  assert.equal(probe.name, '20261013000001_operations_failure.sql');
+  assert.equal(probeMigration(['20261011000000_report_accuracy.sql', '20261013000000_dashboard_zero_stock_value.sql']).version, '20261013000001', 'Probe ignores stale earlier versions');
+  // Sorted input can never collide (probe = max + 1); collision guard defends unsorted input.
+  assert.throws(() => probeMigration(['20261013000001_existing.sql', '20261013000000_report_accuracy.sql']), 'Collision selection refused');
+  assert.throws(() => probeMigration([]), 'Empty migration list refused');
+  // Evidence status: cleanup failure must never report PASS.
+  assert.equal(evidenceStatus(true), 'PASS_LOCAL_ONLY');
+  assert.equal(evidenceStatus(false), 'FAIL_CLEANUP');
+  console.log('PASS operations target guards, probe selection, evidence status');
 }
 
 async function run() {
@@ -69,7 +95,9 @@ async function drill() {
   }
   const directory = await mkdtemp(join(tmpdir(), 'stockos-operations-'));
   if (process.platform === 'win32') {
-    const sid = command('whoami', ['/user', '/fo', 'csv', '/nh']).match(/S-1-\d+(?:-\d+)+/)?.[0];
+    // Absolute path: Git's POSIX whoami in PATH rejects Windows flags.
+    const whoami = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'whoami.exe');
+    const sid = command(whoami, ['/user', '/fo', 'csv', '/nh']).match(/S-1-\d+(?:-\d+)+/)?.[0];
     assert.ok(sid, 'Cannot determine backup file owner');
     command('icacls', [directory, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`]);
   } else command('chmod', ['700', directory]);
@@ -79,6 +107,11 @@ async function drill() {
   const fixtures = [];
   let phase = 'prepare';
   const started = Date.now();
+  let backupHash = null;
+  let backupTime = null;
+  let restoreStarted = null;
+  let drillResult = null;
+  const cleanupOutcomes = [];
   try {
     for (const [index, project] of projects.entries()) {
       const workdir = join(directory, project);
@@ -139,11 +172,13 @@ async function drill() {
     assert.equal(sql(source, `select count(*) from supabase_migrations.schema_migrations where version='${last.split('_')[0]}'`), '1', 'Forward history recorded');
     command(cli, ['migration', 'up', '--local', '--workdir', source.workdir]);
     assert.equal(snapshot(source), beforeHash, 'Migration retry no-op');
-    const failedPath = join(source.workdir, 'supabase/migrations/20261011000000_operations_failure.sql');
+    phase = 'rollback probe';
+    const probe = probeMigration(migrations);
+    const failedPath = join(source.workdir, 'supabase/migrations', probe.name);
     await writeFile(failedPath, "create table public.operations_rollback_probe(id int); select 1/0;", { mode: 0o600 });
     assert.throws(() => command(cli, ['migration', 'up', '--local', '--workdir', source.workdir]), 'Injected migration fails');
     assert.equal(sql(source, "select to_regclass('public.operations_rollback_probe') is null"), 't', 'Failed migration DDL rolls back');
-    assert.equal(sql(source, "select count(*) from supabase_migrations.schema_migrations where version='20261011000000'"), '0', 'Failed version not recorded');
+    assert.equal(sql(source, `select count(*) from supabase_migrations.schema_migrations where version='${probe.version}'`), '0', 'Failed version not recorded');
     assert.equal(snapshot(source), beforeHash, 'Failed migration preserves data');
     phase = 'backup';
     for (const table of sql(source, "select tablename from pg_tables where schemaname='auth' and tablename in ('mfa_factors','mfa_challenges')").split('\n').filter(Boolean)) {
@@ -153,8 +188,8 @@ async function drill() {
     const backup = join(directory, 'stockos.dump');
     const bytes = command('docker', ['exec', source.container, 'pg_dump', '-U', 'postgres', '-d', 'postgres', '-Fc', '--schema=stockos_private', '--schema=public', '--schema=auth', '--schema=supabase_migrations'], { encoding: null });
     await writeFile(backup, bytes, { mode: 0o600 });
-    const backupHash = digest(bytes);
-    const backupTime = Date.now();
+    backupHash = digest(bytes);
+    backupTime = Date.now();
     verifyBackup(await readFile(backup), backupHash);
     assert.throws(() => verifyBackup(Buffer.concat([bytes, Buffer.from('corruption')]), backupHash), 'Corrupt backup rejected before restore');
     assert.equal(command('docker', ['exec', source.container, 'postgres', '--version']), command('docker', ['exec', target.container, 'postgres', '--version']), 'Same PostgreSQL version');
@@ -190,7 +225,7 @@ async function drill() {
     phase = 'restore';
     // Quarantine HTTP access while imported sessions could still authorize requests.
     command('docker', ['pause', `supabase_auth_${target.project}`, `supabase_rest_${target.project}`]);
-    const restoreStarted = Date.now();
+    restoreStarted = Date.now();
     command('docker', ['exec', target.container, 'pg_restore', '-U', 'supabase_admin', '-d', 'postgres', '--single-transaction', '--exit-on-error', '--use-list=/tmp/restore.list', '/tmp/stockos.dump']);
     assert.equal(snapshot(target), snapshot(source), 'Domain/owner/settings/evidence/retry restored exactly');
     assert.equal(sql(target, 'select string_agg(version,\',\' order by version) from supabase_migrations.schema_migrations'), sql(source, 'select string_agg(version,\',\' order by version) from supabase_migrations.schema_migrations'), 'Migration history restored');
@@ -222,23 +257,46 @@ async function drill() {
     assert.equal(good(await call(restored, 'get_product', { id: productId }), 'Read after replay').data.currentStock, 15, 'Replay cannot duplicate stock');
     assert.equal(sql(target, "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='stockos_private' and (has_function_privilege('anon',p.oid,'EXECUTE') or has_function_privilege('authenticated',p.oid,'EXECUTE'))"), '0', 'Private function grants preserved');
     assert.equal(sql(target, "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='stockos_private' and c.relkind='r' and (not c.relrowsecurity or has_table_privilege('anon',c.oid,'SELECT,INSERT,UPDATE,DELETE') or has_table_privilege('authenticated',c.oid,'SELECT,INSERT,UPDATE,DELETE'))"), '0', 'Private table RLS/grants preserved');
-    const evidence = { status: 'PASS_LOCAL_ONLY', capturedAt: new Date(backupTime).toISOString(), backupSha256: backupHash, postgresVersion: command('docker', ['exec', target.container, 'postgres', '--version']).trim(), migrations: migrations.length, stock: 15, inventoryCostValue: '52500.000000', restoreMilliseconds: Date.now() - restoreStarted, snapshotAgeMilliseconds: Date.now() - backupTime, totalMilliseconds: Date.now() - started, smtp: 'BLOCKED_NO_SEND', offHostBackup: 'NOT_PROVEN', deployment: 'NOT_AUTHORIZED' };
-    await writeFile(join(directory, 'evidence.json'), JSON.stringify(evidence, null, 2), { mode: 0o600 });
+    drillResult = {
+      backupSha256: backupHash, capturedAt: new Date(backupTime).toISOString(),
+      postgresVersion: command('docker', ['exec', target.container, 'postgres', '--version']).trim(),
+      migrations: migrations.length, stock: 15, inventoryCostValue: '52500.000000',
+      restoreMilliseconds: Date.now() - restoreStarted, snapshotAgeMilliseconds: Date.now() - backupTime,
+    };
     console.log('PASS local forward migration, independent dump/restore, owner/session/grant/retry checks');
-    console.log(`Protected proof directory (sensitive dump; retain for review): ${directory}`);
-    console.log(`Restore ${evidence.restoreMilliseconds}ms; SMTP/off-host recovery/deployment remain unproven`);
   } catch {
     console.error(`FAIL operations phase: ${phase}; raw output suppressed. Inspect protected directory: ${directory}`);
     process.exitCode = 1;
   } finally {
+    // Cleanup runs before evidence is written so evidence can never claim PASS with failed cleanup.
     for (const fixture of fixtures.reverse()) {
       try {
         inspect(fixture);
         command(cli, ['stop', '--workdir', fixture.workdir, '--no-backup']);
-      } catch {
+        cleanupOutcomes.push({ project: fixture.project, status: 'PASS' });
+      } catch (cleanupError) {
+        cleanupOutcomes.push({ project: fixture.project, status: 'FAIL', error: cleanupError instanceof Error ? cleanupError.message : 'unknown' });
         console.error(`Fixture cleanup incomplete: ${fixture.project}; inspect before manual cleanup`);
         process.exitCode = 1;
       }
+    }
+    if (drillResult) {
+      const evidence = {
+        status: evidenceStatus(cleanupOutcomes.every((outcome) => outcome.status === 'PASS')),
+        capturedAt: drillResult.capturedAt, backupSha256: drillResult.backupSha256,
+        postgresVersion: drillResult.postgresVersion, migrations: drillResult.migrations,
+        stock: drillResult.stock, inventoryCostValue: drillResult.inventoryCostValue,
+        restoreMilliseconds: drillResult.restoreMilliseconds, snapshotAgeMilliseconds: drillResult.snapshotAgeMilliseconds,
+        totalMilliseconds: Date.now() - started,
+        cleanup: cleanupOutcomes,
+        smtp: 'BLOCKED_NO_SEND', offHostBackup: 'NOT_PROVEN', deployment: 'NOT_AUTHORIZED',
+      };
+      await writeFile(join(directory, 'evidence.json'), JSON.stringify(evidence, null, 2), { mode: 0o600 });
+      console.log(`Protected proof directory (sensitive dump; retain for review): ${directory}`);
+      console.log(`Restore ${drillResult.restoreMilliseconds}ms; SMTP/off-host recovery/deployment remain unproven`);
+    } else {
+      await writeFile(join(directory, 'evidence.json'), JSON.stringify({ status: 'FAIL', phase, totalMilliseconds: Date.now() - started, cleanup: cleanupOutcomes }, null, 2), { mode: 0o600 });
+      console.error(`Protected proof directory (sensitive dump; retain for review): ${directory}`);
     }
   }
 }

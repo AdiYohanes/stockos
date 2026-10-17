@@ -50,9 +50,12 @@ stockos-login.txt
 next-env.d.ts
 
 # local agent / design caches
+.mcp.json
 .impeccable/
 .superdesign/
 .agents/
 .claude/worktrees/
 .claude/skills/
 .next-reports-proof/
+
+__pycache__/

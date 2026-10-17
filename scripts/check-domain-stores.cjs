@@ -105,4 +105,48 @@ console.log("Inventory store checks passed.");
 
 assert.ok(MOCK_PRODUCTS.every((product) => !("warehouse" in product)));
 assert.ok(MOCK_INVENTORY_ITEMS.every((item) => !("warehouse" in item)));
+
+// H1 regression: rounded average must never recompute the authoritative total.
+// Edge case: stock 1,000,000,000 × average rounds to "0.000000" while DB total is exactly "1.000000".
+const { ProductDtoSchema } = require("../src/features/products/schemas/product-rpc.schema.ts");
+const { mapProductToInventoryItem } = require("../src/features/inventory/adapters.ts");
+const { mapLowStockReport, mapValuationReport } = require("../src/features/reports/adapters.ts");
+const { formatProductMoney } = require("../src/features/products/format.ts");
+
+const edgeDto = ProductDtoSchema.parse({
+  id: "00000000-0000-4000-8000-000000000001", sku: "EDGE-01", name: "Edge Case", category: "Uji", unit: "pcs",
+  supplier: null, shelfLocation: null, barcode: null, description: null,
+  sellingPrice: "1", minStock: 0, currentStock: 1_000_000_000,
+  inventoryCostValue: "1.000000", averagePurchaseCost: "0.000000",
+  potentialSellingValue: "0", potentialGrossProfit: "0",
+  stockStatus: "in_stock", archivedAt: null, metadataVersion: "1", stockVersion: "1",
+  createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z",
+});
+const edgeItem = mapProductToInventoryItem(edgeDto);
+assert.equal(typeof edgeItem.inventoryCostValue, "string", "Money boundary must stay strings in Inventory adapter");
+assert.equal(edgeItem.inventoryCostValue, "1.000000");
+assert.equal(edgeItem.averagePurchaseCost, "0.000000");
+assert.equal(formatProductMoney(edgeItem.inventoryCostValue), "Rp 1", "Total must come from inventoryCostValue, not stock × rounded average");
+assert.equal(formatProductMoney(edgeItem.averagePurchaseCost), "Rp 0");
+
+const lowStock = mapLowStockReport({
+  mode: "screen",
+  summary: { totalAlerts: 1, outOfStockCount: 1, lowStockCount: 0, totalDeficit: 1_000_000_000 },
+  count: 1, page: 1, pageSize: 25,
+  items: [{
+    id: edgeDto.id, sku: edgeDto.sku, name: edgeDto.name, category: edgeDto.category, unit: "pcs",
+    supplier: null, shelfLocation: null, currentStock: 0, minStock: 0,
+    stockStatus: "out_of_stock", deficit: 1_000_000_000, sellingPrice: "1",
+    inventoryCostValue: "1.000000", averagePurchaseCost: "0.000001",
+  }],
+});
+assert.equal(lowStock[0].unitCost, "0.000001");
+assert.equal(lowStock[0].totalReorderCost, "1000.000000", "Reorder cost must use exact BigInt math, not float");
+
+const valuation = mapValuationReport({
+  mode: "screen",
+  total: { totalSKUs: 1, totalUnits: 1_000_000_000, totalCost: "1.000000", totalValuation: "1.000000", grossMargin: "0", marginPercent: "0", asOf: "2026-01-01" },
+  categories: [], count: 0, page: 1, pageSize: 25,
+});
+assert.equal(valuation.totalCost, "1.000000", "Reports valuation must keep exact decimal strings");
 require("./test-schemas.ts");

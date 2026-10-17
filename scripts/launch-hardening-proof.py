@@ -29,9 +29,11 @@ SUITES = {
     "reports-contract": ("check-reports-contract.mjs", []),
     "products": ("test-products.py", []),
     "defaults": ("test-products.py", ["--defaults"]),
+    "lifecycle": ("test-products.py", ["--lifecycle"]),
     "inventory": ("test-inventory.py", ["--hardening"]),
     "reports": ("test-reports.py", []),
     "settings": ("test-settings.py", []),
+    "hydration": ("test-hydration.py", []),
 }
 EXCLUDED = "studio,realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor"
 BASELINE_LAST = "20261010050000"
@@ -69,6 +71,10 @@ def cli():
 
 def listen_check(ports):
     for port in ports:
+        with socket.socket() as probe:
+            probe.settimeout(0.1)
+            if probe.connect_ex(("127.0.0.1", port)) == 0:
+                raise OSError(f"Port {port} already accepts TCP connections")
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", port))
 
@@ -433,7 +439,7 @@ function execFileSync(binary, args, options) {
     print("PASS " + suite_name)
 
 
-def launch_server(directory, manifest):
+def launch_server(directory, manifest, production=False):
     listen_check([3012])
     app = directory / "app"
     app.mkdir()
@@ -449,8 +455,19 @@ def launch_server(directory, manifest):
                SUPABASE_SERVICE_ROLE_KEY=manifest["status"]["SERVICE_ROLE_KEY"], STOCKOS_APP_URL="http://localhost:3012",
                STOCKOS_SETUP_SECRET=uuid.uuid4().hex + uuid.uuid4().hex, NEXT_TELEMETRY_DISABLED="1")
     log = (directory / "next.log").open("w", encoding="utf-8")
-    server = subprocess.Popen(["node", str(ROOT / "node_modules/next/dist/bin/next"), "dev", "--webpack", "--hostname", "127.0.0.1", "--port", "3012"],
-                              cwd=str(app), env=env, stdout=log, stderr=log)
+    next_bin = ["node", str(ROOT / "node_modules/next/dist/bin/next")]
+    if production:
+        # Isolated next build + next start; same app copy, same synthetic env, same guards.
+        try:
+            command(next_bin + ["build", "--webpack"], cwd=app, env=env, timeout=900)
+        except BaseException:
+            log.close()
+            raise
+        server = subprocess.Popen(next_bin + ["start", "--hostname", "127.0.0.1", "--port", "3012"],
+                                  cwd=str(app), env=env, stdout=log, stderr=log)
+    else:
+        server = subprocess.Popen(next_bin + ["dev", "--webpack", "--hostname", "127.0.0.1", "--port", "3012"],
+                                  cwd=str(app), env=env, stdout=log, stderr=log)
     try:
         for _ in range(180):
             assert server.poll() is None, "Next server exited; private log retained"
@@ -548,7 +565,7 @@ def run(args):
         assert all((ROOT / "scripts" / SUITES[name][0]).is_file() for name in suites), "Required regression suite missing; do not claim full proof"
         if any(SUITES[name][0].endswith(".py") for name in suites):
             phase = "Next startup"
-            server, log = launch_server(directory, clean)
+            server, log = launch_server(directory, clean, production=args.prod)
         for name in suites:
             phase = name
             print("RUN " + name, flush=True)
@@ -597,7 +614,7 @@ def run(args):
         except BaseException:
             cleanup_failures.append("link")
         evidence = proof_evidence(suites, completed, failure_phase, cleanup_failures, baseline_evidence)
-        evidence["commandArgs"] = ["--run", *[arg for name in (args.only or []) for arg in ("--only", name)]]
+        evidence["commandArgs"] = ["--run", *(["--prod"] if args.prod else []), *[arg for name in (args.only or []) for arg in ("--only", name)]]
         (directory / "evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     if evidence["status"] != "PASS_LOCAL_ONLY":
         print("FAIL proof phase: " + str(evidence["failurePhase"]) + "; raw output suppressed. Protected evidence: " + str(directory), file=sys.stderr)
@@ -795,6 +812,7 @@ def self_test():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fresh local synthetic hardening proof; never reuses retained resources")
     parser.add_argument("--run", action="store_true")
+    parser.add_argument("--prod", action="store_true", help="With --run: isolated next build + next start instead of dev")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--baseline-dir")
     parser.add_argument("--only", choices=list(SUITES), action="append")
@@ -804,6 +822,7 @@ if __name__ == "__main__":
     options = parser.parse_args()
     try:
         assert sum((options.run, options.self_test, bool(options.inspect), bool(options.cleanup), bool(options.execute_test))) == 1, "Choose one explicit mode"
+        assert not (options.prod and not options.run), "--prod requires --run"
         if options.self_test:
             self_test()
         elif options.cleanup:

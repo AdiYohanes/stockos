@@ -15,7 +15,9 @@
     "check:reports": "node scripts/check-reports.mjs",
     "check:proof": "python -I scripts/launch-hardening-proof.py --self-test",
     "check:settings": "node scripts/check-settings-state.mjs",
-    "check": "npm run check:domain && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings"
+    "check:seeder": "node scripts/check-seeder-safety.mjs",
+    "check:operations": "node scripts/check-operations.mjs --self-test",
+    "check": "npm run check:domain && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

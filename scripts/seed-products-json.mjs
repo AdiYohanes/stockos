@@ -22,9 +22,12 @@ assert.ok(fs.existsSync(statusFile), `Status file not found: ${statusFile}`);
 assert.ok(fs.existsSync(productsFile), `Products file not found: ${productsFile}`);
 
 const status = JSON.parse(fs.readFileSync(statusFile, "utf8").replace(/^﻿/, ""));
-const apiUrl = status.API_URL;
+assert.ok(typeof status.API_URL === "string" && URL.canParse(status.API_URL), "Refuse invalid API origin");
+const api = new URL(status.API_URL);
+assert.ok(api.protocol === "http:" && api.hostname === "127.0.0.1"
+  && [api.origin, `${api.origin}/`].includes(status.API_URL), "Refuse non-local API origin");
+const apiUrl = api.origin;
 const anonKey = status.ANON_KEY;
-assert.ok(apiUrl.startsWith("http://127.0.0.1"), "Refuse non-local API URL");
 
 const { CreateProductInputSchema } = await import("../src/features/products/schemas/product-rpc.schema.ts");
 const products = JSON.parse(fs.readFileSync(productsFile, "utf8").replace(/^﻿/, ""));
@@ -60,6 +63,7 @@ let seededCount = 0;
 for (const payload of payloads) {
   const res = await fetch(`${apiUrl}/rest/v1/rpc/stockos_create_product`, {
     method: "POST",
+    redirect: "error",
     headers: {
       "Content-Type": "application/json",
       apikey: anonKey,
