@@ -1,5 +1,13 @@
 "use client";
 
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n/context";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 
@@ -14,14 +22,25 @@ interface ProductRowActionsProps {
 export function ProductRowActions({ product, onViewDetails, onEdit, onDelete, onQuickMovement }: ProductRowActionsProps) {
   const { t } = useI18n();
   const p = t.products.persistent;
-  const button = "input-focus border-2 border-ink px-2 py-1 text-[10px] font-bold uppercase bg-paper disabled:opacity-40";
-  return <div className="flex flex-wrap justify-end gap-1">
-    <button type="button" className={button} onClick={() => onViewDetails(product)}>{t.common.details}</button>
-    <button type="button" className={button} disabled={Boolean(product.archivedAt)} onClick={() => onEdit(product)}>{t.common.edit}</button>
-    {onQuickMovement && <>
-      <button type="button" className={button} disabled={Boolean(product.archivedAt)} onClick={() => onQuickMovement(product, "in")}>{p.receipt}</button>
-      <button type="button" className={button} disabled={Boolean(product.archivedAt) || product.currentStock === 0} onClick={() => onQuickMovement(product, "out")}>{p.sold}</button>
-    </>}
-    <button type="button" className={button} onClick={() => onDelete(product)}>{product.archivedAt ? p.reactivate : p.archive}</button>
-  </div>;
+  const item = "min-h-11 rounded-none px-3 py-2 font-mono text-xs font-bold focus:bg-acid/15 data-highlighted:bg-acid/15";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={`${t.common.actions}: ${product.name}`}
+        className="input-focus press inline-flex size-11 items-center justify-center border-[3px] border-ink bg-paper shadow-neo-sm"
+      >
+        <MoreHorizontal className="size-5" aria-hidden="true" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)] rounded-none border-[3px] border-ink bg-paper text-ink shadow-neo ring-0">
+        <DropdownMenuItem className={item} onClick={() => onViewDetails(product)}>{t.common.details}</DropdownMenuItem>
+        <DropdownMenuItem className={item} disabled={Boolean(product.archivedAt)} onClick={() => onEdit(product)}>{t.common.edit}</DropdownMenuItem>
+        {onQuickMovement && <>
+          <DropdownMenuItem className={item} disabled={Boolean(product.archivedAt)} onClick={() => onQuickMovement(product, "in")}>{p.receipt}</DropdownMenuItem>
+          <DropdownMenuItem className={item} disabled={Boolean(product.archivedAt) || product.currentStock === 0} onClick={() => onQuickMovement(product, "out")}>{p.sold}</DropdownMenuItem>
+        </>}
+        <DropdownMenuSeparator className="bg-ink" />
+        <DropdownMenuItem className={item} onClick={() => onDelete(product)}>{product.archivedAt ? p.reactivate : p.archive}</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }

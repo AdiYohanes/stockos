@@ -62,25 +62,33 @@ export function ProductsTable({
     <div className="flex flex-col">
       {/* Table Container */}
       <div className="relative w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[850px]">
-          <thead className="bg-paper border-b-[3px] border-ink font-mono text-[10px] uppercase tracking-widest text-ink select-none">
+        <table className="w-full table-fixed text-left border-collapse min-w-[960px]">
+          <colgroup>
+            <col />
+            <col className="w-[170px]" />
+            <col className="w-[200px]" />
+            <col className="w-[180px]" />
+            <col className="w-[150px]" />
+            <col className="w-[88px]" />
+          </colgroup>
+          <thead className="bg-paper border-b-[3px] border-ink font-mono text-[11px] uppercase tracking-widest text-ink select-none">
             <tr>
-              <th scope="col" className="px-5 py-4 min-w-[220px]">
+              <th scope="col" className="px-4 py-3">
                 {t.products.table.colProduct}
               </th>
-              <th scope="col" className="px-5 py-4 w-[140px]">
+              <th scope="col" className="px-4 py-3">
                 {t.products.table.colSku}
               </th>
-              <th scope="col" className="px-5 py-4 w-[160px]">
+              <th scope="col" className="px-4 py-3">
                 {t.products.table.colStock}
               </th>
-              <th scope="col" className="px-5 py-4 w-[150px] text-right">
+              <th scope="col" className="px-4 py-3 text-right">
                 {t.products.table.colPrice}
               </th>
-              <th scope="col" className="px-5 py-4 w-[130px]">
+              <th scope="col" className="px-4 py-3">
                 {t.common.status}
               </th>
-              <th scope="col" className="px-5 py-4 w-[60px] text-right">
+              <th scope="col" className="px-4 py-3 text-right">
                 <span className="sr-only">{t.common.actions}</span>
               </th>
             </tr>
@@ -96,22 +104,22 @@ export function ProductsTable({
               return (
                 <tr
                   key={product.id}
-                  className="group transition-colors hover:bg-acid/10 cursor-pointer h-16"
+                  className="group h-20 align-middle transition-colors hover:bg-acid/10"
                 >
                   {/* Col 1: Product Name & Category */}
-                  <td className="px-5 py-4">
-                    <div className="flex flex-col">
-                      <button type="button" onClick={() => onViewDetails(product)} className="input-focus text-left font-display font-bold uppercase text-sm text-ink hover:underline">
+                  <td className="px-4 py-3">
+                    <div className="flex min-w-0 flex-col">
+                      <button type="button" title={product.name} onClick={() => onViewDetails(product)} className="input-focus truncate text-left font-display font-bold uppercase text-base text-ink hover:underline">
                         {product.name}
                       </button>
-                      <div className="mt-0.5 flex items-center gap-2">
-                        <span className="font-mono text-[9px] opacity-45 uppercase">
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="min-w-0 truncate font-mono text-[11px] opacity-55 uppercase">
                           {product.category}
                         </span>
                         {product.supplier && (
                           <>
                             <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="font-mono text-[9px] opacity-45 uppercase truncate max-w-[150px]">
+                            <span className="font-mono text-[11px] opacity-55 uppercase truncate min-w-0">
                               {product.supplier}
                             </span>
                           </>
@@ -121,11 +129,11 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 2: SKU & Barcode */}
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3">
                     <div className="flex flex-col gap-0.5">
-                      <SkuBadge code={product.sku} />
+                      <SkuBadge code={product.sku} className="block max-w-full truncate" />
                       {product.barcode && (
-                        <span className="font-mono tabular-nums text-[10px] text-ink opacity-45">
+                        <span className="truncate font-mono tabular-nums text-[11px] text-ink opacity-55">
                           #{product.barcode}
                         </span>
                       )}
@@ -133,12 +141,12 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 3: Stock Level & Progress Bar */}
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3">
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between font-mono tabular-nums">
                         <span
                           className={cn(
-                            "font-display font-[900] text-sm",
+                            "font-display font-[900] text-base",
                             product.stockStatus === "out_of_stock"
                               ? "text-red-600"
                               : product.stockStatus === "low_stock"
@@ -147,11 +155,11 @@ export function ProductsTable({
                           )}
                         >
                           {formatNumber(product.currentStock)}{" "}
-                          <span className="text-[10px] opacity-45 font-mono uppercase">
+                          <span className="text-[11px] opacity-55 font-mono uppercase">
                             {product.unit}
                           </span>
                         </span>
-                        <span className="text-[10px] opacity-45 uppercase">
+                        <span className="text-[11px] opacity-55 uppercase">
                           min {product.minStock}
                         </span>
                       </div>
@@ -174,15 +182,15 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 4: Price & Valuation (Right-Aligned Numbers) */}
-                  <td className="px-5 py-4 text-right font-mono tabular-nums">
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-ink">
-                        <span className="text-[10px] text-ink/50 mr-1">J:</span>
+                      <span className="text-sm font-bold text-ink">
+                        <span className="text-[11px] text-ink/50 mr-1">J:</span>
                         {formatProductMoney(product.sellingPrice)}
                       </span>
                       {product.averagePurchaseCost !== null && (
-                        <span className="text-xs font-bold text-emerald-600 mt-1">
-                          <span className="text-[10px] text-emerald-600/50 mr-1">B:</span>
+                        <span className="text-sm font-bold text-emerald-600 mt-1">
+                          <span className="text-[11px] text-emerald-600/50 mr-1">B:</span>
                           {formatProductMoney(product.averagePurchaseCost)}
                         </span>
                       )}
@@ -190,19 +198,19 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 6: Disciplined Status Micro-Dot */}
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3">
                     {product.stockStatus === "in_stock" && (
-                      <span className="bg-acid border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
+                      <span className="bg-acid inline-block whitespace-nowrap border-[3px] border-ink px-2 py-1 font-mono text-[11px] font-bold uppercase text-paper">
                         {t.products.inStock}
                       </span>
                     )}
                     {product.stockStatus === "low_stock" && (
-                      <span className="bg-orange-400 border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase text-ink">
+                      <span className="bg-orange-400 inline-block whitespace-nowrap border-[3px] border-ink px-2 py-1 font-mono text-[11px] font-bold uppercase text-ink">
                         {t.products.lowStock}
                       </span>
                     )}
                     {product.stockStatus === "out_of_stock" && (
-                      <span className="bg-ink text-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+                      <span className="bg-ink text-paper inline-block whitespace-nowrap border-[3px] border-ink px-2 py-1 font-mono text-[11px] font-bold uppercase">
                         {t.products.outOfStock}
                       </span>
                     )}
@@ -210,7 +218,7 @@ export function ProductsTable({
                   </td>
 
                   {/* Col 7: Actions Menu */}
-                  <td className="px-5 py-4 text-right">
+                  <td className="px-4 py-3 text-right">
                     <ProductRowActions
                       product={product}
                       onViewDetails={onViewDetails}
@@ -227,7 +235,7 @@ export function ProductsTable({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t-[3px] border-ink px-5 py-4 bg-paper">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t-[3px] border-ink px-4 py-3 bg-paper">
         <div className="text-[10px] text-ink opacity-60 font-mono tabular-nums uppercase tracking-widest">
           {t.products.table.showing} <span className="font-bold opacity-100">{startItem}</span>–<span className="font-bold opacity-100">{endItem}</span> {t.products.table.of}{" "}
           <span className="font-bold opacity-100">{totalCount}</span> {t.products.table.products}

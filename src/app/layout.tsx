@@ -35,9 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${archivo.variable} h-full antialiased`}
-      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans">
         <I18nProvider>{children}</I18nProvider>
       </body>
     </html>

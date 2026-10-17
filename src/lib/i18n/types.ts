@@ -216,6 +216,14 @@ export interface Translations {
     subtitle: string;
     badgeText: string;
     adjustStock: string;
+    costCorrection: {
+      title: string; description: string; replacement: string; reason: string;
+      moneyHelp: string; invalidTotal: string; reasonRequired: string; zeroStock: string;
+    };
+    quantityCorrection: {
+      title: string; description: string; original: string; parent: string;
+      invalidCount: string; foundTotal: string; foundHelp: string; invalidFoundTotal: string;
+    };
     batchCode: string;
     location: string;
     availableStock: string;
@@ -304,12 +312,11 @@ export interface Translations {
     noMovementsFoundDesc: string;
     // Detail sheet
     stockHealthGauge: string;
-    ofMaxCap: string;
+    ofMaxScale: string;
     onHand: string;
     available: string;
     storageBin: string;
     minReorderThreshold: string;
-    maxStorageCapacity: string;
     valuationUnitEconomics: string;
     unitCost: string;
     totalStockValuation: string;
@@ -394,6 +401,26 @@ export interface Translations {
     opening: string;
     low: string;
     empty: string;
+    valuationByCategory: string;
+    assetCost: string;
+    retailValue: string;
+    totalCost: string;
+    marginPercent: string;
+    valuationShare: string;
+    categoryBreakdown: string;
+    trendInVsOut: string;
+    colOpening: string;
+    colStockIn: string;
+    colStockOut: string;
+    colOpnameDelta: string;
+    colCurrentStock: string;
+    colLastMovement: string;
+    movementPerProduct: string;
+    noMovementData: string;
+    lookupPage: string;
+    lookupNarrow: string;
+    lookupNext: string;
+    lookupPrev: string;
   };
   settings: {
     title: string;

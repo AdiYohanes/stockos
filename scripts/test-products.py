@@ -239,8 +239,46 @@ def row(page, item):
     return found
 
 
+def row_action(page, item, name):
+    row(page, item).get_by_role("button", name=re.compile(r"^(Actions|Aksi):")).click()
+    page.get_by_role("menuitem", name=name).click()
+
+
+def table_layout(page, item):
+    for language in ("id", "en"):
+        page.evaluate("language => localStorage.setItem('stockos_language', language)", language)
+        page.reload()
+        for width in (1440, 1024, 768, 390, 320):
+            page.set_viewport_size({"width": width, "height": 1000})
+            found = row(page, item)
+            trigger = found.get_by_role("button", name=re.compile(r"^Aksi:" if language == "id" else r"^Actions:"))
+            expect(trigger).to_be_visible()
+            assert found.bounding_box()["height"] <= 100, "Product actions inflated row height"
+            overflow = page.evaluate("""() => ({width: innerWidth, scroll: document.documentElement.scrollWidth, outside: [...document.querySelectorAll('body *')].filter(el => { const r = el.getBoundingClientRect(); return r.right > innerWidth + 1 && r.width > 0; }).slice(0, 12).map(el => ({tag: el.tagName, class: String(el.className).slice(0, 120), path: (() => { let p = el.tagName; let n = el.parentElement; let d = 0; while (n && n !== document.body && d < 4) { p = n.tagName + '>' + p; n = n.parentElement; d++; } return p; })(), right: Math.round(el.getBoundingClientRect().right)}))})""")
+            assert overflow["scroll"] <= width, f"Products overflow at {width}px: {overflow}"
+            trigger.focus()
+            trigger.press("ArrowDown")
+            menu = page.get_by_role("menu")
+            expect(menu).to_be_visible()
+            expect(menu.get_by_role("menuitem")).to_have_count(5)
+            sold = menu.get_by_role("menuitem", name=re.compile(r"^(Stock Out|Stok Keluar) —"))
+            assert sold.is_disabled() == bool(item["archivedAt"] or item["currentStock"] == 0), "Sold action disabled rule changed"
+            box = menu.bounding_box()
+            assert box["x"] >= 0 and box["x"] + box["width"] <= width, "Actions menu outside viewport"
+            page.keyboard.press("Escape")
+            expect(menu).not_to_be_visible()
+            expect(trigger).to_be_focused()
+            if width in (1440, 390):
+                page.screenshot(path=str(Path(sys.argv[2]).parent / f"products-layout-{language}-{width}.png"), full_page=True)
+    page.evaluate("localStorage.setItem('stockos_language', 'id')")
+    page.reload()
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    row(page, item)
+    print("PASS: compact product rows, five viewport widths, both languages, menu keyboard/bounds/disabled state")
+
+
 def movement(page, item, kind, quantity, purchase=None, cartons=None):
-    row(page, item).get_by_role("button", name=re.compile(r"^(Stock In|Stok Masuk) —" if kind == "in" else r"^(Stock Out|Stok Keluar) —")).click()
+    row_action(page, item, re.compile(r"^(Stock In|Stok Masuk) —" if kind == "in" else r"^(Stock Out|Stok Keluar) —"))
     page.locator("#mov-qty").fill(str(quantity))
     if cartons:
         page.get_by_role("dialog").get_by_role("checkbox").check()
@@ -256,7 +294,7 @@ def movement(page, item, kind, quantity, purchase=None, cartons=None):
 
 
 def edit(page, item, price):
-    row(page, item).get_by_role("button", name=re.compile(r"^(Edit|Ubah)$")).click()
+    row_action(page, item, re.compile(r"^(Edit|Ubah)$"))
     expect(page.locator("#edit-sku")).to_be_disabled()
     expect(page.locator("#edit-unit")).to_be_disabled()
     page.locator("#edit-selling-price").fill(str(price))
@@ -268,8 +306,9 @@ def edit(page, item, price):
 
 
 def full(page, context, browser, item, create_request):
-    zero, _ = add(page, "ZERO")
+    zero, _ = add(page, "ZERO-" + "X" * 35, name="Produk uji dengan nama panjang " * 3)
     assert zero["currentStock"] == 0 and history(zero)["total"] == 0
+    table_layout(page, zero)
     free, _ = add(page, "FREE", 2, 0, name=item["name"])
     assert free["id"] != item["id"] and free["inventoryCostValue"] == "0.000000"
     item, receipt = movement(page, item, "in", 10, 40000, cartons=(2, 5))
@@ -292,7 +331,7 @@ def full(page, context, browser, item, create_request):
     other_context = browser.new_context()
     other = login(other_context)
     # Two real sessions: stale draft remains open after metadata changed elsewhere.
-    row(other, item).get_by_role("button", name=re.compile(r"^(Edit|Ubah)$")).click()
+    row_action(other, item, re.compile(r"^(Edit|Ubah)$"))
     other.locator("#edit-selling-price").fill("77777")
     item, _ = edit(page, item, 88888)
     stale = dict(json.loads(edit_request.post_data)[0], requestId=str(uuid.uuid4()))
@@ -311,7 +350,7 @@ def full(page, context, browser, item, create_request):
     assert replayed["ok"] is True and replayed["replayed"] is True
     assert history(item) == before and product(item["sku"])["currentStock"] == 15
     # Drop browser response only after actual server commit; retry must preserve payload/request ID.
-    row(page, item).get_by_role("button", name=re.compile(r"^(Stock In|Stok Masuk) —")).click()
+    row_action(page, item, re.compile(r"^(Stock In|Stok Masuk) —"))
     page.locator("#mov-qty").fill("1")
     page.locator("#mov-purchase").fill("0")
     dropped = []
@@ -341,6 +380,111 @@ def full(page, context, browser, item, create_request):
     print("PASS: zero/free opening, duplicate names, carton receipt, sold/cost, price edit, strict/anonymous actions, two-session conflict, lost-response retry/replay")
 
 
+def lifecycle(page, context, browser):
+    # Archive/reactivate round trip: zero-stock gate, identity/history retention, stale/uncertain handling.
+    zero, _ = add(page, "ZERO")
+    assert zero["currentStock"] == 0 and zero["archivedAt"] is None
+    before_history = history(zero)
+
+    # Nonzero-stock rejection: dialog blocks submit, product unchanged.
+    free, _ = add(page, "FREE", 2, 0)
+    assert free["currentStock"] == 2 and free["archivedAt"] is None
+    row_action(page, free, re.compile(r"^(Archive|Arsipkan)$"))
+    dialog = page.get_by_role("dialog")
+    expect(dialog.get_by_text(re.compile(r"Stock must be zero|Stok harus nol"))).to_be_visible()
+    expect(dialog.get_by_role("button", name=re.compile(r"^(Archive|Arsipkan)$"))).to_be_disabled()
+    page.keyboard.press("Escape")
+    expect(dialog).not_to_be_visible()
+    assert product(free["sku"])["archivedAt"] is None
+
+    # Zero-stock archive: committed, keeps identity/history, disappears from active view.
+    row_action(page, zero, re.compile(r"^(Archive|Arsipkan)$"))
+    expect(dialog.get_by_text(re.compile(r"keeps SKU and history|Arsip mempertahankan"))).to_be_visible()
+    with page.expect_request(is_mutation) as archived_request:
+        dialog.get_by_role("button", name=re.compile(r"^(Archive|Arsipkan)$")).click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    captured_zero = product(zero["sku"])
+    assert captured_zero["archivedAt"]
+    assert history(zero)["total"] == before_history["total"]
+    assert product(free["sku"])["archivedAt"] is None
+    row(page, captured_zero).get_by_role("button", name=re.compile(r"^(Actions|Aksi):")).click()
+    for label in (r"^(Edit|Ubah)$", r"^(Stock In|Stok Masuk) —", r"^(Stock Out|Stok Keluar) —"):
+        expect(page.get_by_role("menuitem", name=re.compile(label))).to_have_attribute("aria-disabled", "true")
+    page.keyboard.press("Escape")
+
+    # Active list hides it; archived view shows it; identity (sku, id) unchanged.
+    page.goto(BASE + "/products")
+    # Table rendered with data (free is active) before asserting zero's absence.
+    expect(page.get_by_role("cell", name=free["sku"], exact=False).first).to_be_visible()
+    assert page.get_by_role("cell", name=zero["sku"], exact=False).count() == 0
+    row(page, zero)
+    assert product(zero["sku"])["id"] == zero["id"]
+
+    # Detail sheet for archived product: movement/edit disabled, reactivate offered.
+    row_action(page, zero, re.compile(r"^(Details|Detail)$"))
+    sheet = page.get_by_role("dialog")
+    expect(sheet.get_by_text(re.compile(r"Archived|Diarsipkan"))).to_be_visible()
+    expect(sheet.get_by_role("button", name=re.compile(r"^(Stock In|Stok Masuk)$"))).to_be_disabled()
+    expect(sheet.get_by_role("button", name=re.compile(r"^(Stock Out|Stok Keluar)"))).to_be_disabled()
+    expect(sheet.get_by_role("button", name=re.compile(r"^(Edit Item|Edit|Ubah Item)$"))).to_be_disabled()
+    page.keyboard.press("Escape")
+    expect(sheet).not_to_be_visible()
+
+    # Cross-route reload: archived state survives navigation.
+    page.reload()
+    row(page, zero)
+    assert product(zero["sku"])["archivedAt"]
+
+    # Same committed archive request replays idempotently; identity unchanged.
+    replayed_archive = direct(context, archived_request.value)
+    assert replayed_archive["ok"] is True and replayed_archive["replayed"] is True
+    assert product(zero["sku"])["id"] == zero["id"]
+
+    # Stale archive replay (new ID, bumped version) on archived product: guard order rejects as archived.
+    stale = dict(json.loads(archived_request.value.post_data)[0])
+    stale["requestId"] = str(uuid.uuid4())
+    stale["expectedMetadataVersion"] = str(int(zero["metadataVersion"]) + 5)
+    assert direct(context, archived_request.value, stale)["code"] == "PRODUCT_ARCHIVED"
+
+    # Reactivate: same row button flips label, archivedAt cleared, identity/history retained.
+    row_action(page, zero, re.compile(r"^(Reactivate|Aktifkan kembali)$"))
+    with page.expect_request(is_mutation) as reactivated_request:
+        dialog.get_by_role("button", name=re.compile(r"^(Reactivate|Aktifkan kembali)$")).click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    revived = product(zero["sku"])
+    assert revived["archivedAt"] is None and revived["id"] == zero["id"]
+    assert history(zero)["total"] == before_history["total"]
+
+    # Same stale replay on now-active product (reactivate bumped metadata): version guard fires.
+    assert direct(context, archived_request.value, stale)["code"] == "VERSION_CONFLICT"
+
+    # Lost response after server commit: uncertain state, frozen retry payload/ID.
+    page.goto(BASE + "/products")
+    row_action(page, zero, re.compile(r"^(Archive|Arsipkan)$"))
+    expect(dialog.get_by_role("button", name=re.compile(r"^(Archive|Arsipkan)$"))).to_be_enabled()
+    dropped = []
+
+    def lose_response(route):
+        if route.request.method == "POST" and route.request.headers.get("next-action") and not dropped:
+            result = route.fetch()
+            assert action_result(result.text())["ok"] is True
+            dropped.append(route.request)
+            route.abort("failed")
+        else:
+            route.continue_()
+
+    page.route("**/products*", lose_response)
+    dialog.get_by_role("button", name=re.compile(r"^(Archive|Arsipkan)$")).click()
+    expect(page.get_by_role("alert")).to_be_visible(timeout=20000)
+    page.unroute("**/products*", lose_response)
+    with page.expect_request(is_mutation) as retry:
+        page.get_by_role("dialog").get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    assert json.loads(retry.value.post_data) == json.loads(dropped[0].post_data), "Lifecycle retry changed payload/ID"
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    assert product(zero["sku"])["archivedAt"]
+    # Pending uncertainty resolved: product stays archived until explicit reactivate.
+    print("PASS: zero-stock archive gate, nonzero rejection, identity/history retention, reload/cross-route, stale VERSION_CONFLICT, lost-response retry")
+
 def creation_defaults(page):
     settings = rpc("get_shop_settings", {})
     request_id = str(uuid.uuid4())
@@ -356,6 +500,11 @@ def creation_defaults(page):
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Defaults route {path} overflow at {width}px"
         page.set_viewport_size({"width": 1440, "height": 1000})
         page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+        dialog = page.get_by_role("dialog")
+        expect(dialog.locator("#product-name")).to_be_visible()
+        expect(dialog.locator("#product-lookup, #product-selection")).to_have_count(0)
+        expect(dialog.get_by_role("button", name=re.compile(r"Restock|Isi ulang", re.I))).to_have_count(0)
+        expect(page.locator("#product-pcs")).to_have_value("0")
         expect(page.locator("#product-unit")).to_have_value("Bungkus")
         expect(page.locator("#product-min-stock")).to_have_value("27")
         page.locator("#product-unit").fill("Botol")
@@ -396,6 +545,10 @@ def run():
             creation_defaults(page)
             browser.close()
             return
+        if "--lifecycle" in sys.argv:
+            lifecycle(page, context, browser)
+            browser.close()
+            return
         item, request = add(page, "VERTICAL", 10, 30000)
         assert item["currentStock"] == 10 and item["inventoryCostValue"] == "30000.000000"
         page.reload()
@@ -410,7 +563,7 @@ def run():
         print("PASS: verified login, actual action create, exact opening cost, reload/navigation/new-session persistence")
         if "--vertical" not in sys.argv:
             full(page, context, browser, item, request)
-        row(page, item).get_by_role("button", name=re.compile(r"^(Details|Detail)$")).click()
+        row_action(page, item, re.compile(r"^(Details|Detail)$"))
         dialog = page.get_by_role("dialog")
         expect(dialog).to_be_visible()
         for _ in range(10):

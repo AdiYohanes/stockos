@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   RefreshCw,
   PackagePlus,
-  ArrowDownToLine,
-  ArrowUpFromLine,
+  ArrowDownUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,7 +25,6 @@ export function DashboardHeader({ userName, rawProducts = [], creationDefaults }
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [movementOpen, setMovementOpen] = React.useState(false);
-  const [movementType, setMovementType] = React.useState<"in" | "out">("in");
   const { t } = useI18n();
 
   const allItems = React.useMemo(() => rawProducts.map(mapProductToInventoryItem), [rawProducts]);
@@ -87,35 +85,18 @@ export function DashboardHeader({ userName, rawProducts = [], creationDefaults }
           variant="outline"
           size="sm"
           className="gap-1.5"
-          title={t.dashboard.stockIn}
-          onClick={() => {
-            setMovementType("in");
-            setMovementOpen(true);
-          }}
+          title={t.inventory.recordStockMovement}
+          onClick={() => setMovementOpen(true)}
         >
-          <ArrowDownToLine className="text-emerald-600 dark:text-emerald-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
-          <span className="sr-only sm:not-sr-only">{t.dashboard.stockIn}</span>
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          title={t.dashboard.stockOut}
-          onClick={() => {
-            setMovementType("out");
-            setMovementOpen(true);
-          }}
-        >
-          <ArrowUpFromLine className="text-amber-600 dark:text-amber-400 group-hover/button:text-white dark:group-hover/button:text-white transition-colors" />
-          <span className="sr-only sm:not-sr-only">{t.dashboard.stockOut}</span>
+          <ArrowDownUp className="text-primary group-hover/button:text-white transition-colors" />
+          <span className="sr-only sm:not-sr-only">{t.inventory.recordStockMovement}</span>
         </Button>
 
         <StockMovementModal
           open={movementOpen}
           onOpenChange={setMovementOpen}
           targetItem={null}
-          defaultType={movementType}
+          defaultType={null}
           allItems={allItems}
           rawProducts={rawProducts}
           onCommitted={async () => {

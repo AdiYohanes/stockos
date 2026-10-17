@@ -50,16 +50,16 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
         <CardHeader className="border-b border-ink pb-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="font-heading text-base font-bold text-foreground">
-              Inventory Asset Valuation by Category
+              {t.reports.valuationByCategory}
             </CardTitle>
             <div className="flex items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-none bg-[#543afd]" />
-                <span className="text-muted-foreground">Asset Cost</span>
+                <span className="text-muted-foreground">{t.reports.assetCost}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-none bg-[#a23cb8]" />
-                <span className="text-muted-foreground">Retail Value</span>
+                <span className="text-muted-foreground">{t.reports.retailValue}</span>
               </div>
             </div>
           </div>
@@ -85,15 +85,15 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                         <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{data.fullName}</p>
                           <div className="space-y-1">
-                            <p className="text-foreground">Total Cost: {formatProductMoney(data.costExact)}</p>
-                            <p className="text-[#09090b]">Retail Value: {formatProductMoney(data.retailExact)}</p>
+                            <p className="text-foreground">{t.reports.totalCost}: {formatProductMoney(data.costExact)}</p>
+                            <p className="text-[#09090b]">{t.reports.retailValue}: {formatProductMoney(data.retailExact)}</p>
                           </div>
                         </div>
                       );
                     }}
                   />
-                  <Bar dataKey="cost" fill="#543afd" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="retail" fill="#a23cb8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="cost" fill="#543afd" />
+                  <Bar dataKey="retail" fill="#a23cb8" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -109,7 +109,7 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
       <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
         <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
-            Category Asset & Margin Breakdown
+            {t.reports.categoryBreakdown}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -120,10 +120,10 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                   <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.category || "Category Name"}</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.sku || "SKUs"}</TableHead>
                   <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.common.quantity || "Total Units"}</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Total Cost</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Retail Value</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Margin %</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground">Valuation Share</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.totalCost}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.retailValue}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.marginPercent}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.reports.valuationShare}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

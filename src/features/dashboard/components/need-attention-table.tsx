@@ -109,10 +109,11 @@ export function NeedAttentionTable({ items, className }: NeedAttentionTableProps
                 </tr>
               ) : (
                 filteredItems.map((item) => {
-                  const stockPercentage = Math.min(
-                    100,
-                    Math.round((item.currentStock / item.minStock) * 100)
-                  );
+                  // minStock 0: these attention rows always have currentStock <= minStock,
+                  // so 0/0 would be NaN — report 0% instead
+                  const stockPercentage = item.minStock > 0
+                    ? Math.min(100, Math.round((item.currentStock / item.minStock) * 100))
+                    : 0;
 
                   return (
                     <tr

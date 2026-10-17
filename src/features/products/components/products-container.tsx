@@ -69,7 +69,7 @@ export function ProductsContainer({ filterState, catalog, metrics, categories, f
     if (!opened) { request.current++; setSelection(null); }
   }
 
-  return <div className="flex flex-col gap-4 sm:gap-5 w-full pb-10" aria-busy={filters.pending || reading}>
+  return <div className="flex min-w-0 flex-col gap-4 sm:gap-5 w-full pb-10" aria-busy={filters.pending || reading}>
     <ProductsHeader addDisabled={!creationDefaults} onAdd={() => setAddOpen(true)} />
     <p className="border-[3px] border-ink bg-paper p-3 text-xs font-mono">{p.localData} · {filterState.archive === "all" ? p.allArchives : filterState.archive === "archived" ? p.archived : t.common.active}</p>
     {(failure || readError) && <div role="alert" className="border-[3px] border-ink p-3">

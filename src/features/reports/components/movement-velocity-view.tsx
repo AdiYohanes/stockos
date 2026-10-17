@@ -44,16 +44,16 @@ export function MovementVelocityView({
         <CardHeader className="border-b border-ink pb-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="font-heading text-base font-bold text-foreground">
-              Trend Arus Stok Masuk vs Keluar
+              {t.reports.trendInVsOut}
             </CardTitle>
             <div className="flex items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-none bg-[#543afd]" />
-                <span className="text-muted-foreground">{t.dashboard.stockInbound || "Stok Masuk"}</span>
+                <span className="text-muted-foreground">{t.dashboard.stockInbound}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-3 w-3 rounded-none bg-[#09090b]" />
-                <span className="text-muted-foreground">{t.dashboard.stockOutbound || "Stok Keluar"}</span>
+                <span className="text-muted-foreground">{t.dashboard.stockOutbound}</span>
               </div>
             </div>
           </div>
@@ -84,10 +84,10 @@ export function MovementVelocityView({
                         <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{label}</p>
                           <div className="space-y-1">
-                            <p className="text-[#543afd]">{t.dashboard.stockIn || "Masuk"}: +{formatNumber(data.stockIn)} unit</p>
-                            <p className="text-[#09090b]">{t.dashboard.stockOut || "Keluar"}: -{formatNumber(data.stockOut)} unit</p>
+                            <p className="text-[#543afd]">{t.dashboard.stockIn}: +{formatNumber(data.stockIn)} unit</p>
+                            <p className="text-[#09090b]">{t.dashboard.stockOut}: -{formatNumber(data.stockOut)} unit</p>
                             <p className={cn("font-bold", data.netFlow >= 0 ? "text-[#15803d]" : "text-[#b91c1c]")}>
-                              {t.dashboard.netFlow || "Arus Bersih"}: {data.netFlow >= 0 ? "+" : ""}{formatNumber(data.netFlow)}
+                              {t.dashboard.netFlow}: {data.netFlow >= 0 ? "+" : ""}{formatNumber(data.netFlow)}
                             </p>
                           </div>
                         </div>
@@ -100,11 +100,11 @@ export function MovementVelocityView({
               </ResponsiveContainer>
             ) : isMounted ? (
               <div className="flex h-full items-center justify-center text-xs font-mono text-muted-foreground">
-                Belum ada aktivitas mutasi pada periode yang dipilih.
+                {t.reports.noMovementData}
               </div>
             ) : (
               <div className="flex h-full items-center justify-center text-xs font-mono text-muted-foreground">
-                {t.common.loading || "Memuat grafik pergerakan..."}
+                {t.common.loading}
               </div>
             )}
           </div>
@@ -115,7 +115,7 @@ export function MovementVelocityView({
       <Card className="border-[3px] border-ink bg-white shadow-neo-sm">
         <CardHeader className="border-b border-ink pb-3">
           <CardTitle className="font-heading text-base font-bold text-foreground">
-            Pergerakan Stok per Produk dalam Periode
+            {t.reports.movementPerProduct}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -123,22 +123,22 @@ export function MovementVelocityView({
             <Table>
               <TableHeader className="bg-[#f8f9fa]">
                 <TableRow className="border-b border-ink">
-                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.sku || "SKU / Kode"}</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.name || "Nama Produk"}</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.category || "Kategori"}</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Stok Awal</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Stok Masuk</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Stok Terjual</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Selisih Opname</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Stok Terkini</TableHead>
-                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">Pergerakan Terakhir</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.sku}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.name}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground">{t.common.category}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colOpening}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colStockIn}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colStockOut}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colOpnameDelta}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colCurrentStock}</TableHead>
+                  <TableHead className="font-mono text-xs font-bold text-foreground text-right">{t.reports.colLastMovement}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {velocityItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="h-32 text-center text-xs font-mono text-muted-foreground">
-                      Tidak ada pergerakan stok dalam periode ini.
+                      {t.reports.noMovementData}
                     </TableCell>
                   </TableRow>
                 ) : (
