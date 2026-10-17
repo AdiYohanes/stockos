@@ -84,32 +84,32 @@ function StockMovementForm({
     if (submission.blocked) return;
 
     if (!activeItem) {
-      submission.reportError("Please select an item.");
+      submission.reportError(c.selectRequired);
       return;
     }
 
     if (!Number.isInteger(computedQty) || computedQty < 1 || computedQty > 1_000_000_000) {
-      submission.reportError("Please enter a valid positive quantity (1 to 1,000,000,000).");
+      submission.reportError(c.invalidQuantity);
       return;
     }
 
     if (isIn && cartons && (!/^[1-9]\d*$/.test(cartonCount) || !/^[1-9]\d*$/.test(unitsPerCarton))) {
-      submission.reportError("Carton count and units per carton must be positive integers.");
+      submission.reportError(c.invalidQuantity);
       return;
     }
 
     if (!isIn && computedQty > activeItem.currentStock) {
-      submission.reportError(`Sold quantity (${computedQty}) exceeds available stock (${activeItem.currentStock}).`);
+      submission.reportError(t.products.persistent.errors.INSUFFICIENT_STOCK);
       return;
     }
 
     if (isIn && (!/^[0-9]{1,13}$/.test(purchaseTotal.trim()) || BigInt(purchaseTotal.trim()) > BigInt("1000000000000"))) {
-      submission.reportError("Purchase total is required (0 to 1,000,000,000,000 IDR). Enter 0 for free goods.");
+      submission.reportError(c.freeCostHelp);
       return;
     }
 
     if (!activeItem) {
-      submission.reportError("Please select an item.");
+      submission.reportError(c.selectRequired);
       return;
     }
 

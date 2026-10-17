@@ -20,6 +20,7 @@ interface InventoryMovementsTableProps {
   hasActiveFilters: boolean;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
+  onCorrectQuantity: (movement: StockMovement) => void;
 }
 
 export function InventoryMovementsTable({
@@ -29,6 +30,7 @@ export function InventoryMovementsTable({
   hasActiveFilters,
   onPageChange,
   onResetFilters,
+  onCorrectQuantity,
 }: InventoryMovementsTableProps) {
   const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(totalCount / filterState.pageSize));
@@ -169,6 +171,13 @@ export function InventoryMovementsTable({
                       ) : (
                         <span className="text-[10px] text-ink/40 italic font-mono uppercase tracking-widest">-</span>
                       )}
+                      {mov.correctionOfEventId && <p className="text-[10px] font-mono break-all">{t.inventory.quantityCorrection.parent}: {mov.correctionOfEventId}</p>}
+                      {mov.kind && mov.kind !== "cost_adjustment" && <button type="button"
+                        aria-label={`${t.inventory.quantityCorrection.title}: ${mov.reference} · ${mov.id}`}
+                        onClick={() => onCorrectQuantity(mov)}
+                        className="mt-2 self-start border-[3px] border-ink bg-white px-2 py-1 shadow-hard-sm press text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2">
+                        {t.inventory.quantityCorrection.title}
+                      </button>}
                     </div>
                   </td>
 

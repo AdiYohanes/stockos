@@ -15,6 +15,7 @@ interface InventoryStockTableProps {
   onResetFilters: () => void;
   onSelectItem: (item: InventoryItem) => void;
   onAdjustItem: (item: InventoryItem) => void;
+  onAdjustCost: (item: InventoryItem) => void;
   onQuickMove: (item: InventoryItem, type: "in" | "out") => void;
 }
 
@@ -27,6 +28,7 @@ export function InventoryStockTable({
   onResetFilters,
   onSelectItem,
   onAdjustItem,
+  onAdjustCost,
 }: InventoryStockTableProps) {
   const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(totalCount / filterState.pageSize));
@@ -38,7 +40,7 @@ export function InventoryStockTable({
       case "in_stock":
       case "overstocked":
         return (
-          <span className="bg-acid border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
+          <span className="bg-acid text-paper border-[3px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase">
             {t.inventory.inStock}
           </span>
         );
@@ -142,6 +144,11 @@ export function InventoryStockTable({
                   <td className="px-5 py-4">{getStatusBadge(item)}</td>
                   <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
+                      <button type="button" onClick={() => onAdjustCost(item)}
+                        title={t.inventory.costCorrection.title} aria-label={t.inventory.costCorrection.title}
+                        className="press w-8 h-8 bg-white border-[3px] border-ink shadow-hard-sm flex items-center justify-center text-ink focus-visible:outline-2 focus-visible:outline-offset-2">
+                        <Icon icon="ph:currency-circle-dollar-bold" className="text-lg" />
+                      </button>
                       <button
                         onClick={() => onAdjustItem(item)}
                         title={t.inventory.adjustStock}

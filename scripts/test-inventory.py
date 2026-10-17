@@ -316,8 +316,701 @@ def hardening(page, browser, product, empty_product):
     expect(other.locator("#foundCost")).to_have_value("0")
     other.keyboard.press("Escape")
     expect(other.get_by_role("dialog")).not_to_be_visible()
+    other.unroute_all(behavior="wait")
+    other_context.unroute_all(behavior="wait")
     other_context.close()
     print("PASS: movement/opname lost-response close guards and exact replay; two-session conflict read retry, preserved note, explicit recount, current found-cost snapshot")
+
+
+def open_cost(page, product):
+    page.goto(BASE + "/inventory")
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.get_by_role("button", name=re.compile(r"^(Koreksi modal|Correct inventory cost)$")).click()
+    expect(page.get_by_role("dialog")).to_be_visible()
+    expect(page.locator("#replacementTotalCost")).to_be_visible(timeout=20000)
+
+
+def cost_validation(page, product, empty_product):
+    before = get_product(product["id"])
+    events = history(product["id"])
+    posted = []
+    page.on("request", lambda request: posted.append(request) if is_mutation(request) else None)
+    open_cost(page, product)
+    dialog = page.get_by_role("dialog")
+    total, reason = page.locator("#replacementTotalCost"), page.locator("#costReason")
+    total.fill("8000")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).to_be_visible()
+    assert not posted, "Missing reason must not submit"
+    reason.fill("   ")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_be_visible()
+    reason.fill("Validation proof")
+    for invalid in ("-1", "1.5", "1e3", "1,000", "1000000000001"):
+        total.fill(invalid)
+        dialog.locator('button[type="submit"]').click()
+        expect(total).to_have_value(invalid)
+        expect(dialog).to_be_visible()
+        assert not posted, "Invalid whole-IDR total must not submit"
+    total.fill("")
+    total.focus()
+    page.keyboard.insert_text("10000000000000")
+    expect(total).to_have_value("10000000000000")
+    dialog.locator('button[type="submit"]').click()
+    assert not posted, "Oversized pasted total must not be truncated into a valid mutation"
+    assert get_product(product["id"]) == before and history(product["id"]) == events
+    page.keyboard.press("Escape")
+    open_cost(page, empty_product)
+    dialog = page.get_by_role("dialog")
+    page.locator("#replacementTotalCost").fill("1")
+    page.locator("#costReason").fill("Zero stock proof")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_contain_text(re.compile(r"Stok nol|Zero stock"))
+    assert not posted and get_product(empty_product["id"])["inventoryCostValue"] == "0.000000"
+    empty_events = history(empty_product["id"])["total"]
+    page.locator("#replacementTotalCost").fill("0")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert history(empty_product["id"])["total"] == empty_events + 1
+    open_cost(page, product)
+    dialog = page.get_by_role("dialog")
+    page.locator("#replacementTotalCost").fill("0")
+    page.locator("#costReason").fill("Barang gratis pengujian")
+    for width in (1440, 390):
+        page.set_viewport_size({"width": width, "height": 1000})
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Cost dialog overflow"
+        assert dialog.evaluate("element => element.scrollWidth <= element.clientWidth"), "Cost content overflow"
+        page.wait_for_function("element => { const r = element.getBoundingClientRect(); return r.left >= 15 && r.right <= innerWidth - 15 && Math.abs(r.width - Math.min(448, innerWidth - 32)) < 1; }", arg=dialog.element_handle())
+        page.screenshot(path=str(Path(sys.argv[2]).parent / f"cost-dialog-{width}.png"))
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    latest = get_product(product["id"])
+    assert latest["currentStock"] == 2 and latest["inventoryCostValue"] == "0.000000"
+    assert latest["averagePurchaseCost"] == "0.000000"
+    print("PASS: cost validation rejects invalid totals/reasons without mutations; zero stock and genuinely zero cost supported")
+
+
+def cost_lost_response(page, browser, product):
+    before = get_product(product["id"])
+    events = history(product["id"])["total"]
+    open_cost(page, product)
+    page.locator("#replacementTotalCost").fill("10000")
+    page.locator("#costReason").fill("Frozen cost draft")
+    dropped = []
+
+    def lose(route):
+        if is_mutation(route.request) and not dropped:
+            response = route.fetch()
+            assert action_result(response.text())["ok"] is True
+            dropped.append(json.loads(route.request.post_data))
+            route.abort("failed")
+        else:
+            route.continue_()
+
+    page.route("**/inventory*", lose)
+    dialog = page.get_by_role("dialog")
+    dialog.locator('button[type="submit"]').evaluate("button => { button.click(); button.click(); }")
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    assert_close_blocked(page)
+    expect(page.locator("#replacementTotalCost")).to_be_disabled()
+    expect(page.locator("#replacementTotalCost")).to_have_value("10000")
+    expect(page.locator("#costReason")).to_be_disabled()
+    expect(page.locator("#costReason")).to_have_value("Frozen cost draft")
+    committed = get_product(product["id"])
+    assert int(committed["stockVersion"]) == int(before["stockVersion"]) + 1
+    assert history(product["id"])["total"] == events + 1
+    # Live value advances beyond the frozen successful receipt before replay.
+    other_context = browser.new_context()
+    other = None
+    try:
+        other = login(other_context)
+        other.on("request", capture)
+        open_cost(other, product)
+        other.locator("#replacementTotalCost").fill("12000")
+        other.locator("#costReason").fill("Later cost correction")
+        other.get_by_role("dialog").locator('button[type="submit"]').click()
+        expect(other.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    finally:
+        if other:
+            other.unroute_all(behavior="wait")
+        other_context.unroute_all(behavior="wait")
+        other_context.close()
+    live = get_product(product["id"])
+    assert live["inventoryCostValue"] == "12000.000000"
+    page.unroute_all(behavior="wait")
+    with page.expect_request(is_mutation) as retry:
+        dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    assert json.loads(retry.value.post_data) == dropped[0], "Cost replay changed UUID/payload/intent"
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert get_product(product["id"]) == live and history(product["id"])["total"] == events + 2
+    open_cost(page, product)
+    expect(page.get_by_role("dialog")).to_contain_text("Rp 12.000")
+    expect(page.locator("#replacementTotalCost")).to_have_value("")
+    page.keyboard.press("Escape")
+    print("PASS: lost cost response freezes drafts/close guards; identical replay adds no evidence and reopen reads live value")
+
+
+def cost_conflict(page, browser, product):
+    other_context = browser.new_context()
+    other = None
+    try:
+        other = login(other_context)
+        other.on("request", capture)
+        open_cost(other, product)
+        other.locator("#replacementTotalCost").fill("15000")
+        other.locator("#costReason").fill("Keep cost reason")
+        open_opname(page, product)
+        page.locator("#newStock").fill("3")
+        page.locator("#adjNote").fill("Concurrent physical count")
+        page.get_by_role("dialog").locator('button[type="submit"]').click()
+        expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+        current = get_product(product["id"])
+        events = history(product["id"])
+        assert current["currentStock"] == 3 and current["inventoryCostValue"] == "18000.000000"
+        failed_read = []
+
+        def fail_read(route):
+            request = route.request
+            if request.method == "POST" and request.headers.get("next-action") and not is_mutation(request) and not failed_read:
+                if json.loads(request.post_data)[0] == {"id": product["id"]}:
+                    failed_read.append(True)
+                    route.abort("failed")
+                    return
+            route.continue_()
+
+        other.route("**/inventory*", fail_read)
+        dialog = other.get_by_role("dialog")
+        with other.expect_request(is_mutation) as stale:
+            dialog.locator('button[type="submit"]').click()
+        expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+        expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+        expect(other.locator("#replacementTotalCost")).to_have_value("15000")
+        expect(other.locator("#costReason")).to_have_value("Keep cost reason")
+        assert failed_read and get_product(product["id"]) == current and history(product["id"]) == events
+        other.unroute_all(behavior="wait")
+        retries = []
+        other.on("request", lambda request: retries.append(request) if is_mutation(request) else None)
+        dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+        reviewed = dialog.get_by_role("button", name=re.compile(r"Reviewed|Sudah ditinjau", re.I))
+        expect(reviewed).to_be_visible(timeout=20000)
+        assert not retries, "Conflict reload must read only"
+        expect(dialog).to_contain_text("Rp 18.000")
+        expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+        reviewed.click()
+        expect(other.locator("#replacementTotalCost")).to_have_value("")
+        expect(other.locator("#costReason")).to_have_value("Keep cost reason")
+        expect(dialog).to_contain_text("3 Pcs")
+        other.locator("#replacementTotalCost").fill("15000")
+        with other.expect_request(is_mutation) as fresh:
+            dialog.locator('button[type="submit"]').click()
+        old_payload = json.loads(stale.value.post_data)[0]
+        payload = json.loads(fresh.value.post_data)[0]
+        assert payload["requestId"] != old_payload["requestId"]
+        assert payload["expectedStockVersion"] == current["stockVersion"]
+        expect(dialog).not_to_be_visible(timeout=20000)
+        latest = get_product(product["id"])
+        assert latest["currentStock"] == 3 and latest["inventoryCostValue"] == "15000.000000"
+        assert latest["averagePurchaseCost"] == "5000.000000"
+        assert int(latest["stockVersion"]) == int(current["stockVersion"]) + 1
+        assert history(product["id"])["total"] == events["total"] + 1
+    finally:
+        if other:
+            other.unroute_all(behavior="wait")
+        other_context.unroute_all(behavior="wait")
+        other_context.close()
+    print("PASS: stale cost draft preserves reason/total; failed latest read retries read-only; explicit review adopts current quantity/version with new UUID")
+
+
+def cost_read_retry(page, product):
+    open_cost(page, product)
+    page.locator("#replacementTotalCost").fill("21000")
+    page.locator("#costReason").fill("Known commit read retry")
+    mutations, reads = [], []
+
+    def fail_read(route):
+        request = route.request
+        if is_mutation(request):
+            mutations.append(request)
+        elif request.method == "POST" and request.headers.get("next-action"):
+            if json.loads(request.post_data)[0] == {"id": product["id"]}:
+                reads.append(request)
+                route.abort("failed")
+                return
+        route.continue_()
+
+    page.route("**/inventory*", fail_read)
+    dialog = page.get_by_role("dialog")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_contain_text(re.compile(r"mutasi tidak diulang|no duplicate mutation"), timeout=20000)
+    assert len(mutations) == 1 and reads
+    assert_close_blocked(page)
+    expect(page.locator("#replacementTotalCost")).to_be_disabled()
+    expect(page.locator("#replacementTotalCost")).to_have_value("21000")
+    expect(page.locator("#costReason")).to_have_value("Known commit read retry")
+    committed, events = get_product(product["id"]), history(product["id"])
+    assert committed["inventoryCostValue"] == "21000.000000"
+    page.unroute_all(behavior="wait")
+    read_retries = []
+
+    def observe(route):
+        if is_mutation(route.request):
+            mutations.append(route.request)
+        elif route.request.method == "POST" and route.request.headers.get("next-action"):
+            read_retries.append(route.request)
+        route.continue_()
+
+    page.route("**/inventory*", observe)
+    dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert len(mutations) == 1 and read_retries, "Known commit retry must read without another mutation"
+    assert get_product(product["id"]) == committed and history(product["id"]) == events
+    page.unroute_all(behavior="wait")
+    # Initial read failure exposes no stale editable form; retry reads current state.
+    page.goto(BASE + "/inventory")
+    failed = []
+
+    def fail_initial(route):
+        request = route.request
+        if request.method == "POST" and request.headers.get("next-action") and not is_mutation(request):
+            if json.loads(request.post_data)[0] == {"id": product["id"]}:
+                failed.append(True)
+                route.abort("failed")
+                return
+        route.continue_()
+
+    page.route("**/inventory*", fail_initial)
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.get_by_role("button", name=re.compile(r"^(Koreksi modal|Correct inventory cost)$")).click()
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    expect(page.locator("#replacementTotalCost")).to_have_count(0)
+    assert failed
+    page.unroute_all(behavior="wait")
+    dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    expect(page.locator("#replacementTotalCost")).to_have_value("", timeout=20000)
+    expect(dialog).to_contain_text("Rp 21.000")
+    page.locator("#replacementTotalCost").focus()
+    expect(page.locator("#replacementTotalCost")).to_be_focused()
+    page.keyboard.press("Tab")
+    expect(page.locator("#costReason")).to_be_focused()
+    page.keyboard.press("Escape")
+    expect(dialog).not_to_be_visible()
+    page.reload()
+    open_cost(page, product)
+    expect(dialog).to_contain_text("Rp 21.000")
+    page.keyboard.press("Escape")
+    assert get_product(product["id"]) == committed and history(product["id"]) == events
+    print("PASS: known cost commit retries read-only; initial read failure has no stale form, retry/reload and keyboard focus work")
+
+
+def cost_hardening(page, product):
+    before = get_product(product["id"])
+    events = history(product["id"])
+    assert before["currentStock"] == 2 and before["inventoryCostValue"] == "6000.000000"
+    open_cost(page, product)
+    page.locator("#replacementTotalCost").fill("8000")
+    page.locator("#costReason").fill("Koreksi modal pengujian")
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    latest = get_product(product["id"])
+    assert latest["currentStock"] == 2
+    assert latest["inventoryCostValue"] == "8000.000000"
+    assert latest["averagePurchaseCost"] == "4000.000000"
+    assert latest["metadataVersion"] == before["metadataVersion"]
+    assert int(latest["stockVersion"]) == int(before["stockVersion"]) + 1
+    after = history(product["id"])
+    assert after["total"] == events["total"] + 1
+    event = after["items"][0]
+    assert event["kind"] == "cost_adjustment" and event["quantityDelta"] == 0
+    assert event["costBefore"] == "6000.000000" and event["costAfter"] == "8000.000000"
+    assert event["note"] == "Koreksi modal pengujian"
+    assert after["items"][1:] == events["items"], "Cost correction must preserve original history"
+    open_cost(page, product)
+    expect(page.get_by_role("dialog")).to_contain_text("Rp 8.000")
+    expect(page.locator("#replacementTotalCost")).to_have_value("")
+    page.keyboard.press("Escape")
+    page.reload()
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.get_by_title(re.compile(r"Details|Detail", re.I)).click()
+    valuation = page.get_by_role("heading", name=re.compile(r"Valuasi & Ekonomi Unit|Valuation & Unit Economics")).locator("..")
+    valuation.get_by_role("button", name=re.compile(r"^(Koreksi modal|Correct inventory cost)$")).click()
+    expect(page.locator("#replacementTotalCost")).to_be_visible(timeout=20000)
+    expect(page.get_by_role("dialog")).to_contain_text("Rp 8.000")
+    page.keyboard.press("Escape")
+    print("PASS: cost correction changes present valuation only; immutable history and both entrypoints persist")
+
+
+def open_quantity_correction(page, event):
+    page.goto(BASE + "/inventory?tab=movements&pageSize=100")
+    row = page.get_by_role("row").filter(has=page.get_by_text(event["reference"], exact=True))
+    row.get_by_role("button", name=re.compile(r"^(Koreksi jumlah|Correct quantity)")).click()
+    expect(page.locator("#newStock")).to_be_visible(timeout=20000)
+    return page.get_by_role("dialog")
+
+
+def quantity_correction(page, product):
+    # Establish a known current baseline after older movements, through normal opname.
+    open_opname(page, product)
+    page.locator("#newStock").fill("5")
+    page.locator("#adjNote").fill("Current quantity baseline")
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    open_cost(page, product)
+    page.locator("#replacementTotalCost").fill("15000")
+    page.locator("#costReason").fill("Current cost baseline")
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    before, events = get_product(product["id"]), history(product["id"])
+    original = next(event for event in events["items"] if event["kind"] == "opening")
+    assert before["currentStock"] == 5 and before["inventoryCostValue"] == "15000.000000"
+    assert events["items"][1]["correctionOfEventId"] is None, "Normal opname must remain unlinked"
+    dialog = open_quantity_correction(page, original)
+    expect(dialog).to_contain_text(original["id"])
+    expect(page.locator("#newStock")).to_have_value("")
+    page.locator("#newStock").fill("4")
+    page.locator("#adjNote").fill("Correct original quantity against current count")
+    with page.expect_request(is_mutation) as posted:
+        dialog.locator('button[type="submit"]').click()
+    payload = json.loads(posted.value.post_data)[0]
+    assert payload["correctionOfEventId"] == original["id"]
+    assert payload["productId"] == product["id"] and payload["expectedStockVersion"] == before["stockVersion"]
+    expect(dialog).not_to_be_visible(timeout=20000)
+    latest, after = get_product(product["id"]), history(product["id"])
+    event = after["items"][0]
+    assert latest["currentStock"] == 4 and latest["inventoryCostValue"] == "12000.000000"
+    assert latest["metadataVersion"] == before["metadataVersion"]
+    assert int(latest["stockVersion"]) == int(before["stockVersion"]) + 1
+    assert after["total"] == events["total"] + 1 and after["items"][1:] == events["items"]
+    assert event["kind"] == "opname" and event["correctionOfEventId"] == original["id"]
+    assert (event["quantityBefore"], event["quantityAfter"], event["quantityDelta"]) == (5, 4, -1)
+    assert event["note"] == payload["note"]
+    page.reload()
+    row = page.get_by_role("row").filter(has=page.get_by_text(event["reference"], exact=True))
+    expect(row).to_contain_text(original["id"])
+    # Correction of correction: the linked opname itself becomes a parent; repeated parent stays allowed.
+    dialog = open_quantity_correction(page, event)
+    expect(dialog).to_contain_text(event["id"])
+    page.locator("#newStock").fill("4")
+    page.locator("#adjNote").fill("Repeated parent still allowed")
+    with page.expect_request(is_mutation) as second:
+        dialog.locator('button[type="submit"]').click()
+    second_payload = json.loads(second.value.post_data)[0]
+    assert second_payload["correctionOfEventId"] == event["id"] and second_payload["requestId"] != payload["requestId"]
+    expect(dialog).not_to_be_visible(timeout=20000)
+    latest2, after2 = get_product(product["id"]), history(product["id"])
+    assert after2["total"] == after["total"] + 1 and after2["items"][0]["correctionOfEventId"] == event["id"]
+    assert after2["items"][1:] == after["items"] and latest2["currentStock"] == 4
+    print("PASS: linked quantity correction reconciles current stock/cost and preserves every original event; correction-of-correction and repeated parent allowed; normal opname remains unlinked")
+
+
+def quantity_history(page, product):
+    events = history(product["id"])
+    correction = events["items"][0]
+    parent = correction["correctionOfEventId"]
+    page.goto(BASE + "/inventory")
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.get_by_title(re.compile(r"Details|Detail", re.I)).click()
+    timeline = page.get_by_text(correction["reference"], exact=True).locator("../..")
+    expect(timeline).to_contain_text(parent)
+    timeline.get_by_role("button", name=re.compile(r"^(Koreksi jumlah|Correct quantity)")).click()
+    expect(page.locator("#newStock")).to_have_value("", timeout=20000)
+    expect(page.get_by_role("dialog")).to_contain_text(correction["id"])
+    page.keyboard.press("Escape")
+    page.goto(BASE + "/products")
+    row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
+    row.get_by_role("button", name=product["name"], exact=True).click()
+    dialog = page.get_by_role("dialog")
+    dialog.get_by_role("button", name=re.compile(r"^(Riwayat inventaris|Inventory history)$", re.I)).click()
+    expect(dialog).to_contain_text(parent, timeout=20000)
+    expect(dialog.get_by_role("button", name=re.compile(r"^(Koreksi jumlah|Correct quantity)"))).to_have_count(0)
+    page.keyboard.press("Escape")
+    print("PASS: quantity correction entrypoint in Inventory detail and full parent UUID on all history surfaces")
+
+
+def quantity_correction_validation(page, product, empty_product):
+    posted = []
+    page.on("request", lambda request: posted.append(request) if is_mutation(request) else None)
+    current = get_product(product["id"])
+    events = history(product["id"])
+    dialog = open_quantity_correction(page, events["items"][0])
+    page.locator("#newStock").fill(str(current["currentStock"]))
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).to_be_visible()
+    assert not posted, "Blank reason must not submit"
+    page.locator("#adjNote").fill("   ")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_be_visible()
+    assert not posted, "Whitespace reason must not submit"
+    for invalid in ("-1", "1.5", "1000000001"):
+        page.locator("#newStock").fill(invalid)
+        dialog.locator('button[type="submit"]').click()
+        expect(dialog).to_be_visible()
+        assert not posted, "Invalid count must not submit"
+    expect(page.locator("#adjNote")).to_have_value("   ")
+    # Zero delta still records linked evidence without changing stock.
+    page.locator("#adjNote").fill("Zero delta evidence")
+    page.locator("#newStock").fill(str(current["currentStock"]))
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    zero = get_product(product["id"])
+    assert zero["currentStock"] == current["currentStock"]
+    assert int(zero["stockVersion"]) == int(current["stockVersion"]) + 1
+    zero_events = history(product["id"])
+    assert zero_events["total"] == events["total"] + 1 and zero_events["items"][0]["correctionOfEventId"] == events["items"][0]["id"]
+    # Found goods from zero stock require an explicit whole-IDR total. A zero-opening product
+    # has no opening event, so first record an unlinked normal opname as eligible parent.
+    open_opname(page, empty_product)
+    page.locator("#newStock").fill("0")
+    page.locator("#adjNote").fill("Unlinked zero evidence parent")
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    opening = next(event for event in history(empty_product["id"])["items"] if event["kind"] == "opname" and event["correctionOfEventId"] is None)
+    dialog = open_quantity_correction(page, opening)
+    baseline = len(posted)  # Unlinked parent opname above committed; guards below assert no NEW mutation.
+    page.locator("#newStock").fill("3")
+    expect(page.locator("#foundCost")).to_be_visible()
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog).to_be_visible()
+    assert len(posted) == baseline, "Missing found cost must not submit"
+    for invalid in ("1.5", "1,000", "-5"):
+        page.locator("#foundCost").fill(invalid)
+        dialog.locator('button[type="submit"]').click()
+        expect(page.locator("#foundCost")).to_have_value(invalid)
+        expect(dialog).to_be_visible()
+        assert len(posted) == baseline, "Invalid found cost must not submit"
+    page.locator("#foundCost").fill("")
+    page.locator("#foundCost").focus()
+    page.keyboard.insert_text("10000000000000")
+    expect(page.locator("#foundCost")).to_have_value("10000000000000")
+    dialog.locator('button[type="submit"]').click()
+    assert len(posted) == baseline, "Oversized pasted found cost must not be truncated into a valid mutation"
+    page.locator("#foundCost").fill("0")
+    page.locator("#adjNote").fill("Found free goods")
+    with page.expect_request(is_mutation) as found:
+        dialog.locator('button[type="submit"]').click()
+    payload = json.loads(found.value.post_data)[0]
+    assert payload["foundPurchaseTotal"] == "0" and payload["correctionOfEventId"] == opening["id"]
+    expect(dialog).not_to_be_visible(timeout=20000)
+    latest = get_product(empty_product["id"])
+    assert latest["currentStock"] == 3 and latest["inventoryCostValue"] == "0.000000"    # Initial live-read failure exposes no stale form; retry reads current state.
+    failed = []
+
+    def fail_read(route):
+        request = route.request
+        if request.method == "POST" and request.headers.get("next-action") and not is_mutation(request):
+            try:
+                body = json.loads(request.post_data)[0]
+            except (TypeError, ValueError):
+                body = None
+            if body == {"id": product["id"]}:
+                # Abort every matching read, not just the first: StrictMode
+                # double-fires the modal's initial read and letting the second
+                # through would render the form instead of the expected alert.
+                failed.append(True)
+                route.abort("failed")
+                return
+        route.continue_()
+
+    page.route("**/inventory*", fail_read)
+    # Route the navigation without the shared helper: it waits for #newStock,
+    # which must NOT render when the initial read is failed.
+    page.goto(BASE + "/inventory?tab=movements&pageSize=100")
+    row = page.get_by_role("row").filter(has=page.get_by_text(history(product["id"])["items"][0]["reference"], exact=True))
+    row.get_by_role("button", name=re.compile(r"^(Koreksi jumlah|Correct quantity)")).click()
+    dialog = page.get_by_role("dialog")
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    expect(page.locator("#newStock")).to_have_count(0)
+    assert failed
+    page.unroute_all(behavior="wait")
+    dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    expect(page.locator("#newStock")).to_have_value("", timeout=20000)
+    # Correction dialog stays inside bounds at desktop and mobile widths.
+    for width in (1440, 390):
+        page.set_viewport_size({"width": width, "height": 1000})
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Correction page overflow"
+        assert dialog.evaluate("element => element.scrollWidth <= element.clientWidth"), "Correction content overflow"
+        page.wait_for_function("element => { const r = element.getBoundingClientRect(); return r.left >= 15 && r.right <= innerWidth - 15 && Math.abs(r.width - Math.min(448, innerWidth - 32)) < 1; }", arg=dialog.element_handle())
+        page.screenshot(path=str(Path(sys.argv[2]).parent / f"quantity-dialog-{width}.png"))
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    page.keyboard.press("Escape")
+    expect(page.get_by_role("dialog")).not_to_be_visible()
+    print("PASS: correction validation blocks blank/invalid input without mutations; zero delta appends linked evidence; found goods require explicit whole-IDR total; failed initial read retries cleanly at both widths")
+
+
+def quantity_lost_response(page, browser, product):
+    before = get_product(product["id"])
+    events = history(product["id"])["total"]
+    parent = next(event for event in history(product["id"])["items"] if event["kind"] == "sold")
+    dialog = open_quantity_correction(page, parent)
+    count = before["currentStock"] + 1
+    page.locator("#newStock").fill(str(count))
+    page.locator("#adjNote").fill("Frozen quantity draft")
+    dropped = []
+
+    def lose(route):
+        if is_mutation(route.request) and not dropped:
+            response = route.fetch()
+            assert action_result(response.text())["ok"] is True
+            dropped.append(json.loads(route.request.post_data))
+            route.abort("failed")
+        else:
+            route.continue_()
+
+    page.route("**/inventory*", lose)
+    dialog.locator('button[type="submit"]').evaluate("button => { button.click(); button.click(); }")
+    expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+    assert_close_blocked(page)
+    expect(page.locator("#newStock")).to_be_disabled()
+    expect(page.locator("#newStock")).to_have_value(str(count))
+    expect(page.locator("#adjNote")).to_have_value("Frozen quantity draft")
+    committed = get_product(product["id"])
+    assert committed["currentStock"] == count
+    assert int(committed["stockVersion"]) == int(before["stockVersion"]) + 1
+    assert history(product["id"])["total"] == events + 1
+    # Live state advances beyond the frozen successful receipt before replay.
+    other_context = browser.new_context()
+    other = None
+    try:
+        other = login(other_context)
+        other.on("request", capture)
+        open_cost(other, product)
+        other.locator("#replacementTotalCost").fill("13000")
+        other.locator("#costReason").fill("Later cost proof")
+        other.get_by_role("dialog").locator('button[type="submit"]').click()
+        expect(other.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    finally:
+        if other:
+            other.unroute_all(behavior="wait")
+        other_context.unroute_all(behavior="wait")
+        other_context.close()
+    live = get_product(product["id"])
+    page.unroute_all(behavior="wait")
+    with page.expect_request(is_mutation) as retry:
+        dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    assert json.loads(retry.value.post_data) == dropped[0], "Quantity replay changed UUID/payload/intent"
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert get_product(product["id"]) == live and history(product["id"])["total"] == events + 2
+    print("PASS: lost quantity response freezes drafts/close guards; identical replay adds no evidence and later live cost stays")
+
+
+def quantity_conflict(page, browser, product):
+    other_context = browser.new_context()
+    other = None
+    try:
+        other = login(other_context)
+        other.on("request", capture)
+        parent = next(event for event in history(product["id"])["items"] if event["kind"] == "sold")
+        dialog = open_quantity_correction(other, parent)
+        other.locator("#newStock").fill("2")
+        other.locator("#adjNote").fill("Keep quantity reason")
+        # Independent owner session moves stock while the stale correction stays open.
+        open_opname(page, product)
+        page.locator("#newStock").fill("6")
+        page.locator("#adjNote").fill("Concurrent count")
+        page.get_by_role("dialog").locator('button[type="submit"]').click()
+        expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+        current = get_product(product["id"])
+        events = history(product["id"])
+        assert current["currentStock"] == 6
+        failed_read = []
+
+        def fail_read(route):
+            request = route.request
+            if request.method == "POST" and request.headers.get("next-action") and not is_mutation(request) and not failed_read:
+                if json.loads(request.post_data)[0] == {"id": product["id"]}:
+                    failed_read.append(True)
+                    route.abort("failed")
+                    return
+            route.continue_()
+
+        other.route("**/inventory*", fail_read)
+        with other.expect_request(is_mutation) as stale:
+            dialog.locator('button[type="submit"]').click()
+        expect(dialog.get_by_role("alert")).to_be_visible(timeout=20000)
+        expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+        expect(other.locator("#newStock")).to_have_value("2")
+        expect(other.locator("#adjNote")).to_have_value("Keep quantity reason")
+        assert failed_read and get_product(product["id"]) == current and history(product["id"]) == events
+        other.unroute_all(behavior="wait")
+        retries = []
+        other.on("request", lambda request: retries.append(request) if is_mutation(request) else None)
+        dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+        reviewed = dialog.get_by_role("button", name=re.compile(r"Reviewed|Sudah ditinjau", re.I))
+        expect(reviewed).to_be_visible(timeout=20000)
+        assert not retries, "Conflict reload must read only"
+        expect(dialog.locator('button[type="submit"]')).to_be_disabled()
+        reviewed.click()
+        expect(other.locator("#newStock")).to_have_value("")
+        expect(other.locator("#adjNote")).to_have_value("Keep quantity reason")
+        expect(dialog).to_contain_text("6 Pcs")
+        other.locator("#newStock").fill("5")
+        with other.expect_request(is_mutation) as fresh:
+            dialog.locator('button[type="submit"]').click()
+        old_payload = json.loads(stale.value.post_data)[0]
+        payload = json.loads(fresh.value.post_data)[0]
+        assert payload["requestId"] != old_payload["requestId"]
+        assert payload["expectedStockVersion"] == current["stockVersion"]
+        assert payload["correctionOfEventId"] == old_payload["correctionOfEventId"]
+        expect(dialog).not_to_be_visible(timeout=20000)
+        latest = get_product(product["id"])
+        assert latest["currentStock"] == 5
+        assert int(latest["stockVersion"]) == int(current["stockVersion"]) + 1
+        assert history(product["id"])["total"] == events["total"] + 1
+    finally:
+        if other:
+            other.unroute_all(behavior="wait")
+        other_context.unroute_all(behavior="wait")
+        other_context.close()
+    print("PASS: stale quantity correction preserves parent/reason/count; failed latest read retries read-only; explicit review adopts current version with new UUID")
+
+
+def quantity_read_retry(page, product):
+    before = get_product(product["id"])
+    parent = next(event for event in history(product["id"])["items"] if event["kind"] == "sold")
+    open_quantity_correction(page, parent)
+    page.locator("#newStock").fill(str(before["currentStock"] - 1))
+    page.locator("#adjNote").fill("Known commit read retry")
+    mutations, reads = [], []
+
+    def fail_read(route):
+        request = route.request
+        if is_mutation(request):
+            mutations.append(request)
+        elif request.method == "POST" and request.headers.get("next-action"):
+            if json.loads(request.post_data)[0] == {"id": product["id"]}:
+                reads.append(request)
+                route.abort("failed")
+                return
+        route.continue_()
+
+    page.route("**/inventory*", fail_read)
+    dialog = page.get_by_role("dialog")
+    dialog.locator('button[type="submit"]').click()
+    expect(dialog.get_by_role("alert")).to_contain_text(re.compile(r"mutasi tidak diulang|no duplicate mutation"), timeout=20000)
+    assert len(mutations) == 1 and reads
+    assert_close_blocked(page)
+    expect(page.locator("#newStock")).to_be_disabled()
+    expect(page.locator("#newStock")).to_have_value(str(before["currentStock"] - 1))
+    expect(page.locator("#adjNote")).to_have_value("Known commit read retry")
+    committed, events = get_product(product["id"]), history(product["id"])
+    assert committed["currentStock"] == before["currentStock"] - 1
+    page.unroute_all(behavior="wait")
+    read_retries = []
+
+    def observe(route):
+        if is_mutation(route.request):
+            mutations.append(route.request)
+        elif route.request.method == "POST" and route.request.headers.get("next-action"):
+            read_retries.append(route.request)
+        route.continue_()
+
+    page.route("**/inventory*", observe)
+    dialog.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    expect(dialog).not_to_be_visible(timeout=20000)
+    assert len(mutations) == 1 and read_retries, "Known commit retry must read without another mutation"
+    assert get_product(product["id"]) == committed and history(product["id"]) == events
+    page.unroute_all(behavior="wait")
+    print("PASS: known quantity commit retries read-only with frozen draft and unchanged evidence")
 
 
 def create_fixture(suffix, opening_qty=10, purchase_total=50000, min_stock=5):
@@ -352,11 +1045,30 @@ def run():
         page = login(context)
         page.on("request", capture)
         if "--hardening" in sys.argv:
-            hardening(page, browser, prod_a, prod_b)
-            for width in (1440, 390):
-                page.set_viewport_size({"width": width, "height": 1000})
-                assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Inventory overflow at {width}px"
-            browser.close()
+            errors = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            try:
+                hardening(page, browser, prod_a, prod_b)
+                cost_hardening(page, prod_a)
+                cost_validation(page, prod_a, prod_b)
+                cost_lost_response(page, browser, prod_a)
+                cost_conflict(page, browser, prod_a)
+                cost_read_retry(page, prod_a)
+                quantity_correction(page, prod_a)
+                quantity_history(page, prod_a)
+                quantity_correction_validation(page, prod_a, prod_b)
+                quantity_lost_response(page, browser, prod_a)
+                quantity_conflict(page, browser, prod_a)
+                quantity_read_retry(page, prod_a)
+                for width in (1440, 390):
+                    page.set_viewport_size({"width": width, "height": 1000})
+                    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Inventory overflow at {width}px"
+                assert not errors, "Browser page errors observed"
+            finally:
+                page.unroute_all(behavior="wait")
+                context.unroute_all(behavior="wait")
+                context.close()
+                browser.close()
             return
 
         errors = []

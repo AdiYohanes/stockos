@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import { useInventory, INITIAL_INVENTORY_FILTER_STATE } from "../hooks/use-inventory";
@@ -11,17 +10,15 @@ import { InventoryToolbar } from "./inventory-toolbar";
 import { InventoryTabs } from "./inventory-tabs";
 import { InventoryStockTable } from "./inventory-stock-table";
 import { InventoryMovementsTable } from "./inventory-movements-table";
+import { InventoryDetailSheet } from "./inventory-detail-sheet";
 import { StockMovementModal } from "./stock-movement-modal";
 import { StockAdjustmentModal } from "./stock-adjustment-modal";
+import { CostAdjustmentModal } from "./cost-adjustment-modal";
+import { getProductAction } from "@/features/products/actions";
 import { mapProductToInventoryItem, mapEventToStockMovement } from "../adapters";
 import type { InventoryFilterState, InventoryItem, InventoryMetrics, StockMovement } from "../types";
 import type { ProductDto, ProductsPage, ProductMetrics, ProductFailure } from "@/features/products/schemas/product-rpc.schema";
 import type { InventoryEventsPage } from "../schemas/inventory-rpc.schema";
-
-const InventoryDetailSheet = dynamic(
-  () => import("./inventory-detail-sheet").then((m) => m.InventoryDetailSheet),
-  { ssr: false }
-);
 
 export interface InventoryContainerProps {
   filterState?: InventoryFilterState;
@@ -101,9 +98,11 @@ export function InventoryContainer({
   const [adjustmentModalState, setAdjustmentModalState] = React.useState<{
     open: boolean;
     targetItem: InventoryItem | null;
+    correction: StockMovement | null;
   }>({
     open: false,
     targetItem: null,
+    correction: null,
   });
 
   const handleOpenMovementModal = (item?: InventoryItem, type?: "in" | "out") => {
@@ -118,7 +117,20 @@ export function InventoryContainer({
     setAdjustmentModalState({
       open: true,
       targetItem: item || null,
+      correction: null,
     });
+  };
+
+  const handleCorrectQuantity = (movement: StockMovement) => {
+    setSelectedItemId(null);
+    setAdjustmentModalState({ open: true, targetItem: null, correction: { ...movement } });
+  };
+
+  const [costProductId, setCostProductId] = React.useState<string | null>(null);
+  const handleCorrectionCommitted = async (product: ProductDto) => {
+    const current = await getProductAction({ id: product.id });
+    if (!current.ok || current.data.id !== product.id) throw new Error(p.refreshError);
+    router.refresh();
   };
 
   const handleCommitted = async () => {
@@ -205,6 +217,7 @@ export function InventoryContainer({
             onResetFilters={filters.resetFilters}
             onSelectItem={(item) => setSelectedItemId(item.id)}
             onAdjustItem={(item) => handleOpenAdjustmentModal(item)}
+            onAdjustCost={(item) => setCostProductId(item.id)}
             onQuickMove={(item, moveType) => handleOpenMovementModal(item, moveType)}
           />
         ) : (
@@ -215,6 +228,7 @@ export function InventoryContainer({
             hasActiveFilters={filters.hasActiveFilters}
             onPageChange={filters.setPage}
             onResetFilters={filters.resetFilters}
+            onCorrectQuantity={handleCorrectQuantity}
           />
         )}
       </section>
@@ -228,12 +242,20 @@ export function InventoryContainer({
             setSelectedItemId(null);
             handleOpenAdjustmentModal(item);
           }}
+          onAdjustCost={(item) => {
+            setSelectedItemId(null);
+            setCostProductId(item.id);
+          }}
           onQuickMove={(item, moveType) => {
             setSelectedItemId(null);
             handleOpenMovementModal(item, moveType);
           }}
+          onCorrectQuantity={(movement) => handleCorrectQuantity(movement)}
         />
       )}
+
+      {costProductId && <CostAdjustmentModal key={costProductId} productId={costProductId}
+        onClose={() => setCostProductId(null)} onCommitted={handleCorrectionCommitted} />}
 
       <StockMovementModal
         key={movementModalState.targetItem?.id || "new-move"}
@@ -246,15 +268,16 @@ export function InventoryContainer({
         onCommitted={handleCommitted}
       />
 
-      <StockAdjustmentModal
-        key={adjustmentModalState.targetItem?.id || "new-adjust"}
+      {adjustmentModalState.open && <StockAdjustmentModal
+        key={adjustmentModalState.correction?.id || adjustmentModalState.targetItem?.id || "new-adjust"}
         open={adjustmentModalState.open}
         onOpenChange={(open) => setAdjustmentModalState((prev) => ({ ...prev, open }))}
         targetItem={adjustmentModalState.targetItem}
+        correction={adjustmentModalState.correction}
         allItems={inventoryItems}
         rawProducts={rawProducts}
-        onCommitted={handleCommitted}
-      />
+        onCommitted={adjustmentModalState.correction ? handleCorrectionCommitted : handleCommitted}
+      />}
     </div>
   );
 }

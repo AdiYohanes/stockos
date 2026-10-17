@@ -1,3 +1,5 @@
+import type { InventoryEventDto } from "./schemas/inventory-rpc.schema";
+
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "overstocked";
 
 export type MovementType = "in" | "out" | "adjustment";
@@ -16,6 +18,8 @@ export interface StockMovement {
   sku: string;
   itemName: string;
   type: MovementType;
+  kind?: InventoryEventDto["kind"];
+  correctionOfEventId?: string | null;
   quantity: number; // Positive for IN, negative for OUT, delta (+/-) for ADJ
   previousStock: number;
   newStock: number;
@@ -38,7 +42,8 @@ export interface InventoryItem {
   minStock: number; // Safety/reorder threshold
   maxStock: number; // Optimal capacity ceiling
   unit: string;
-  unitCost: number; // Harga beli satuan
+  inventoryCostValue: string; // Exact total modal (DB decimal text, authoritative)
+  averagePurchaseCost: string | null; // Exact per-unit average (DB decimal text)
   unitPrice?: number; // Harga jual satuan
   status: StockStatus;
   lastMovementAt: string;

@@ -22,7 +22,9 @@ import { useI18n } from "@/lib/i18n/context";
 import { recordOpnameAction } from "../actions";
 import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
 import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
-import type { InventoryItem } from "../types";
+import type { InventoryItem, StockMovement } from "../types";
+import { getProductAction } from "@/features/products/actions";
+import { formatProductMoney } from "@/features/products/format";
 import { mapProductToInventoryItem } from "../adapters";
 
 export interface StockAdjustmentModalProps {
@@ -31,6 +33,7 @@ export interface StockAdjustmentModalProps {
   targetItem: InventoryItem | null;
   allItems: InventoryItem[];
   rawProducts?: ProductDto[];
+  correction?: StockMovement | null;
   onCommitted?: OnProductCommitted;
 }
 
@@ -38,6 +41,7 @@ interface FormInnerProps {
   initialItem: InventoryItem | null;
   allItems: InventoryItem[];
   rawProducts: ProductDto[];
+  correction?: StockMovement | null;
   selectedId: string;
   onSelect: (id: string) => void;
   onClose: () => void;
@@ -54,9 +58,11 @@ function StockAdjustmentForm({
   onClose,
   onBlocked,
   onCommitted,
+  correction,
 }: FormInnerProps) {
   const { t } = useI18n();
   const c = t.products.persistent;
+  const q = t.inventory.quantityCorrection;
 
   const [snapshot, setSnapshot] = React.useState<ProductDto | InventoryItem | null>(() =>
     rawProducts.find((p) => p.id === selectedId) ?? allItems.find((i) => i.id === selectedId) ?? initialItem
@@ -65,9 +71,9 @@ function StockAdjustmentForm({
   const archived = snapshot && "archivedAt" in snapshot ? !!snapshot.archivedAt : false;
 
   const [newStockStr, setNewStockStr] = React.useState<string>(
-    activeItem ? activeItem.currentStock.toString() : "0"
+    correction ? "" : activeItem ? activeItem.currentStock.toString() : "0"
   );
-  const [foundCost, setFoundCost] = React.useState<string>("0");
+  const [foundCost, setFoundCost] = React.useState<string>(correction ? "" : "0");
   const [note, setNote] = React.useState<string>("");
 
   const submission = useProductSubmission(recordOpnameAction, async (product) => {
@@ -87,17 +93,22 @@ function StockAdjustmentForm({
     if (submission.blocked || conflict || archived) return;
 
     if (!Number.isSafeInteger(newStockNum) || newStockNum < 0 || newStockNum > 1_000_000_000) {
-      submission.reportError("Please enter a valid physical count (0 to 1,000,000,000).");
+      submission.reportError(q.invalidCount);
       return;
     }
 
     if (!activeItem) {
-      submission.reportError("Please select an item.");
+      submission.reportError(t.products.persistent.selectRequired);
+      return;
+    }
+
+    if (correction && (!note.trim() || note.trim().length > 1000)) {
+      submission.reportError(t.inventory.costCorrection.reasonRequired);
       return;
     }
 
     if (isFoundGoods && (!/^[0-9]{1,13}$/.test(foundCost.trim()) || BigInt(foundCost.trim()) > BigInt("1000000000000"))) {
-      submission.reportError("Purchase total is required for found goods after zero balance (0 to 1,000,000,000,000 IDR).");
+      submission.reportError(q.invalidFoundTotal);
       return;
     }
 
@@ -108,6 +119,7 @@ function StockAdjustmentForm({
       expectedStockVersion: String(version),
       countedQuantity: newStockNum,
       note: note.trim() || null,
+      ...(correction ? { correctionOfEventId: correction.id } : {}),
       ...(isFoundGoods ? { foundPurchaseTotal: foundCost.trim() } : {}),
     });
   };
@@ -117,10 +129,10 @@ function StockAdjustmentForm({
       <DialogHeader className="border-b-[3px] border-ink p-4 bg-paper">
         <DialogTitle className="flex items-center gap-2 font-display text-lg font-bold uppercase tracking-tight text-ink">
           <SlidersHorizontal className="h-5 w-5" />
-          <span>{t.inventory.stockAdjustmentAudit}</span>
+          <span>{correction ? q.title : t.inventory.stockAdjustmentAudit}</span>
         </DialogTitle>
         <DialogDescription className="font-mono text-xs text-ink/60">
-          {t.inventory.stockAdjustmentAuditDesc}
+          {correction ? q.description : t.inventory.stockAdjustmentAuditDesc}
         </DialogDescription>
       </DialogHeader>
 
@@ -132,17 +144,33 @@ function StockAdjustmentForm({
           </div>
         )}
 
+        {correction && <section className="border-[3px] border-ink bg-paper p-3 space-y-2 text-xs break-words">
+          <h3 className="font-bold">{q.original}</h3>
+          <p className="font-mono break-all">{correction.id}</p>
+          <p>{correction.kind && c[correction.kind]} · {correction.timestamp}</p>
+          <p>{correction.sku} · {correction.itemName}</p>
+          <p>{c.reference}: {correction.reference}</p>
+          <p>{c.before}: {correction.previousStock} · {c.after}: {correction.newStock} ({correction.quantity > 0 ? "+" : ""}{correction.quantity})</p>
+          {correction.note && <p>{correction.note}</p>}
+        </section>}
+        {correction && snapshot && "archivedAt" in snapshot && <p className="text-xs font-mono break-words">
+          {c.stockVersion}: {snapshot.stockVersion} · {c.inventoryCostValue}: {formatProductMoney(snapshot.inventoryCostValue)}
+        </p>}
         {conflict && <section className="border-[3px] border-ink p-3 space-y-2">
           <p className="font-bold">{c.conflict}</p>
           {submission.current ? <>
             <p>{c.currentState}: {submission.current.name} · {submission.current.currentStock} {submission.current.unit}</p>
             <p className="font-mono">{c.stockVersion}: {submission.current.stockVersion}</p>
+            {correction && <>
+              <p className="text-xs break-words">{c.inventoryCostValue}: {formatProductMoney(submission.current.inventoryCostValue)} · {c.averagePurchaseCost}: {formatProductMoney(submission.current.averagePurchaseCost)}</p>
+              {submission.current.archivedAt && <p>{c.archivedHelp}</p>}
+            </>}
             <p>{c.reviewCurrent}</p>
             <Button type="button" variant="outline" disabled={submission.pending} onClick={() => {
               if (!submission.current || submission.current.id !== selectedId) return;
               setSnapshot(submission.current);
               setNewStockStr("");
-              setFoundCost("0");
+              setFoundCost(correction ? "" : "0");
               submission.review();
             }}>{c.reviewed}</Button>
           </> : <>
@@ -234,7 +262,7 @@ function StockAdjustmentForm({
         </div>
 
         {/* Zero difference informational note */}
-        {delta === 0 && (
+        {Number.isFinite(newStockNum) && delta === 0 && (
           <p className="text-[11px] font-mono text-ink/70 bg-paper p-2 border border-ink/20">
             Physical count matches system stock. Verification will be recorded as evidence without stock change.
           </p>
@@ -244,23 +272,23 @@ function StockAdjustmentForm({
         {isFoundGoods && (
           <div className="space-y-1.5 p-3 bg-amber-50 border-[2px] border-ink">
             <Label htmlFor="foundCost" className="text-xs font-bold text-ink block">
-              Purchase Total for Found Goods (IDR) *
+              {q.foundTotal} *
             </Label>
             <Input
               id="foundCost"
               type="text"
               inputMode="numeric"
               pattern="[0-9]{1,13}"
-              maxLength={13}
+              maxLength={correction ? undefined : 13}
               required
-              disabled={submission.blocked}
+              disabled={submission.blocked || conflict || archived}
               placeholder="0"
               value={foundCost}
               onChange={(e) => setFoundCost(e.target.value)}
               className="h-8 text-xs font-mono bg-white border-ink"
             />
             <p className="text-[10px] text-ink/70 font-mono">
-              Purchase total required when recording found stock after a zero balance. Enter 0 for free goods.
+              {q.foundHelp}
             </p>
           </div>
         )}
@@ -268,14 +296,15 @@ function StockAdjustmentForm({
         {/* 3. Notes */}
         <div className="space-y-1.5">
           <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-ink/70">
-            {t.inventory.auditNote}
+            {correction ? `${t.inventory.costCorrection.reason} *` : t.inventory.auditNote}
           </Label>
           <Input
             id="adjNote"
             type="text"
             maxLength={1000}
+            required={!!correction}
             disabled={submission.blocked}
-            placeholder={t.modals?.notesOptional || "Optional notes..."}
+            placeholder={correction ? t.inventory.costCorrection.reason : t.modals.notesOptional}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className="h-9 text-xs border-ink bg-white"
@@ -309,7 +338,7 @@ function StockAdjustmentForm({
             disabled={submission.pending || conflict || archived}
             className="bg-acid hover:bg-acid/90 text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
           >
-            {submission.pending ? c.pending : t.inventory.applyAdjustment}
+            {submission.pending ? c.pending : correction ? q.title : t.inventory.applyAdjustment}
           </Button>
         )}
       </DialogFooter>
@@ -323,27 +352,59 @@ export function StockAdjustmentModal({
   targetItem,
   allItems,
   rawProducts = [],
+  correction = null,
   onCommitted,
 }: StockAdjustmentModalProps) {
   const [blocked, setBlocked] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const itemId = targetItem?.id || selectedId || allItems[0]?.id || "";
+  const { t } = useI18n();
+  const [product, setProduct] = React.useState<ProductDto | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [attempt, setAttempt] = React.useState(0);
+  const itemId = correction?.itemId || targetItem?.id || selectedId || allItems[0]?.id || "";
+  React.useEffect(() => {
+    if (!open || !correction) return;
+    let active = true;
+    async function read() {
+      try {
+        const result = await getProductAction({ id: itemId });
+        if (!active) return;
+        if (result.ok && result.data.id === itemId) setProduct(result.data);
+        else setError(!result.ok ? t.products.persistent.errors[result.code] || t.common.error : t.common.error);
+      } catch { if (active) setError(t.common.error); }
+    }
+    void read();
+    return () => { active = false; };
+  }, [open, correction, itemId, attempt, t]);
   return (
     <DialogRoot open={open} onOpenChange={next => { if (next || !blocked) onOpenChange(next); }}>
       <DialogPortal>
         <DialogBackdrop />
         <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
-          <StockAdjustmentForm
-            key={itemId}
-            initialItem={targetItem}
+          {!correction || product ? <StockAdjustmentForm
+            key={`${itemId}:${correction?.id || "opname"}`}
+            initialItem={correction && product ? mapProductToInventoryItem(product) : targetItem}
             allItems={allItems}
-            rawProducts={rawProducts}
+            rawProducts={correction && product ? [product] : rawProducts}
+            correction={correction}
             selectedId={itemId}
             onSelect={setSelectedId}
             onClose={() => onOpenChange(false)}
             onBlocked={setBlocked}
             onCommitted={onCommitted}
-          />
+          /> : <>
+            <DialogHeader className="border-b-[3px] border-ink bg-paper p-4">
+              <DialogTitle>{t.inventory.quantityCorrection.title}</DialogTitle>
+              <DialogDescription>{t.inventory.quantityCorrection.description}</DialogDescription>
+            </DialogHeader>
+            <DialogBody className="p-4">
+              {error ? <p role="alert">{error}</p> : <p role="status">{t.common.loading}...</p>}
+            </DialogBody>
+            <DialogFooter className="border-t-[3px] border-ink bg-paper p-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t.common.cancel}</Button>
+              {error && <Button type="button" onClick={() => { setError(null); setAttempt(value => value + 1); }}>{t.products.persistent.retry}</Button>}
+            </DialogFooter>
+          </>}
         </DialogPopup>
       </DialogPortal>
     </DialogRoot>
