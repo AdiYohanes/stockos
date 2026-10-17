@@ -2,6 +2,10 @@
 
 ## Architecture Status
 
+Separate opening-stock exception approved 2026-10-17: one operator CLI may import the approved 48-row source into existing Cloud project `ohltpkxtucchqezkgfok` through a verified normal owner session and existing RPCs. A private external manifest freezes payloads/request IDs before writes. No new runtime layer, API, migration, dependency or privileged business-write client; localhost seeders/proofs stay localhost-only. This exception does not authorize production launch or further real-shop use.
+
+Private-test exception approved 2026-10-17: existing Supabase Cloud project `ohltpkxtucchqezkgfok` may host the existing PostgreSQL/Auth boundary while Next.js remains local. Reuse the session/admin clients, owner-checked RPCs, existing forward migrations and auth templates; no new application layer or provider. Hosted compatibility and email behavior need separate verification. No Vercel deployment, paid changes, real-shop use/import or production-readiness claim. Historical local-only scope below describes earlier slices.
+
 Version: `0.x`
 
 Current architecture phase:

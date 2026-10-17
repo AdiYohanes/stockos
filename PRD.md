@@ -286,6 +286,10 @@ These are future considerations and should not automatically be treated as appro
 
 ## 12. Current Status
 
+Separate approval 2026-10-17 permits only the existing 48-row opening-stock import to Cloud project `ohltpkxtucchqezkgfok`, run privately by the owner through a guarded CLI. Preserve approved combined names, categories, units and exact purchase totals. This records opening balances, not historical sales, realized revenue or net profit. Production launch, deployment and other real-shop operations remain outside this exception.
+
+Private-test exception approved 2026-10-17: configure existing Supabase Cloud project `ohltpkxtucchqezkgfok` and connect the app running locally, using existing migrations and Supabase Auth. Built-in email is limited to eligible organization-team inboxes and requires confirmed sending permission. No application deployment, paid changes, real-shop data/import, production launch, or expanded domain scope. Connection and hosted behavior require verification; prior local proof is not hosted proof.
+
 Current development phase:
 
 **Backend Foundation local correctness hardening — approved 2026-10-11**
