@@ -1,59 +1,25 @@
-export type CurrencyCode = "IDR" | "USD" | "EUR" | "SGD";
-export type ValuationMethod = "FIFO" | "LIFO" | "WEIGHTED_AVERAGE";
-export type DefaultUnit = "Pcs" | "Kg" | "Box" | "Liter" | "Pack" | "Roll";
-export type TeamRole = "Admin" | "Store Manager" | "Inventory Clerk" | "Viewer";
-export type TeamMemberStatus = "Active" | "Invited" | "Suspended";
+import type { ShopSettingsDto, UpdateShopSettingsInput } from "./schemas/settings-rpc.schema";
 
-export type SettingsTab = "company" | "inventory" | "notifications" | "team" | "system";
+export type SettingsTab = "company" | "inventory" | "system";
+
+export type TimezoneCode = "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
 
 export interface CompanySettings {
-  companyName: string;
-  taxId: string;
-  officialEmail: string;
+  name: string;
+  ownerName: string;
   phone: string;
   address: string;
-  currency: CurrencyCode;
-  currencySymbol: string;
-  timezone: string;
-  dateFormat: "DD/MM/YYYY" | "YYYY-MM-DD" | "MM/DD/YYYY";
-  operatingHours: string;
+  timezone: TimezoneCode;
 }
 
 export interface InventorySettings {
-  defaultLowStockThreshold: number;
-  autoOutofStock: boolean;
-  defaultUnit: DefaultUnit;
-  valuationMethod: ValuationMethod;
-  allowNegativeStock: boolean;
-  defaultReorderQuantity: number;
-  enableExpiryTracking: boolean;
+  defaultUnit: string;
+  defaultMinStock: number;
 }
 
-export interface NotificationSettings {
-  emailLowStockAlert: boolean;
-  dailyDigest: boolean;
-  supplierReorderReminder: boolean;
-  systemAuditLogs: boolean;
-  webhookUrl: string;
-  alertRecipients: string;
+export interface DisplayPreferences {
+  language: "id" | "en";
+  dateFormat: "DD/MM/YYYY" | "YYYY-MM-DD" | "MM/DD/YYYY";
 }
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: TeamRole;
-  avatar?: string;
-  status: TeamMemberStatus;
-  lastActive: string;
-  joinedAt: string;
-  permissions: string[];
-}
-
-export interface SystemSettings {
-  company: CompanySettings;
-  inventory: InventorySettings;
-  notifications: NotificationSettings;
-  team: TeamMember[];
-  updatedAt: string;
-}
+export type { ShopSettingsDto, UpdateShopSettingsInput };

@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,115 +18,194 @@ import { Label } from "@/components/ui/label";
 import { SkuBadge } from "@/components/shared/sku-badge";
 import { SlidersHorizontal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { AdjustmentReason, InventoryItem } from "../types";
+import { useI18n } from "@/lib/i18n/context";
+import { recordOpnameAction } from "../actions";
+import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
+import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
+import type { InventoryItem, StockMovement } from "../types";
+import { getProductAction } from "@/features/products/actions";
+import { formatProductMoney } from "@/features/products/format";
+import { mapProductToInventoryItem } from "../adapters";
 
 export interface StockAdjustmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetItem: InventoryItem | null;
   allItems: InventoryItem[];
-  onAdjustStock: (
-    itemId: string,
-    newStock: number,
-    reason: AdjustmentReason,
-    reference: string,
-    note?: string
-  ) => void;
+  rawProducts?: ProductDto[];
+  correction?: StockMovement | null;
+  onCommitted?: OnProductCommitted;
 }
 
 interface FormInnerProps {
   initialItem: InventoryItem | null;
   allItems: InventoryItem[];
-  onSubmit: (
-    itemId: string,
-    newStock: number,
-    reason: AdjustmentReason,
-    reference: string,
-    note?: string
-  ) => void;
-  onCancel: () => void;
+  rawProducts: ProductDto[];
+  correction?: StockMovement | null;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  onBlocked: (blocked: boolean) => void;
+  onCommitted?: OnProductCommitted;
 }
 
 function StockAdjustmentForm({
   initialItem,
   allItems,
-  onSubmit,
-  onCancel,
+  rawProducts,
+  selectedId,
+  onSelect,
+  onClose,
+  onBlocked,
+  onCommitted,
+  correction,
 }: FormInnerProps) {
-  const [selectedItemId, setSelectedItemId] = React.useState<string>(
-    initialItem ? initialItem.id : allItems[0]?.id || ""
+  const { t } = useI18n();
+  const c = t.products.persistent;
+  const q = t.inventory.quantityCorrection;
+
+  const [snapshot, setSnapshot] = React.useState<ProductDto | InventoryItem | null>(() =>
+    rawProducts.find((p) => p.id === selectedId) ?? allItems.find((i) => i.id === selectedId) ?? initialItem
   );
-  const activeItem = allItems.find((i) => i.id === selectedItemId) || initialItem;
+  const activeItem = snapshot && ("archivedAt" in snapshot ? mapProductToInventoryItem(snapshot) : snapshot);
+  const archived = snapshot && "archivedAt" in snapshot ? !!snapshot.archivedAt : false;
 
   const [newStockStr, setNewStockStr] = React.useState<string>(
-    activeItem ? activeItem.currentStock.toString() : "0"
+    correction ? "" : activeItem ? activeItem.currentStock.toString() : "0"
   );
+  const [foundCost, setFoundCost] = React.useState<string>(correction ? "" : "0");
   const [note, setNote] = React.useState<string>("");
-  const [error, setError] = React.useState<string | null>(null);
+
+  const submission = useProductSubmission(recordOpnameAction, async (product) => {
+    if (onCommitted) await onCommitted(product);
+    onClose();
+  });
+  React.useEffect(() => { onBlocked(submission.blocked); return () => onBlocked(false); }, [submission.blocked, onBlocked]);
+  const conflict = submission.code === "VERSION_CONFLICT";
 
   const currentStock = activeItem ? activeItem.currentStock : 0;
   const newStockNum = newStockStr.trim() ? Number(newStockStr) : NaN;
   const delta = isNaN(newStockNum) ? 0 : newStockNum - currentStock;
+  const isFoundGoods = currentStock === 0 && newStockNum > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    if (submission.blocked || conflict || archived) return;
 
-    if (!Number.isSafeInteger(newStockNum) || newStockNum < 0) {
-      setError("Masukkan jumlah fisik yang benar (tidak boleh minus).");
+    if (!Number.isSafeInteger(newStockNum) || newStockNum < 0 || newStockNum > 1_000_000_000) {
+      submission.reportError(q.invalidCount);
       return;
     }
 
     if (!activeItem) {
-      setError("Please select an item.");
+      submission.reportError(t.products.persistent.selectRequired);
       return;
     }
 
-    if (delta === 0) {
-      setError("Stok fisik sama dengan sistem. Tidak ada selisih.");
+    if (correction && (!note.trim() || note.trim().length > 1000)) {
+      submission.reportError(t.inventory.costCorrection.reasonRequired);
       return;
     }
 
-    try {
-      const autoRef = `SO-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000)}`;
-      onSubmit(activeItem.id, newStockNum, "cycle_count", autoRef, note.trim() || undefined);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to adjust stock");
+    if (isFoundGoods && (!/^[0-9]{1,13}$/.test(foundCost.trim()) || BigInt(foundCost.trim()) > BigInt("1000000000000"))) {
+      submission.reportError(q.invalidFoundTotal);
+      return;
     }
+
+    const version = snapshot?.stockVersion || "0";
+
+    submission.submit({
+      productId: activeItem.id,
+      expectedStockVersion: String(version),
+      countedQuantity: newStockNum,
+      note: note.trim() || null,
+      ...(correction ? { correctionOfEventId: correction.id } : {}),
+      ...(isFoundGoods ? { foundPurchaseTotal: foundCost.trim() } : {}),
+    });
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <DialogBody className="space-y-4">
+      <DialogHeader className="border-b-[3px] border-ink p-4 bg-paper">
+        <DialogTitle className="flex items-center gap-2 font-display text-lg font-bold uppercase tracking-tight text-ink">
+          <SlidersHorizontal className="h-5 w-5" />
+          <span>{correction ? q.title : t.inventory.stockAdjustmentAudit}</span>
+        </DialogTitle>
+        <DialogDescription className="font-mono text-xs text-ink/60">
+          {correction ? q.description : t.inventory.stockAdjustmentAuditDesc}
+        </DialogDescription>
+      </DialogHeader>
+
+      <DialogBody className="space-y-4 p-4 max-h-[65vh] overflow-y-auto">
+        {submission.error && (
+          <div role="alert" className="rounded-none bg-rose-50 border border-rose-300 p-2.5 text-xs text-rose-700 font-sans flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{submission.error}</span>
+          </div>
+        )}
+
+        {correction && <section className="border-[3px] border-ink bg-paper p-3 space-y-2 text-xs break-words">
+          <h3 className="font-bold">{q.original}</h3>
+          <p className="font-mono break-all">{correction.id}</p>
+          <p>{correction.kind && c[correction.kind]} · {correction.timestamp}</p>
+          <p>{correction.sku} · {correction.itemName}</p>
+          <p>{c.reference}: {correction.reference}</p>
+          <p>{c.before}: {correction.previousStock} · {c.after}: {correction.newStock} ({correction.quantity > 0 ? "+" : ""}{correction.quantity})</p>
+          {correction.note && <p>{correction.note}</p>}
+        </section>}
+        {correction && snapshot && "archivedAt" in snapshot && <p className="text-xs font-mono break-words">
+          {c.stockVersion}: {snapshot.stockVersion} · {c.inventoryCostValue}: {formatProductMoney(snapshot.inventoryCostValue)}
+        </p>}
+        {conflict && <section className="border-[3px] border-ink p-3 space-y-2">
+          <p className="font-bold">{c.conflict}</p>
+          {submission.current ? <>
+            <p>{c.currentState}: {submission.current.name} · {submission.current.currentStock} {submission.current.unit}</p>
+            <p className="font-mono">{c.stockVersion}: {submission.current.stockVersion}</p>
+            {correction && <>
+              <p className="text-xs break-words">{c.inventoryCostValue}: {formatProductMoney(submission.current.inventoryCostValue)} · {c.averagePurchaseCost}: {formatProductMoney(submission.current.averagePurchaseCost)}</p>
+              {submission.current.archivedAt && <p>{c.archivedHelp}</p>}
+            </>}
+            <p>{c.reviewCurrent}</p>
+            <Button type="button" variant="outline" disabled={submission.pending} onClick={() => {
+              if (!submission.current || submission.current.id !== selectedId) return;
+              setSnapshot(submission.current);
+              setNewStockStr("");
+              setFoundCost(correction ? "" : "0");
+              submission.review();
+            }}>{c.reviewed}</Button>
+          </> : <>
+            <p>{c.reviewCurrent}</p>
+            <Button type="button" variant="outline" disabled={submission.pending} onClick={submission.reloadCurrent}>{c.retry}</Button>
+          </>}
+        </section>}
+        {archived && <p role="status">{c.archivedHelp}</p>}
+
         {/* 1. Item Selection */}
         <div className="space-y-1.5">
-          <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Pilih Barang
+          <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-ink/70">
+            {t.inventory.selectInventoryItem}
           </Label>
           {initialItem ? (
-            <div className="p-3 rounded-none border-[3px] border-ink bg-slate-50/60 dark:bg-slate-900/40 text-xs flex items-center justify-between">
+            <div className="p-3 border-[3px] border-ink bg-paper text-xs flex items-center justify-between">
               <div className="flex flex-col gap-1 min-w-0 pr-2">
-                <SkuBadge code={initialItem.sku} />
-                <span className="font-sans font-medium text-foreground truncate">{initialItem.name}</span>
-                <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                  Shelf: {initialItem.locationBin}
+                <SkuBadge code={activeItem?.sku || initialItem.sku} />
+                <span className="font-sans font-bold text-ink truncate">{activeItem?.name || initialItem.name}</span>
+                <span className="font-mono text-[10px] text-ink/60">
+                  {t.inventory.storageBin}: {activeItem?.locationBin || initialItem.locationBin}
                 </span>
               </div>
-              <span className="font-mono tabular-nums text-xs font-semibold text-foreground shrink-0 text-right">
-                {initialItem.currentStock} {initialItem.unit}
-                <span className="block text-[10px] font-sans text-muted-foreground font-normal">on hand</span>
+              <span className="font-mono text-xs font-bold text-ink shrink-0 text-right">
+                {currentStock} {activeItem?.unit || initialItem.unit}
+                <span className="block text-[10px] font-sans text-ink/60 font-normal">{t.inventory.onHandLabel}</span>
               </span>
             </div>
           ) : (
             <select
               id="itemSelect"
-              value={selectedItemId}
-              onChange={(e) => {
-                setSelectedItemId(e.target.value);
-                const nextItem = allItems.find((i) => i.id === e.target.value);
-                if (nextItem) setNewStockStr(nextItem.currentStock.toString());
-              }}
-              className="w-full h-9 rounded-none border-[3px] border-ink bg-background px-3 text-xs font-medium text-foreground focus:border-slate-900 focus:outline-none"
+              value={selectedId}
+              onChange={(e) => onSelect(e.target.value)}
+              disabled={submission.blocked}
+              className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
             >
               {allItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -139,39 +217,43 @@ function StockAdjustmentForm({
         </div>
 
         {/* 2. Current vs New Stock Comparison & Delta */}
-        <div className="grid grid-cols-2 gap-3 p-3 rounded-none bg-slate-50/60 dark:bg-slate-900/40 border-[3px] border-ink">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-paper border-[3px] border-ink">
           <div>
-            <span className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Stok Sistem Saat Ini
+            <span className="text-[11px] font-mono uppercase text-ink/70 block">
+              {t.inventory.currentOnHand}
             </span>
-            <span className="font-mono tabular-nums text-lg font-semibold text-foreground">
-              {currentStock} <span className="text-xs font-normal text-muted-foreground font-sans">{activeItem?.unit}</span>
+            <span className="font-mono text-lg font-bold text-ink">
+              {currentStock} <span className="text-xs font-normal text-ink/60 font-sans">{activeItem?.unit}</span>
             </span>
           </div>
 
           <div>
-            <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-muted-foreground block">
-              Stok Fisik Asli (Real) *
+            <Label htmlFor="newStock" className="text-[11px] font-mono uppercase text-ink/70 block">
+              {t.inventory.actualPhysicalCount} *
             </Label>
             <Input
               id="newStock"
               type="number"
               min="0"
+              max={1_000_000_000}
+              step={1}
+              required
+              disabled={submission.blocked || conflict || archived}
               value={newStockStr}
               onChange={(e) => setNewStockStr(e.target.value)}
-              className="h-8 text-xs font-mono tabular-nums font-semibold bg-background border-ink focus:border-slate-900"
+              className="h-8 text-xs font-mono font-bold bg-white border-ink"
             />
           </div>
 
           {/* Delta feedback */}
-          <div className="col-span-2 pt-2 border-t border-ink flex items-center justify-between text-xs font-mono tabular-nums">
-            <span className="text-muted-foreground font-sans">Selisih (Adjustment):</span>
+          <div className="col-span-2 pt-2 border-t border-ink/20 flex items-center justify-between text-xs font-mono">
+            <span className="text-ink/70 font-sans">{t.inventory.calculatedAdjustment}</span>
             <span
               className={cn(
-                "font-medium px-2 py-0.5 rounded-none border",
-                delta > 0 && "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-                delta < 0 && "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-                delta === 0 && "bg-slate-100 text-slate-700 border-ink dark:bg-slate-800 dark:text-slate-300"
+                "font-bold px-2 py-0.5 border-[2px] border-ink",
+                delta > 0 && "bg-emerald-100 text-emerald-900",
+                delta < 0 && "bg-rose-100 text-rose-900",
+                delta === 0 && "bg-white text-ink"
               )}
             >
               {delta > 0 ? `+${delta}` : delta} {activeItem?.unit || "units"}
@@ -179,47 +261,86 @@ function StockAdjustmentForm({
           </div>
         </div>
 
+        {/* Zero difference informational note */}
+        {Number.isFinite(newStockNum) && delta === 0 && (
+          <p className="text-[11px] font-mono text-ink/70 bg-paper p-2 border border-ink/20">
+            Physical count matches system stock. Verification will be recorded as evidence without stock change.
+          </p>
+        )}
+
+        {/* Found goods purchase total input */}
+        {isFoundGoods && (
+          <div className="space-y-1.5 p-3 bg-amber-50 border-[2px] border-ink">
+            <Label htmlFor="foundCost" className="text-xs font-bold text-ink block">
+              {q.foundTotal} *
+            </Label>
+            <Input
+              id="foundCost"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{1,13}"
+              maxLength={correction ? undefined : 13}
+              required
+              disabled={submission.blocked || conflict || archived}
+              placeholder="0"
+              value={foundCost}
+              onChange={(e) => setFoundCost(e.target.value)}
+              className="h-8 text-xs font-mono bg-white border-ink"
+            />
+            <p className="text-[10px] text-ink/70 font-mono">
+              {q.foundHelp}
+            </p>
+          </div>
+        )}
+
         {/* 3. Notes */}
-        <div className="space-y-1.5 mt-2">
-          <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-            Catatan Opname
+        <div className="space-y-1.5">
+          <Label htmlFor="adjNote" className="text-xs font-mono uppercase tracking-wider text-ink/70">
+            {correction ? `${t.inventory.costCorrection.reason} *` : t.inventory.auditNote}
           </Label>
           <Input
             id="adjNote"
             type="text"
-            placeholder="Keterangan / alasan selisih (opsional)"
+            maxLength={1000}
+            required={!!correction}
+            disabled={submission.blocked}
+            placeholder={correction ? t.inventory.costCorrection.reason : t.modals.notesOptional}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-9 text-xs border-ink focus:border-slate-900"
+            className="h-9 text-xs border-ink bg-white"
           />
         </div>
-
-        {/* Error message */}
-        {error && (
-          <div
-            role="alert"
-            className="rounded-none bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
-          >
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
       </DialogBody>
 
       {/* Footer */}
-      <DialogFooter className="mt-4 pt-3 border-t border-ink">
-        <DialogClose
-          render={<Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-9 text-xs border-ink hover:border-slate-400" />}
-        >
-          Cancel
-        </DialogClose>
+      <DialogFooter className="border-t-[3px] border-ink p-4 flex justify-end gap-2 bg-paper">
         <Button
-          type="submit"
-          size="sm"
-          className="h-9 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+          type="button"
+          variant="outline"
+          disabled={submission.blocked}
+          onClick={onClose}
+          className="border-[3px] border-ink shadow-hard-sm"
         >
-          Simpan Stok Opname
+          {t.common.cancel}
         </Button>
+        {submission.uncertain || submission.refreshFailed ? (
+          <Button
+            type="button"
+            disabled={submission.pending}
+            onClick={submission.retry}
+            className="bg-acid text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
+          >
+            {c.retry}
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={submission.pending || conflict || archived}
+            className="bg-acid hover:bg-acid/90 text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
+          >
+            {submission.pending ? c.pending : correction ? q.title : t.inventory.applyAdjustment}
+          </Button>
+        )}
       </DialogFooter>
     </form>
   );
@@ -230,38 +351,60 @@ export function StockAdjustmentModal({
   onOpenChange,
   targetItem,
   allItems,
-  onAdjustStock,
+  rawProducts = [],
+  correction = null,
+  onCommitted,
 }: StockAdjustmentModalProps) {
-  // Keyed form pattern for React 19 safety
-  const formKey = `${targetItem?.id || "general"}-${open}`;
-
+  const [blocked, setBlocked] = React.useState(false);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const { t } = useI18n();
+  const [product, setProduct] = React.useState<ProductDto | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [attempt, setAttempt] = React.useState(0);
+  const itemId = correction?.itemId || targetItem?.id || selectedId || allItems[0]?.id || "";
+  React.useEffect(() => {
+    if (!open || !correction) return;
+    let active = true;
+    async function read() {
+      try {
+        const result = await getProductAction({ id: itemId });
+        if (!active) return;
+        if (result.ok && result.data.id === itemId) setProduct(result.data);
+        else setError(!result.ok ? t.products.persistent.errors[result.code] || t.common.error : t.common.error);
+      } catch { if (active) setError(t.common.error); }
+    }
+    void read();
+    return () => { active = false; };
+  }, [open, correction, itemId, attempt, t]);
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
+    <DialogRoot open={open} onOpenChange={next => { if (next || !blocked) onOpenChange(next); }}>
       <DialogPortal>
         <DialogBackdrop />
-        <DialogPopup className="max-w-md overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="font-sans text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <span>Stok Opname (Penyesuaian)</span>
-            </DialogTitle>
-            <DialogDescription className="font-mono tabular-nums text-xs uppercase tracking-wider text-muted-foreground">
-              Samakan stok fisik asli dengan sistem
-            </DialogDescription>
-          </DialogHeader>
-
-          {open && (
-            <StockAdjustmentForm
-              key={formKey}
-              initialItem={targetItem}
-              allItems={allItems}
-              onSubmit={(itemId, newStock, reason, ref, note) => {
-                onAdjustStock(itemId, newStock, reason, ref, note);
-                onOpenChange(false);
-              }}
-              onCancel={() => onOpenChange(false)}
-            />
-          )}
+        <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
+          {!correction || product ? <StockAdjustmentForm
+            key={`${itemId}:${correction?.id || "opname"}`}
+            initialItem={correction && product ? mapProductToInventoryItem(product) : targetItem}
+            allItems={allItems}
+            rawProducts={correction && product ? [product] : rawProducts}
+            correction={correction}
+            selectedId={itemId}
+            onSelect={setSelectedId}
+            onClose={() => onOpenChange(false)}
+            onBlocked={setBlocked}
+            onCommitted={onCommitted}
+          /> : <>
+            <DialogHeader className="border-b-[3px] border-ink bg-paper p-4">
+              <DialogTitle>{t.inventory.quantityCorrection.title}</DialogTitle>
+              <DialogDescription>{t.inventory.quantityCorrection.description}</DialogDescription>
+            </DialogHeader>
+            <DialogBody className="p-4">
+              {error ? <p role="alert">{error}</p> : <p role="status">{t.common.loading}...</p>}
+            </DialogBody>
+            <DialogFooter className="border-t-[3px] border-ink bg-paper p-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t.common.cancel}</Button>
+              {error && <Button type="button" onClick={() => { setError(null); setAttempt(value => value + 1); }}>{t.products.persistent.retry}</Button>}
+            </DialogFooter>
+          </>}
         </DialogPopup>
       </DialogPortal>
     </DialogRoot>

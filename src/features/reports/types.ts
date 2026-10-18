@@ -1,4 +1,4 @@
-export type ReportTab = "valuation" | "velocity" | "reorder" | "performance";
+export type ReportTab = "valuation" | "velocity" | "reorder";
 
 export type ReportTimeframe = "7d" | "30d" | "90d" | "12m";
 
@@ -7,16 +7,16 @@ export interface CategoryValuation {
   categoryName: string;
   itemCount: number;
   stockQty: number;
-  totalCost: number;
-  totalRetailValue: number;
+  totalCost: string;
+  totalRetailValue: string;
   marginPercent: number;
   ratioPercent: number;
 }
 
 export interface ValuationSummary {
-  totalValuation: number;
-  totalCost: number;
-  grossMargin: number;
+  totalValuation: string;
+  totalCost: string;
+  grossMargin: string;
   marginPercent: number;
   totalSKUs: number;
   categories: CategoryValuation[];
@@ -29,11 +29,13 @@ export interface MovementVelocityItem {
   sku: string;
   name: string;
   category: string;
+  openingQty?: number;
   stockInQty: number;
   stockOutQty: number;
+  opnameDelta?: number;
   currentStock: number;
-  turnoverRatio: number;
-  velocityTier: VelocityTier;
+  turnoverRatio?: number;
+  velocityTier?: VelocityTier;
   lastMovementDate: string;
 }
 
@@ -46,13 +48,13 @@ export interface ReorderRiskItem {
   category: string;
   currentStock: number;
   minThreshold: number;
-  daysRemaining: number;
   suggestedReorderQty: number;
-  unitCost: number;
-  totalReorderCost: number;
+  unitCost: string;
+  totalReorderCost: string;
   urgency: RiskUrgency;
-  leadTimeDays: number;
   supplierName: string;
+  daysRemaining?: number;
+  leadTimeDays?: number;
 }
 
 export interface SupplierPerformance {

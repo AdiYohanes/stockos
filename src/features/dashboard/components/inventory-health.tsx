@@ -3,17 +3,16 @@
 import * as React from "react";
 import { HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { InventoryHealthData } from "../types";
-import { MOCK_INVENTORY_HEALTH } from "../mock-data";
 
 interface InventoryHealthProps {
-  data?: InventoryHealthData;
+  data: InventoryHealthData;
   className?: string;
 }
 
-export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: InventoryHealthProps) {
+export function InventoryHealth({ data, className }: InventoryHealthProps) {
   const { t } = useI18n();
 
   return (
@@ -78,7 +77,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.healthy.percentage}%)</span>
           </div>
           <span className="font-bold text-ink text-xs">
-            ${formatNumber(data.healthy.value)}
+            {formatProductMoney(data.healthy.value)}
           </span>
         </div>
 
@@ -90,7 +89,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.lowStock.percentage}%)</span>
           </div>
           <span className="font-bold text-ink text-xs">
-            ${formatNumber(data.lowStock.value)}
+            {formatProductMoney(data.lowStock.value)}
           </span>
         </div>
 
@@ -102,7 +101,7 @@ export function InventoryHealth({ data = MOCK_INVENTORY_HEALTH, className }: Inv
             <span className="text-[10px] text-ink/60">({data.outOfStock.percentage}%)</span>
           </div>
           <span className="font-bold text-red-600 text-xs">
-            ${formatNumber(data.outOfStock.value)}
+            {formatProductMoney(data.outOfStock.value)}
           </span>
         </div>
       </div>

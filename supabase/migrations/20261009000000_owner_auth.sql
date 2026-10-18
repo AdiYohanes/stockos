@@ -147,4 +147,4 @@ revoke all on function public.stockos_auth_throttle(text, integer, integer),
 grant execute on function public.stockos_auth_throttle(text, integer, integer),
   public.stockos_claim_owner(text, text, text, text), public.stockos_reconcile_owner(uuid),
   public.stockos_pending_owner(text) to service_role;
-grant execute on function public.stockos_owner_session(), public.stockos_owner_invitation(), public.stockos_owner_setup_session() to authenticated;
+grant execute on function public.stockos_owner_session(), public.stockos_owner_invitation() to authenticated;

@@ -6,14 +6,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { AttentionItem, AttentionStatus } from "../types";
-import { MOCK_ATTENTION_ITEMS } from "../mock-data";
 
 interface NeedAttentionTableProps {
-  items?: AttentionItem[];
+  items: AttentionItem[];
   className?: string;
 }
 
-export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS, className }: NeedAttentionTableProps) {
+export function NeedAttentionTable({ items, className }: NeedAttentionTableProps) {
   const { t } = useI18n();
   const [filter, setFilter] = React.useState<"all" | AttentionStatus>("all");
 
@@ -110,10 +109,11 @@ export function NeedAttentionTable({ items = MOCK_ATTENTION_ITEMS, className }: 
                 </tr>
               ) : (
                 filteredItems.map((item) => {
-                  const stockPercentage = Math.min(
-                    100,
-                    Math.round((item.currentStock / item.minStock) * 100)
-                  );
+                  // minStock 0: these attention rows always have currentStock <= minStock,
+                  // so 0/0 would be NaN — report 0% instead
+                  const stockPercentage = item.minStock > 0
+                    ? Math.min(100, Math.round((item.currentStock / item.minStock) * 100))
+                    : 0;
 
                   return (
                     <tr

@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { SkuBadge } from "@/components/shared/sku-badge";
+import { useI18n } from "@/lib/i18n/context";
 import type { InventoryFilterState, StockMovement } from "../types";
 
 interface InventoryMovementsTableProps {
@@ -19,6 +20,7 @@ interface InventoryMovementsTableProps {
   hasActiveFilters: boolean;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
+  onCorrectQuantity: (movement: StockMovement) => void;
 }
 
 export function InventoryMovementsTable({
@@ -28,7 +30,9 @@ export function InventoryMovementsTable({
   hasActiveFilters,
   onPageChange,
   onResetFilters,
+  onCorrectQuantity,
 }: InventoryMovementsTableProps) {
+  const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(totalCount / filterState.pageSize));
   const startIndex = (filterState.page - 1) * filterState.pageSize + 1;
   const endIndex = Math.min(filterState.page * filterState.pageSize, totalCount);
@@ -62,12 +66,12 @@ export function InventoryMovementsTable({
   const getReasonLabel = (reason?: string) => {
     if (!reason) return null;
     const map: Record<string, string> = {
-      cycle_count: "Cycle Count Audit",
-      damaged_goods: "Damaged Goods",
-      expired: "Expired / Obsolete",
-      theft_loss: "Discrepancy / Loss",
-      supplier_return: "Supplier Return",
-      correction: "Correction Entry",
+      cycle_count: t.inventory.cycleCountAudit,
+      damaged_goods: t.inventory.damagedGoods,
+      expired: t.inventory.expiredObsolete,
+      theft_loss: t.inventory.discrepancyLoss,
+      supplier_return: t.inventory.supplierReturn,
+      correction: t.inventory.correctionEntry,
     };
     return map[reason] || reason;
   };
@@ -78,13 +82,13 @@ export function InventoryMovementsTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b-[3px] border-ink bg-paper font-sans text-[10px] font-bold uppercase tracking-widest text-ink">
-              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">Timestamp</th>
-              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">Delta</th>
-              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">Reference</th>
-              <th className="py-3 px-3.5 sm:px-4 min-w-[220px] border-r-[2px] border-ink/20">Product / SKU</th>
-              <th className="py-3 px-3.5 sm:px-4 text-center border-r-[2px] border-ink/20">Stock Change</th>
-              <th className="py-3 px-3.5 sm:px-4 min-w-[180px] border-r-[2px] border-ink/20">Reason / Notes</th>
-              <th className="py-3 px-3.5 sm:px-4 text-right">Performed By</th>
+              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">{t.inventory.colTimestamp}</th>
+              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">{t.inventory.colType}</th>
+              <th className="py-3 px-3.5 sm:px-4 border-r-[2px] border-ink/20">{t.inventory.colReference}</th>
+              <th className="py-3 px-3.5 sm:px-4 min-w-[220px] border-r-[2px] border-ink/20">{t.inventory.colItemSku}</th>
+              <th className="py-3 px-3.5 sm:px-4 text-center border-r-[2px] border-ink/20">{t.inventory.colQty}</th>
+              <th className="py-3 px-3.5 sm:px-4 min-w-[180px] border-r-[2px] border-ink/20">{t.common.notes}</th>
+              <th className="py-3 px-3.5 sm:px-4 text-right">{t.inventory.colPerformedBy}</th>
             </tr>
           </thead>
           <tbody className="divide-y-[2px] divide-ink/20 text-xs">
@@ -96,10 +100,10 @@ export function InventoryMovementsTable({
                       <FileText className="h-5 w-5" />
                     </div>
                     <p className="font-sans font-bold uppercase tracking-widest text-ink text-sm">
-                      No stock movement audit records found
+                      {t.inventory.noMovementsFound}
                     </p>
                     <p className="font-mono uppercase tracking-widest text-[10px] text-ink/60 max-w-sm">
-                      Try resetting your search query or changing your movement type filters.
+                      {t.inventory.noMovementsFoundDesc}
                     </p>
                     {hasActiveFilters && (
                       <button
@@ -107,7 +111,7 @@ export function InventoryMovementsTable({
                         onClick={onResetFilters}
                         className="mt-2 text-[10px] font-bold uppercase tracking-widest text-ink border-[3px] border-ink bg-white px-3 py-1.5 shadow-hard-sm press"
                       >
-                        Clear all filters
+                        {t.inventory.clearAllFilters}
                       </button>
                     )}
                   </div>
@@ -165,8 +169,15 @@ export function InventoryMovementsTable({
                           {mov.note}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-ink/40 italic font-mono uppercase tracking-widest">No notes</span>
+                        <span className="text-[10px] text-ink/40 italic font-mono uppercase tracking-widest">-</span>
                       )}
+                      {mov.correctionOfEventId && <p className="text-[10px] font-mono break-all">{t.inventory.quantityCorrection.parent}: {mov.correctionOfEventId}</p>}
+                      {mov.kind && mov.kind !== "cost_adjustment" && <button type="button"
+                        aria-label={`${t.inventory.quantityCorrection.title}: ${mov.reference} · ${mov.id}`}
+                        onClick={() => onCorrectQuantity(mov)}
+                        className="mt-2 self-start border-[3px] border-ink bg-white px-2 py-1 shadow-hard-sm press text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2">
+                        {t.inventory.quantityCorrection.title}
+                      </button>}
                     </div>
                   </td>
 
@@ -190,9 +201,9 @@ export function InventoryMovementsTable({
       {totalCount > 0 && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t-[3px] border-ink px-4 py-3 bg-paper">
           <div className="font-mono tabular-nums text-[10px] font-bold uppercase tracking-widest text-ink/60">
-            Showing <span className="font-bold text-ink bg-white border border-ink/20 px-1 mx-0.5">{startIndex}</span> to{" "}
-            <span className="font-bold text-ink bg-white border border-ink/20 px-1 mx-0.5">{endIndex}</span> of{" "}
-            <span className="font-bold text-ink">{totalCount}</span> records
+            {t.inventory.showing} <span className="font-bold text-ink bg-white border border-ink/20 px-1 mx-0.5">{startIndex}</span> {t.inventory.to}{" "}
+            <span className="font-bold text-ink bg-white border border-ink/20 px-1 mx-0.5">{endIndex}</span> {t.inventory.of}{" "}
+            <span className="font-bold text-ink">{totalCount}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -203,11 +214,11 @@ export function InventoryMovementsTable({
               className="flex items-center justify-center h-8 gap-1 px-2.5 text-[10px] font-bold uppercase tracking-widest border-[3px] border-ink bg-white text-ink disabled:opacity-40 shadow-hard-sm press"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              <span>Prev</span>
+              <span>{t.inventory.prev}</span>
             </button>
 
             <span className="font-mono tabular-nums text-[10px] font-bold uppercase tracking-widest text-ink/60 px-2">
-              Page <span className="font-bold text-ink">{filterState.page}</span> of {totalPages}
+              {t.inventory.page} <span className="font-bold text-ink">{filterState.page}</span> {t.inventory.of} {totalPages}
             </span>
 
             <button
@@ -216,7 +227,7 @@ export function InventoryMovementsTable({
               disabled={filterState.page >= totalPages}
               className="flex items-center justify-center h-8 gap-1 px-2.5 text-[10px] font-bold uppercase tracking-widest border-[3px] border-ink bg-white text-ink disabled:opacity-40 shadow-hard-sm press"
             >
-              <span>Next</span>
+              <span>{t.inventory.next}</span>
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>

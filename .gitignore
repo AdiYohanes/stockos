@@ -34,6 +34,14 @@ yarn-error.log*
 .env*
 !.env.example
 
+# sensitive operational proof artifacts (keep outside repository)
+/ops-proof/
+*.dump
+*.backup
+*supabase-status*.json
+smtp-proof*.json
+stockos-login.txt
+
 # vercel
 .vercel
 
@@ -41,4 +49,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# local agent / design caches
+.mcp.json
+.impeccable/
+.superdesign/
+.agents/
+.claude/worktrees/
+.claude/skills/
+.next-reports-proof/
+
+__pycache__/

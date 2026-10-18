@@ -1,24 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Building2, Boxes, Bell, Users, ShieldAlert } from "lucide-react";
+import { Building2, Boxes, ShieldAlert } from "lucide-react";
 import { SettingsTab } from "../types";
 import { cn } from "@/lib/utils";
-
 import { useI18n } from "@/lib/i18n/context";
 
 interface SettingsTabNavProps {
   activeTab: SettingsTab;
+  disabled?: boolean;
   onTabChange: (tab: SettingsTab) => void;
-  teamCount: number;
-  activeAlertsCount: number;
 }
 
 export function SettingsTabNav({
   activeTab,
+  disabled = false,
   onTabChange,
-  teamCount,
-  activeAlertsCount,
 }: SettingsTabNavProps) {
   const { t } = useI18n();
 
@@ -26,7 +23,6 @@ export function SettingsTabNav({
     id: SettingsTab;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
-    badge?: string | number;
   }> = [
     {
       id: "company",
@@ -37,18 +33,6 @@ export function SettingsTabNav({
       id: "inventory",
       label: t.settings.tabStockRules,
       icon: Boxes,
-    },
-    {
-      id: "notifications",
-      label: t.settings.tabNotificationsAlerts,
-      icon: Bell,
-      badge: activeAlertsCount > 0 ? `${activeAlertsCount} ${t.settings.activeStatus}` : undefined,
-    },
-    {
-      id: "team",
-      label: t.settings.tabTeamAccess,
-      icon: Users,
-      badge: `${teamCount} ${t.settings.membersCount}`,
     },
     {
       id: "system",
@@ -67,6 +51,9 @@ export function SettingsTabNav({
           return (
             <button
               key={tab.id}
+              type="button"
+              disabled={disabled}
+              aria-current={isActive ? "page" : undefined}
               onClick={() => onTabChange(tab.id)}
               className={cn(
                 "flex items-center gap-2 rounded-none px-3.5 py-2 font-mono text-xs font-semibold transition-all whitespace-nowrap",
@@ -77,18 +64,6 @@ export function SettingsTabNav({
             >
               <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-slate-500")} />
               <span>{tab.label}</span>
-              {tab.badge && (
-                <span
-                  className={cn(
-                    "ml-1 inline-flex items-center rounded-none px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold",
-                    isActive
-                      ? "bg-white text-[#543afd] border-[3px] border-ink"
-                      : "bg-slate-200 text-slate-700"
-                  )}
-                >
-                  {tab.badge}
-                </span>
-              )}
             </button>
           );
         })}
