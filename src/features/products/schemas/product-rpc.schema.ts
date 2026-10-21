@@ -13,10 +13,16 @@ const timestamp = z.iso.datetime({ offset: true });
 const archive = z.enum(["active", "archived", "all"]);
 const stockStatus = z.enum(["in_stock", "low_stock", "out_of_stock"]);
 const eventKind = z.enum(["opening", "receipt", "sold", "opname", "cost_adjustment"]);
+const photoVariant = (edge: number) => z.strictObject({
+  hash: z.string().regex(/^[0-9a-f]{64}$/), bytes: z.number().int().min(1).max(131072),
+  width: z.number().int().min(1).max(edge), height: z.number().int().min(1).max(edge),
+});
+export const ProductPhotoSchema = z.strictObject({ display: photoVariant(512), thumb: photoVariant(96) });
+export type ProductPhoto = z.infer<typeof ProductPhotoSchema>;
 const metadata = {
   sku, name: text(120), category: text(120), unit: text(30), sellingPrice: money,
   minStock: quantity, supplier: nullableText(120), shelfLocation: nullableText(80),
-  barcode: nullableText(64), description: nullableText(2000),
+  barcode: nullableText(64), description: nullableText(2000), photo: ProductPhotoSchema.nullable().optional(),
 };
 
 function checkCartons(value: { cartonCount?: number; unitsPerCarton?: number }, units: number, ctx: z.RefinementCtx) {
@@ -76,6 +82,8 @@ export const ProductDtoSchema = z.strictObject({
   averagePurchaseCost: decimal.nullable(), potentialSellingValue: decimal, potentialGrossProfit: signedDecimal,
   stockStatus, archivedAt: timestamp.nullable(), metadataVersion: revision, stockVersion: revision,
   createdAt: timestamp, updatedAt: timestamp,
+  // Durable responses recorded before photos omit this field; never rewrite their evidence.
+  photo: ProductPhotoSchema.nullable().default(null),
 });
 export const InventoryEventDtoSchema = z.strictObject({
   id: z.uuid(), productId: z.uuid(), kind: eventKind, stockVersion: revision,

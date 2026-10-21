@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { ProductRowActions } from "./product-row-actions";
 import { ProductEmptyState } from "./product-empty-state";
+import { ProductPhoto } from "./product-photo";
 import type { ProductFilterState } from "../types";
 import type { ProductDto as Product } from "../schemas/product-rpc.schema";
 
@@ -109,8 +110,9 @@ export function ProductsTable({
                   {/* Col 1: Product Name & Category */}
                   <td className="px-4 py-3">
                     <div className="flex min-w-0 flex-col">
-                      <button type="button" title={product.name} onClick={() => onViewDetails(product)} className="input-focus truncate text-left font-display font-bold uppercase text-base text-ink hover:underline">
-                        {product.name}
+                      <button type="button" title={product.name} onClick={() => onViewDetails(product)} className="input-focus flex w-full min-w-0 items-center gap-2 text-left font-display font-bold uppercase text-base text-ink hover:underline">
+                        <ProductPhoto photo={product.photo} name={product.name} />
+                        <span className="min-w-0 truncate">{product.name}</span>
                       </button>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="min-w-0 truncate font-mono text-[11px] opacity-55 uppercase">

@@ -18,6 +18,7 @@ import { SkuBadge } from "@/components/shared/sku-badge";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { formatProductMoney } from "@/features/products/format";
+import { ProductPhoto } from "@/features/products/components/product-photo";
 import { listInventoryEventsAction } from "../actions";
 import { mapEventToStockMovement } from "../adapters";
 import type { InventoryItem, StockMovement } from "../types";
@@ -100,6 +101,7 @@ export function InventoryDetailSheet({
 
         {/* Scrollable Content */}
         <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-6">
+          <ProductPhoto photo={item.photo} name={item.name} display />
           {/* Quick Actions Panel */}
           <div className="flex items-center gap-2">
             <button

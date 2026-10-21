@@ -108,6 +108,13 @@ export const idTranslations: Translations = {
     welcomeBack: "Selamat datang kembali",
   },
   products: {
+    photo: {
+      label: "Foto produk (opsional)", help: "JPEG, PNG, atau WebP, maksimal 10 MiB / 40 megapiksel. Hanya salinan WebP terkompresi yang diunggah.",
+      remove: "Hapus foto", processing: "Menyiapkan foto…",
+      unsupported: "Pilih foto JPEG, PNG, atau WebP yang didukung peramban ini.",
+      tooLarge: "Foto melebihi 10 MiB, 40 megapiksel, atau batas ukuran kompresi. Pilih foto lebih kecil.",
+      invalid: "Foto tidak bisa dibaca. Pilih berkas lain.",
+    },
     persistent: {
       create: "Buat produk", restock: "Isi ulang produk existing", lookup: "Cari nama atau SKU", selectProduct: "Pilih produk / SKU", search: "Cari nama atau SKU",
       openingQuantity: "Jumlah stok awal", purchaseTotal: "Total biaya beli (rupiah bulat)", cartonMode: "Terima dalam karton", cartonCount: "Jumlah karton", unitsPerCarton: "Unit dasar per karton",

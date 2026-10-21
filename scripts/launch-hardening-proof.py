@@ -25,9 +25,11 @@ RAW_RUN = subprocess.run
 SUITES = {
     "auth": ("check-owner-auth.mjs", []),
     "stock": ("check-stock-foundation.mjs", []),
+    "photos": ("check-stock-foundation.mjs", ["--photos"]),
     "recovery": ("check-owner-recovery.mjs", []),
     "reports-contract": ("check-reports-contract.mjs", []),
     "products": ("test-products.py", []),
+    "photos-browser": ("test-products.py", ["--photos"]),
     "defaults": ("test-products.py", ["--defaults"]),
     "lifecycle": ("test-products.py", ["--lifecycle"]),
     "inventory": ("test-inventory.py", ["--hardening"]),
@@ -151,12 +153,26 @@ def native_grants(manifest):
       or has_table_privilege('authenticated',c.oid,'SELECT,INSERT,UPDATE,DELETE'))""") == "0", "Private table grant/RLS leak"
 
 
+PHOTO_COLUMNS = {f"photo_{variant}_{field}" for variant in ("display", "thumb")
+                 for field in ("hash", "bytes", "width", "height")}
+
+
+def without_empty_photos(value):
+    if isinstance(value, dict):
+        return {key: without_empty_photos(item) for key, item in value.items()
+                if not (item is None and (key == "photo" or key in PHOTO_COLUMNS))}
+    if isinstance(value, list):
+        return [without_empty_photos(item) for item in value]
+    return value
+
+
 def snapshot_hash(manifest):
     tables = sql(manifest, "select tablename from pg_tables where schemaname='stockos_private' and tablename not in ('auth_throttle','password_purposes') order by tablename").splitlines()
     contents = []
     for table in tables:
         assert re.fullmatch(r"[a-z_]+", table)
-        contents.append(sql(manifest, f"select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]'::jsonb) from stockos_private.{table} t"))
+        rows = json.loads(sql(manifest, f"select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]'::jsonb) from stockos_private.{table} t"))
+        contents.append(json.dumps(without_empty_photos(rows), sort_keys=True, separators=(",", ":")))
     return hashlib.sha256("\n".join(contents).encode()).hexdigest()
 
 
@@ -221,14 +237,15 @@ def seed_upgrade(manifest):
         result = http(manifest, "/rest/v1/rpc/stockos_" + name, {"p_input": payload}, token=owner)
         assert result.get("ok") is True, "Seed RPC rejected"
         return result
-    creation = rpc("create_product", {"requestId": str(uuid.uuid4()), "sku": "HARDENING-UPGRADE", "name": "Beras uji", "category": "Sembako", "unit": "Pcs", "sellingPrice": "5000", "minStock": 2, "openingQuantity": 10, "purchaseTotal": "30000"})
+    create_input = {"requestId": str(uuid.uuid4()), "sku": "HARDENING-UPGRADE", "name": "Beras uji", "category": "Sembako", "unit": "Pcs", "sellingPrice": "5000", "minStock": 2, "openingQuantity": 10, "purchaseTotal": "30000"}
+    creation = rpc("create_product", create_input)
     product_id = creation["data"]["product"]["id"]
     receipt = {"requestId": str(uuid.uuid4()), "productId": product_id, "quantity": 10, "purchaseTotal": "40000"}
     rpc("record_stock_in", receipt)
     rpc("record_stock_out", {"requestId": str(uuid.uuid4()), "productId": product_id, "quantity": 5})
     before = rpc("get_product", {"id": product_id})
     assert before["data"]["currentStock"] == 15 and before["data"]["inventoryCostValue"] == "52500.000000"
-    return rpc, receipt, before
+    return rpc, receipt, before, create_input
 
 
 def prepare_fixture(directory, suffix, ports, migrations, fixtures):
@@ -242,6 +259,11 @@ def prepare_fixture(directory, suffix, ports, migrations, fixtures):
     for old, new in zip((55431, 55432, 55434, 55430, 55433), ports):
         config = config.replace(f"port = {old}", f"port = {new}")
     config = config.replace("http://localhost:3000", "http://localhost:3012")
+    # Forward photo migration requires Storage schema, including seeded-upgrade fixtures.
+    storage = any((ROOT / "supabase/migrations").glob("*_product_photos.sql"))
+    if storage:
+        config = config.replace("[storage]\nenabled = false", "[storage]\nenabled = true")
+    excluded = ",".join(name for name in EXCLUDED.split(",") if not (storage and name == "storage-api"))
     (workdir / "supabase/config.toml").write_text(config, encoding="utf-8")
     manifest = {"project": project, "workdir": str(workdir), "apiPort": ports[0], "dbPort": ports[1], "mailPort": ports[2],
                 "api": f"http://127.0.0.1:{ports[0]}", "db": f"postgresql://postgres:postgres@127.0.0.1:{ports[1]}/postgres",
@@ -249,7 +271,7 @@ def prepare_fixture(directory, suffix, ports, migrations, fixtures):
     (workdir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     fixtures.append(manifest)
     try:
-        command([cli(), "start", "--workdir", str(workdir), "--exclude", EXCLUDED])
+        command([cli(), "start", "--workdir", str(workdir), "--exclude", excluded])
     finally:
         names = command(["docker", "ps", "-a", "--filter", "label=com.supabase.cli.project=" + project, "--format", "{{.Names}}"])
         for name in names.splitlines():
@@ -540,15 +562,16 @@ def run(args):
         phase = "seeded forward upgrade"
         upgrade_ports = fixture_ports()
         upgrade = prepare_fixture(directory, "upgrade", upgrade_ports, baseline, fixtures)
-        rpc, receipt, before = seed_upgrade(upgrade)
+        rpc, receipt, before, create_input = seed_upgrade(upgrade)
         prior = snapshot_hash(upgrade)
         for migration in migrations[len(baseline):]:
             shutil.copy2(migration, Path(upgrade["workdir"]) / "supabase/migrations" / migration.name)
         guard(upgrade)
         command([cli(), "migration", "up", "--local", "--workdir", upgrade["workdir"]])
         assert snapshot_hash(upgrade) == prior, "Upgrade changed domain/evidence/retry rows"
-        assert rpc("get_product", {"id": before["data"]["id"]}) == before, "Upgrade changed stock DTO"
+        assert without_empty_photos(rpc("get_product", {"id": before["data"]["id"]})) == without_empty_photos(before), "Upgrade changed stock DTO"
         assert rpc("record_stock_in", receipt)["replayed"] is True, "Upgrade lost retry identity"
+        assert rpc("create_product", create_input)["replayed"] is True, "Upgrade lost historical create retry identity"
         assert snapshot_hash(upgrade) == prior, "Replay duplicated evidence"
         guard(upgrade)
         command([cli(), "migration", "up", "--local", "--workdir", upgrade["workdir"]])
@@ -563,7 +586,7 @@ def run(args):
         manifest_path = Path(clean["workdir"]) / "manifest.json"
         manifest_path.write_text(json.dumps(clean), encoding="utf-8")
         assert all((ROOT / "scripts" / SUITES[name][0]).is_file() for name in suites), "Required regression suite missing; do not claim full proof"
-        if any(SUITES[name][0].endswith(".py") for name in suites):
+        if "photos" in suites or any(SUITES[name][0].endswith(".py") for name in suites):
             phase = "Next startup"
             server, log = launch_server(directory, clean, production=args.prod)
         for name in suites:
@@ -625,6 +648,10 @@ def run(args):
 
 
 def self_test():
+    old = {"sku": "UNCHANGED", "metadataVersion": "1"}
+    assert without_empty_photos(dict(old, photo=None, **{key: None for key in PHOTO_COLUMNS})) == old
+    assert without_empty_photos(dict(old, photo={"display": {"hash": "abc"}})) != old
+    assert without_empty_photos(dict(old, name=None)) != old
     # Evidence seam: subset coverage, interrupted suites, and cleanup cannot imply full PASS.
     subset = proof_evidence(["products"], ["products"], None, [], {})
     assert subset["status"] == "PASS_LOCAL_ONLY" and subset["coverage"] == "partial"

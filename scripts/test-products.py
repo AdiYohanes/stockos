@@ -2,6 +2,7 @@
 Edge + actual Next Server Action POSTs + real isolated Supabase. No mock cookies/env edits.
 Native stock suite must release empty fixture first. Cleanup refuses uncaptured records.
 """
+import base64
 import json
 import re
 import subprocess
@@ -165,6 +166,11 @@ def is_mutation(request):
 def capture(request):
     if is_mutation(request):
         REQUESTS.add(str(uuid.UUID(json.loads(request.post_data)[0]["requestId"])))
+    elif request.method == "POST" and request.headers.get("next-action") and request.post_data_buffer:
+        # Photo actions carry FormData; capture the durable JSON argument inside multipart fields.
+        text = request.post_data_buffer.decode("utf-8", errors="ignore")
+        for value in re.findall(r'"requestId"\s*:\s*"([0-9a-f-]{36})"', text):
+            REQUESTS.add(str(uuid.UUID(value)))
 
 
 def action_result(text):
@@ -533,6 +539,120 @@ def creation_defaults(page):
     print("PASS: Settings defaults on Products/Dashboard, user overrides, Add Another, existing products unchanged, desktop/mobile")
 
 
+def photo_flow(page, context):
+    page.goto(BASE + "/products")
+    page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+    sku = PREFIX + "-PHOTO"
+    for field, value in {"name": "Foto browser proof", "sku": sku, "category": "Uji", "unit": "Pcs", "min-stock": "0", "sell": "1000"}.items():
+        page.locator(f"#product-{field}").fill(value)
+    picker = page.locator('input[type="file"]')
+    picker.set_input_files({"name": "wrong.txt", "mimeType": "text/plain", "buffer": b"not a photo"})
+    expect(page.get_by_role("alert")).to_contain_text(re.compile(r"JPEG"))
+    expect(page.locator("#product-name")).to_have_value("Foto browser proof")
+    picker.set_input_files({"name": "large.png", "mimeType": "image/png", "buffer": bytes(10 * 1024 * 1024 + 1)})
+    expect(page.get_by_role("alert")).to_contain_text(re.compile(r"10 MiB"))
+    image = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#543afd';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
+    picker.set_input_files({"name": "photo.png", "mimeType": "image/png", "buffer": base64.b64decode(image)})
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    submit = page.get_by_role("dialog").locator('button[type="submit"]')
+    expect(submit).to_be_enabled()
+    # Losing upload before product mutation must keep draft and same retry request/files.
+    def fail_storage(route):
+        if route.request.method == "POST" and route.request.headers.get("next-action"):
+            route.abort("failed")
+        else:
+            route.continue_()
+    page.route("**/products**", fail_storage)
+    submit.click()
+    expect(page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$"))).to_be_visible(timeout=20000)
+    expect(page.locator("#product-name")).to_have_value("Foto browser proof")
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    page.unroute("**/products**", fail_storage)
+    with page.expect_response(lambda response: response.request.method == "POST" and bool(response.request.headers.get("next-action"))) as retried:
+        page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    result = action_result(retried.value.text())
+    assert result["ok"], "Photo retry rejected: " + str(result.get("code")) + " fields=" + str(result.get("fieldErrors", {}))
+    expect(page.get_by_role("heading", name=re.compile(r"Produk Berhasil Ditambahkan|Product Added Successfully"))).to_be_visible(timeout=30000)
+    item = product(sku)
+    assert item["photo"]["display"]["width"] == 512 and item["photo"]["display"]["height"] == 384
+    assert item["photo"]["thumb"]["width"] == 96 and item["photo"]["thumb"]["height"] == 72
+    assert history(item)["total"] == 0
+    page.get_by_role("button", name=re.compile(r"^(Selesai|Done)$")).click()
+    for width in (1440, 390):
+        page.set_viewport_size({"width": width, "height": 1000})
+        found = row(page, item)
+        expect(found.locator('img[src*="/thumb/"]')).to_be_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Photo page overflow"
+        page.screenshot(path=str(Path(sys.argv[2]).parent / f"photos-products-{width}.png"), full_page=True)
+    row_action(page, item, re.compile(r"^(Details|Detail)$"))
+    expect(page.get_by_role("dialog").locator('img[src*="/display/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    page.goto(BASE + "/inventory?search=" + sku)
+    inventory_row = page.get_by_role("row").filter(has=page.get_by_role("cell", name=sku, exact=False))
+    expect(inventory_row.locator('img[src*="/thumb/"]')).to_be_visible()
+    inventory_row.get_by_role("cell", name=sku, exact=False).click()
+    expect(page.get_by_role("dialog").locator('img[src*="/display/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    page.get_by_role("button", name=re.compile(r"^(Record Stock Movement|Catat Pergerakan Stok)$")).click()
+    for kind in (r"^(Stock In|Stok Masuk) ", r"^(Stock Out|Stok Keluar) "):
+        page.get_by_role("dialog").get_by_role("button", name=re.compile(kind)).click()
+        page.locator("#itemSelect").click()
+        option = page.get_by_role("option").filter(has_text=sku)
+        expect(option.locator('img[src*="/thumb/"]')).to_be_visible()
+        option.click()
+        expect(page.locator('#itemSelect img[src*="/thumb/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    row_action(page, item, re.compile(r"^(Edit|Ubah)$"))
+    replacement = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#e75423';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
+    page.locator('input[type="file"]').set_input_files({"name": "replacement.png", "mimeType": "image/png", "buffer": base64.b64decode(replacement)})
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    # Fail the actual provider's thumbnail write after display upload succeeds.
+    # SQL helper pins this run-owned local fixture; never touch retained or Cloud Storage.
+    audit_before = sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid")
+    sql("""CREATE FUNCTION stockos_private.proof_photo_outage() RETURNS trigger
+      LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic thumbnail upload outage'; END $$;
+      CREATE TRIGGER proof_photo_outage BEFORE INSERT OR UPDATE ON storage.objects
+      FOR EACH ROW WHEN (NEW.bucket_id = 'product-photos' AND NEW.name LIKE 'products/thumb/%')
+      EXECUTE FUNCTION stockos_private.proof_photo_outage();""")
+    def photo_mutation(response):
+        request = response.request
+        return request.method == "POST" and bool(request.headers.get("next-action")) and bool(re.search(rb'"requestId"\s*:\s*"[0-9a-f-]{36}"', request.post_data_buffer or b""))
+    try:
+        with page.expect_response(photo_mutation) as failed_upload:
+            page.get_by_role("dialog").locator('button[type="submit"]').click()
+        failure = action_result(failed_upload.value.text())
+        assert not failure["ok"] and failure.get("code") == "INTERNAL_ERROR", "Expected Storage outage rejection: " + str({key: failure.get(key) for key in ("ok", "code", "fieldErrors")})
+        expect(page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$"))).to_be_visible()
+        expect(page.locator('img[src^="blob:"]')).to_be_visible()
+        expect(page.locator("#edit-name")).to_have_value(item["name"])
+        unchanged = product(sku)
+        assert unchanged["photo"] == item["photo"] and unchanged["metadataVersion"] == item["metadataVersion"]
+        assert sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid") == audit_before
+        assert sql("select count(*) from storage.objects where bucket_id='product-photos' and name like 'products/display/%'") == "2", "Display uploaded before thumbnail outage"
+        assert sql("select count(*) from storage.objects where bucket_id='product-photos' and name like 'products/thumb/%'") == "1", "Thumbnail upload must fail"
+    finally:
+        sql("DROP TRIGGER proof_photo_outage ON storage.objects; DROP FUNCTION stockos_private.proof_photo_outage();")
+    with page.expect_response(photo_mutation) as storage_retry:
+        page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    failed_ids = re.findall(rb'"requestId"\s*:\s*"([0-9a-f-]{36})"', failed_upload.value.request.post_data_buffer)
+    retry_ids = re.findall(rb'"requestId"\s*:\s*"([0-9a-f-]{36})"', storage_retry.value.request.post_data_buffer)
+    assert failed_ids and failed_ids == retry_ids, "Provider retry must preserve durable request ID"
+    assert action_result(storage_retry.value.text())["ok"], "Provider retry must succeed"
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    replaced = product(sku)
+    assert replaced["photo"]["display"]["hash"] != item["photo"]["display"]["hash"]
+    assert history(replaced)["total"] == 0
+    assert sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid and kind='photo_replaced'") == "1"
+    row_action(page, replaced, re.compile(r"^(Edit|Ubah)$"))
+    page.get_by_role("button", name=re.compile(r"^(Remove photo|Hapus foto)$")).click()
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    assert product(sku)["photo"] is None and history(item)["total"] == 0
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    print("PASS: photo processing, invalid/oversized input, failed upload draft/retry, thumbnails/detail/mobile/remove")
+
+
 def run():
     provision()
     with sync_playwright() as playwright:
@@ -547,6 +667,11 @@ def run():
             return
         if "--lifecycle" in sys.argv:
             lifecycle(page, context, browser)
+            browser.close()
+            return
+        if "--photos" in sys.argv:
+            photo_flow(page, context)
+            assert not errors, "Photo browser page errors"
             browser.close()
             return
         item, request = add(page, "VERTICAL", 10, 30000)

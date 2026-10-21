@@ -1,4 +1,5 @@
 import type { InventoryEventDto } from "./schemas/inventory-rpc.schema";
+import type { ProductPhoto } from "@/features/products/schemas/product-rpc.schema";
 
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "overstocked";
 
@@ -48,6 +49,7 @@ export interface InventoryItem {
   status: StockStatus;
   lastMovementAt: string;
   stockVersion?: string;
+  photo?: ProductPhoto | null;
   movementLogs?: StockMovement[];
 }
 

@@ -107,6 +107,13 @@ export const enTranslations: Translations = {
     welcomeBack: "Welcome back",
   },
   products: {
+    photo: {
+      label: "Product photo (optional)", help: "JPEG, PNG or WebP, up to 10 MiB / 40 megapixels. Only compressed WebP copies are uploaded.",
+      remove: "Remove photo", processing: "Preparing photo…",
+      unsupported: "Choose a JPEG, PNG or WebP photo supported by this browser.",
+      tooLarge: "Photo exceeds 10 MiB, 40 megapixels or the compressed size limit. Choose a smaller photo.",
+      invalid: "Cannot read this photo. Choose another file.",
+    },
     persistent: {
       create: "Create product", restock: "Restock existing product", lookup: "Find by name or SKU", selectProduct: "Select product / SKU", search: "Search name or SKU",
       openingQuantity: "Opening quantity", purchaseTotal: "Total purchase cost (whole IDR)", cartonMode: "Receive in cartons", cartonCount: "Cartons", unitsPerCarton: "Base units per carton",

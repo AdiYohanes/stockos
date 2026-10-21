@@ -10,6 +10,8 @@ import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
 import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../constants";
 import { ProductFormField } from "./product-add-modal";
+import { ProductPhotoField, usePhotoDraft } from "./product-photo-field";
+import { ProductPhoto } from "./product-photo";
 
 interface EditProductModalProps {
   product: ProductDto | null;
@@ -24,8 +26,9 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
   const c = t.products.persistent;
   const [expectedVersion, setExpectedVersion] = React.useState(product.metadataVersion);
   const [suggestions, setSuggestions] = React.useState<{ category: string[]; supplier: string[] }>({ category: [...WARUNG_CATEGORIES], supplier: [] });
-  const submission = useProductSubmission(updateProductAction, async value => { await onCommitted(value); onClose(); });
-  React.useEffect(() => { onBlocked(submission.blocked); return () => onBlocked(false); }, [submission.blocked, onBlocked]);
+  const photo = usePhotoDraft();
+  const submission = useProductSubmission(input => updateProductAction(input, photo.files.current), async value => { await onCommitted(value); onClose(); });
+  React.useEffect(() => { onBlocked(submission.blocked || photo.processing); return () => onBlocked(false); }, [submission.blocked, photo.processing, onBlocked]);
   React.useEffect(() => {
     let active = true;
     React.startTransition(async () => {
@@ -43,12 +46,12 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submission.blocked || submission.code === "VERSION_CONFLICT" || product.archivedAt) return;
+    if (submission.blocked || photo.processing || submission.code === "VERSION_CONFLICT" || product.archivedAt) return;
     const data = new FormData(event.currentTarget);
     const text = (name: string) => String(data.get(name) ?? "").trim();
     submission.submit({ productId: product.id, expectedMetadataVersion: expectedVersion, patch: {
       name: text("name"), category: text("category"), sellingPrice: text("sellingPrice"), minStock: Number(text("minStock")),
-      ...(identityLocked ? {} : { sku: text("sku"), unit: text("unit") }),
+      ...photo.patch, ...(identityLocked ? {} : { sku: text("sku"), unit: text("unit") }),
       supplier: text("supplier") || null, shelfLocation: text("shelfLocation") || null, barcode: text("barcode") || null, description: text("description") || null,
     } });
   }
@@ -58,8 +61,9 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
       {submission.error && <p role="alert" className="text-sm text-destructive">{submission.error}</p>}
       {product.archivedAt && <p role="status">{c.archivedHelp}</p>}
       {identityLocked && <p className="text-xs">{c.identityLocked}</p>}
-      {submission.code === "VERSION_CONFLICT" && <section className="border-[3px] border-ink p-3 space-y-2"><p className="font-bold">{c.conflict}</p>{submission.current ? <><p>{c.currentState}: {submission.current.name} · {submission.current.sku} · {submission.current.category} · {submission.current.unit}</p><p className="font-mono">{t.products.form.priceLabel}: {submission.current.sellingPrice} · {t.products.form.minStockLabel}: {submission.current.minStock} · {c.metadataVersion}: {submission.current.metadataVersion}</p><p>{c.shelfLocation}: {submission.current.shelfLocation ?? "—"} · {t.products.form.supplierLabel}: {submission.current.supplier ?? "—"}</p><p>{t.products.sheet.barcodeUpc}: {submission.current.barcode ?? "—"}</p><p className="break-words">{submission.current.description ?? "—"}</p><Button type="button" variant="outline" onClick={() => { setExpectedVersion(submission.current!.metadataVersion); submission.review(); }}>{c.reviewed}</Button></> : <><p>{c.reviewCurrent}</p><Button type="button" variant="outline" onClick={submission.reloadCurrent}>{c.retry}</Button></>}</section>}
-      <fieldset disabled={submission.blocked || !!product.archivedAt} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {submission.code === "VERSION_CONFLICT" && <section className="border-[3px] border-ink p-3 space-y-2"><p className="font-bold">{c.conflict}</p>{submission.current ? <><ProductPhoto photo={submission.current.photo} name={submission.current.name} /><p>{c.currentState}: {submission.current.name} · {submission.current.sku} · {submission.current.category} · {submission.current.unit}</p><p className="font-mono">{t.products.form.priceLabel}: {submission.current.sellingPrice} · {t.products.form.minStockLabel}: {submission.current.minStock} · {c.metadataVersion}: {submission.current.metadataVersion}</p><p>{c.shelfLocation}: {submission.current.shelfLocation ?? "—"} · {t.products.form.supplierLabel}: {submission.current.supplier ?? "—"}</p><p>{t.products.sheet.barcodeUpc}: {submission.current.barcode ?? "—"}</p><p className="break-words">{submission.current.description ?? "—"}</p><Button type="button" variant="outline" onClick={() => { setExpectedVersion(submission.current!.metadataVersion); submission.review(); }}>{c.reviewed}</Button></> : <><p>{c.reviewCurrent}</p><Button type="button" variant="outline" onClick={submission.reloadCurrent}>{c.retry}</Button></>}</section>}
+      <fieldset disabled={submission.blocked || photo.processing || !!product.archivedAt} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ProductPhotoField value={photo} photo={product.photo} disabled={submission.blocked || !!product.archivedAt} />
         <ProductFormField id="edit-name" name="name" label={`${t.products.form.nameLabel} *`} defaultValue={product.name} required maxLength={120} error={submission.fieldErrors.name?.[0]} />
         <ProductFormField id="edit-sku" name="sku" label={`${t.products.form.skuLabel} *`} defaultValue={product.sku} disabled={identityLocked} required minLength={3} maxLength={64} />
         <ProductFormField id="edit-category" name="category" label={`${t.products.form.categoryLabel} *`} defaultValue={product.category} list="edit-categories" required maxLength={120} />
@@ -74,7 +78,7 @@ function EditForm({ product, identityLocked, onClose, onCommitted, onBlocked }: 
         <datalist id="edit-suppliers">{suggestions.supplier.map(value => <option key={value} value={value} />)}</datalist>
         <datalist id="edit-units">{WARUNG_UNITS.map(value => <option key={value} value={value} />)}</datalist>
       </fieldset>
-    </DialogBody><DialogFooter className="border-t-[3px] border-ink"><Button type="button" variant="outline" disabled={submission.blocked} onClick={onClose}>{t.common.cancel}</Button>{submission.uncertain || submission.refreshFailed ? <Button type="button" disabled={submission.pending} onClick={submission.retry}>{c.retry}</Button> : <Button type="submit" disabled={submission.pending || !!product.archivedAt || submission.code === "VERSION_CONFLICT"}>{submission.pending ? c.pending : t.common.save}</Button>}</DialogFooter></form>;
+    </DialogBody><DialogFooter className="border-t-[3px] border-ink"><Button type="button" variant="outline" disabled={submission.blocked || photo.processing} onClick={onClose}>{t.common.cancel}</Button>{submission.uncertain || submission.refreshFailed ? <Button type="button" disabled={submission.pending} onClick={submission.retry}>{c.retry}</Button> : <Button type="submit" disabled={submission.pending || photo.processing || !!product.archivedAt || submission.code === "VERSION_CONFLICT"}>{submission.pending ? c.pending : t.common.save}</Button>}</DialogFooter></form>;
 }
 
 export function EditProductModal({ product, open, onOpenChange, onCommitted, identityLocked = true }: EditProductModalProps) {

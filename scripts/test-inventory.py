@@ -189,6 +189,11 @@ def history(product_id):
     return rpc("list_inventory_events", {"productId": product_id, "pageSize": 100})
 
 
+def select_movement_product(page, product):
+    page.locator("#itemSelect").click()
+    page.get_by_role("option").filter(has_text=product["sku"]).click()
+
+
 def open_opname(page, product):
     page.goto(BASE + "/inventory")
     row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
@@ -216,7 +221,7 @@ def lost_response(page, product, opname=False):
     else:
         page.goto(BASE + "/inventory")
         page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
-        page.locator("#itemSelect").select_option(product["id"])
+        select_movement_product(page, product)
         page.locator("#quantity").fill("1")
         page.locator("#purchaseTotal").fill("0")
     dropped = []
@@ -258,7 +263,7 @@ def hardening(page, browser, product, empty_product):
     page.goto(BASE + "/inventory")
     page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
     page.get_by_role("dialog").get_by_role("button", name=re.compile(r"Stock Out|Stok Keluar", re.I)).click()
-    page.locator("#itemSelect").select_option(product["id"])
+    select_movement_product(page, product)
     page.locator("#quantity").fill(str(get_product(product["id"])["currentStock"]))
     page.get_by_role("dialog").locator('button[type="submit"]').click()
     expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
@@ -1116,7 +1121,7 @@ def run():
         expect(mov_dialog).to_be_visible()
 
         # Select item A from dropdown if not already selected
-        mov_dialog.locator("#itemSelect").select_option(value=prod_a["id"])
+        select_movement_product(page, prod_a)
         # Toggle carton mode
         mov_dialog.locator('input[type="checkbox"]').check()
         mov_dialog.locator("input[type='number']").nth(0).fill("2")  # 2 cartons
@@ -1139,7 +1144,7 @@ def run():
 
         # Switch to stock out
         mov_dialog.get_by_role("button", name=re.compile(r"(Stock Out|Stok Keluar)", re.I)).click()
-        mov_dialog.locator("#itemSelect").select_option(value=prod_a["id"])
+        select_movement_product(page, prod_a)
         mov_dialog.locator("#quantity").fill("5")
         mov_dialog.locator("#reference").fill("STRUK-001")
 

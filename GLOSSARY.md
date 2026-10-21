@@ -67,3 +67,7 @@ _Avoid_: Purchase order, sales revenue
 **Stok keluar (Stock out)**:
 Sold goods manually recorded to reduce stock when no POS integration exists. It records sold quantity, not payment, a sales invoice, or realized revenue.
 _Avoid_: Damage/loss transaction, POS sale, payment record
+
+**Foto produk (Product photo)**:
+One optional image per product, compressed at upload into fixed-size variants and identified by content hash. Several products may reference one stored image without copying it. Replacing a photo is an auditable product change, not a stock movement; a product may remain without a photo.
+_Avoid_: Product gallery, multiple photos per product, visual matching, image URL from outside

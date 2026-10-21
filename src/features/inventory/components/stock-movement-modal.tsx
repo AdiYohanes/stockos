@@ -23,6 +23,8 @@ import { inventoryStockInAction, inventoryStockOutAction } from "../actions";
 import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
 import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
 import type { InventoryItem } from "../types";
+import { ProductPhoto } from "@/features/products/components/product-photo";
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 
 export interface StockMovementModalProps {
   open: boolean;
@@ -190,7 +192,8 @@ function StockMovementForm({
           </Label>
           {initialItem ? (
             <div className="p-3 border-[3px] border-ink bg-paper text-xs flex items-center justify-between">
-              <div className="flex flex-col gap-1 min-w-0 pr-2">
+              <ProductPhoto photo={initialItem.photo} name={initialItem.name} className="mr-2" />
+              <div className="flex flex-1 flex-col gap-1 min-w-0 pr-2">
                 <SkuBadge code={initialItem.sku} />
                 <span className="font-sans font-bold text-ink truncate">{initialItem.name}</span>
                 <span className="font-mono text-[10px] text-ink/60">
@@ -203,19 +206,14 @@ function StockMovementForm({
               </span>
             </div>
           ) : (
-            <select
-              id="itemSelect"
-              value={selectedItemId}
-              disabled={submission.blocked}
-              onChange={(e) => setSelectedItemId(e.target.value)}
-              className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
-            >
-              {allItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.sku} - {item.name} ({item.currentStock} {item.unit})
-                </option>
-              ))}
-            </select>
+            <Select value={selectedItemId} disabled={submission.blocked} onValueChange={value => { if (value) setSelectedItemId(value); }}>
+              <SelectTrigger id="itemSelect" className="h-auto min-h-14 whitespace-normal text-left">
+                {activeItem && <span className="flex min-w-0 items-center gap-2"><ProductPhoto photo={activeItem.photo} name={activeItem.name} /><span className="min-w-0 break-words">{activeItem.sku} - {activeItem.name} ({activeItem.currentStock} {activeItem.unit})</span></span>}
+              </SelectTrigger>
+              <SelectContent>{allItems.map(item => <SelectItem key={item.id} value={item.id} label={`${item.sku} ${item.name}`}>
+                <span className="flex min-w-0 items-center gap-2"><ProductPhoto photo={item.photo} name={item.name} /><span className="min-w-0 whitespace-normal">{item.sku} - {item.name} ({item.currentStock} {item.unit})</span></span>
+              </SelectItem>)}</SelectContent>
+            </Select>
           )}
         </div>
 

@@ -107,6 +107,10 @@ export interface Translations {
     welcomeBack: string;
   };
   products: {
+    photo: {
+      label: string; help: string; remove: string; processing: string;
+      unsupported: string; tooLarge: string; invalid: string;
+    };
     persistent: {
       create: string; restock: string; lookup: string; selectProduct: string; search: string;
       openingQuantity: string; purchaseTotal: string; cartonMode: string; cartonCount: string; unitsPerCarton: string;
