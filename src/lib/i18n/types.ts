@@ -111,6 +111,12 @@ export interface Translations {
       label: string; help: string; remove: string; processing: string;
       unsupported: string; tooLarge: string; invalid: string;
     };
+    scanner: {
+      scan: string; title: string; description: string; starting: string; aim: string; result: string;
+      use: string; rescan: string; retry: string; cancel: string; stopped: string;
+      insecure: string; unsupported: string; denied: string; notFound: string; busy: string;
+      loadFailed: string; cameraFailed: string; invalid: string;
+    };
     persistent: {
       create: string; restock: string; lookup: string; selectProduct: string; search: string;
       openingQuantity: string; purchaseTotal: string; cartonMode: string; cartonCount: string; unitsPerCarton: string;
@@ -153,9 +159,11 @@ export interface Translations {
     sortCategory: string;
     table: {
       colProduct: string;
+      colCategory: string;
       colSku: string;
       colStock: string;
       colPrice: string;
+      colValue: string;
       showing: string;
       to: string;
       of: string;

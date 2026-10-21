@@ -12,6 +12,14 @@ _Avoid_: Warehouse, tenant, company group
 The sole account holder who registers and operates the single warung in StockOS. Staff accounts and registration for multiple independent shops are outside the agreed initial scope.
 _Avoid_: Customer, supplier
 
+**SKU**:
+The warung's required unique product code, retained across product archives. It identifies the product independently of its packaging barcode.
+_Avoid_: Barcode, product name
+
+**Barcode**:
+An optional code on product packaging recorded against a product, separate from its SKU. Several products may share the same barcode; scanning it fills a product draft, not a stock movement or automatic product match.
+_Avoid_: SKU, unique product identity, restock command
+
 **Satuan stok (Stock unit)**:
 The product's unit for counting whole quantities of goods, such as pcs, bottles, or packs. Fractional quantities for weighed goods are outside the agreed initial scope.
 _Avoid_: Weight, fractional stock

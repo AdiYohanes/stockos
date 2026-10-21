@@ -491,6 +491,186 @@ def lifecycle(page, context, browser):
     # Pending uncertainty resolved: product stays archived until explicit reactivate.
     print("PASS: zero-stock archive gate, nonzero rejection, identity/history retention, reload/cross-route, stale VERSION_CONFLICT, lost-response retry")
 
+def barcode_draft(page):
+    page.goto(BASE + "/products")
+    page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+    page.locator("#product-name").fill("Barcode draft proof")
+    page.locator("#product-barcode").fill("001-OLD")
+    before = set(REQUESTS)
+    page.get_by_role("button", name=re.compile(r"^(Scan barcode|Pindai barcode)$")).click()
+    scanner = page.get_by_role("dialog").filter(has=page.get_by_role("heading", name=re.compile(r"^(Scan barcode|Pindai barcode)$")))
+    expect(scanner).to_be_visible()
+    page.keyboard.press("Escape")
+    expect(scanner).not_to_be_visible()
+    expect(page.locator("#product-name")).to_have_value("Barcode draft proof")
+    expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+    expect(page.get_by_role("button", name=re.compile(r"^(Scan barcode|Pindai barcode)$"))).to_be_focused()
+    assert REQUESTS == before, "Scanner submitted product without explicit save"
+    page.keyboard.press("Escape")
+    print("PASS: scanner cancel preserves draft, focus and explicit-save boundary")
+
+
+def barcode_camera(page):
+    fixture = subprocess.run(["node", "--input-type=module", "-e", """
+import { readFile } from 'node:fs/promises';
+import { prepareZXingModule, writeBarcode } from 'zxing-wasm/writer';
+prepareZXingModule({ overrides: { wasmBinary: await readFile('node_modules/zxing-wasm/dist/writer/zxing_writer.wasm') } });
+const image = await writeBarcode('0123456789012', { format: 'EAN13', scale: 3 });
+if (image.error || !image.image) throw new Error('Barcode fixture generation failed');
+console.log(Buffer.from(await image.image.arrayBuffer()).toString('base64'));
+"""], cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, timeout=30)
+    assert fixture.returncode == 0, "Synthetic barcode fixture failed"
+    image = fixture.stdout.strip()
+    scan_name = re.compile(r"^(Scan barcode|Pindai barcode)$")
+    scanner = page.get_by_role("dialog").filter(has=page.get_by_role("heading", name=scan_name))
+    trigger = page.get_by_role("button", name=scan_name)
+
+    def open_form(path="/products"):
+        page.goto(BASE + path)
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add (?:New )?Product")).first.click()
+        page.locator("#product-name").fill("Barcode draft proof")
+        page.locator("#product-barcode").fill("001-OLD")
+
+    def camera(mode="image"):
+        page.evaluate("""({image, mode}) => {
+          window.cameraProof = {mode, tracks: [], calls: [], release: null};
+          Object.defineProperty(navigator, 'mediaDevices', {configurable: true, value: {
+            getUserMedia: async constraints => {
+              const proof = window.cameraProof;
+              proof.calls.push(constraints);
+              if (proof.mode.endsWith('Error')) throw new DOMException('Synthetic camera failure', proof.mode);
+              const canvas = document.createElement('canvas');
+              canvas.width = 900; canvas.height = 600;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 900, 600);
+              if (proof.mode === 'image') {
+                const img = new Image(); img.src = 'data:image/png;base64,' + image;
+                await img.decode();
+                ctx.drawImage(img, (900-img.width)/2, (600-img.height)/2);
+              }
+              const stream = canvas.captureStream(10);
+              proof.tracks.push(...stream.getTracks());
+              if (proof.mode === 'delayed') await new Promise(resolve => { proof.release = resolve; });
+              return stream;
+            }
+          }});
+        }""", {"image": image, "mode": mode})
+
+    def stopped():
+        page.wait_for_function("window.cameraProof.tracks.length > 0 && window.cameraProof.tracks.every(t => t.readyState === 'ended')")
+        assert page.locator("video").evaluate_all("els => els.every(el => el.srcObject === null)"), "Preview retained stopped stream"
+
+    for path, language, width in (("/products", "id", 390), ("/", "en", 1440)):
+        page.evaluate("language => localStorage.setItem('stockos_language', language)", language)
+        page.set_viewport_size({"width": width, "height": 1000})
+        open_form(path)
+        camera()
+        before = set(REQUESTS)
+        trigger.click()
+        use = scanner.get_by_role("button", name=re.compile(r"^(Use barcode|Pakai barcode)$"))
+        expect(use).to_be_visible(timeout=30000)
+        expect(scanner.get_by_text("0123456789012", exact=True)).to_be_visible()
+        stopped()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        assert REQUESTS == before, "Scan mutated product before explicit save"
+        assert page.evaluate("cameraProof.calls.every(c => c.audio === false && c.video.facingMode.ideal === 'environment')")
+        for _ in range(8):
+            page.keyboard.press("Tab")
+            assert scanner.evaluate("el => el.contains(document.activeElement)"), "Scanner focus escaped"
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Scanner overflow"
+        scanner.get_by_role("button", name=re.compile(r"^(Scan again|Scan ulang)$")).click()
+        expect(use).to_be_visible(timeout=30000)
+        page.wait_for_function("cameraProof.calls.length === 2")
+        stopped()
+        use.click()
+        expect(scanner).not_to_be_visible()
+        expect(page.locator("#product-barcode")).to_have_value("0123456789012")
+        expect(page.locator("#product-barcode")).to_be_focused()
+        expect(page.locator("#product-name")).to_have_value("Barcode draft proof")
+        assert REQUESTS == before, "Apply submitted parent form"
+        sku = f"{PREFIX}-SCAN-{language.upper()}"
+        for field, value in {"sku": sku, "category": "Browser proof", "unit": "Pcs", "min-stock": "0", "sell": "10000"}.items():
+            page.locator(f"#product-{field}").fill(value)
+        with page.expect_request(is_mutation) as posted:
+            page.get_by_role("dialog").locator('button[type="submit"]').click()
+        response = posted.value.response()
+        assert response and action_result(response.text())["ok"] is True
+        item = product(sku)
+        assert item["barcode"] == "0123456789012" and item["currentStock"] == 0 and history(item)["total"] == 0
+        expect(page.get_by_role("heading", name=re.compile(r"Produk Berhasil Ditambahkan|Product Added Successfully"))).to_be_visible(timeout=30000)
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Lain|Add Another", re.I)).click()
+        expect(page.locator("#product-barcode")).to_have_value("")
+        page.keyboard.press("Escape")
+    print("PASS: real browser decoder, review/rescan/apply/save, duplicate barcode, Add Another, both entrypoints/languages/viewports")
+
+    # Camera boundary failures remain local; persistence still uses real Server Actions/RPCs.
+    for mode, message in (("NotAllowedError", "Camera permission denied"), ("NotFoundError", "No camera found"), ("NotReadableError", "Camera is busy")):
+        open_form()
+        camera(mode)
+        before = set(REQUESTS)
+        trigger.click()
+        expect(scanner.get_by_role("alert")).to_contain_text(message, timeout=30000)
+        scanner.get_by_role("button", name="Cancel", exact=True).click()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        assert REQUESTS == before
+        page.locator("#product-barcode").fill("  000-MANUAL  ")
+        expect(page.locator("#product-barcode")).to_have_value("  000-MANUAL  ")
+        page.keyboard.press("Escape")
+
+    for mode in ("blank", "delayed"):
+        open_form()
+        camera(mode)
+        trigger.click()
+        page.wait_for_function("cameraProof.tracks.length > 0")
+        scanner.get_by_role("button", name="Cancel", exact=True).click()
+        if mode == "delayed":
+            page.evaluate("cameraProof.release()")
+        stopped()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        expect(trigger).to_be_focused()
+        page.keyboard.press("Escape")
+
+    for event in ("visibilitychange", "pagehide"):
+        open_form()
+        camera("blank")
+        trigger.click()
+        page.wait_for_function("cameraProof.tracks.length > 0")
+        page.evaluate("""event => {
+          if (event === 'visibilitychange') {
+            Object.defineProperty(document, 'hidden', {configurable:true, value:true});
+            document.dispatchEvent(new Event(event));
+          } else window.dispatchEvent(new Event(event));
+        }""", event)
+        expect(scanner.get_by_role("alert")).to_contain_text("Camera stopped")
+        stopped()
+        page.evaluate("""() => {
+          Object.defineProperty(document, 'hidden', {configurable:true, value:false});
+          document.dispatchEvent(new Event('visibilitychange'));
+        }""")
+        assert page.evaluate("cameraProof.calls.length") == 1, "Camera auto-resumed"
+        scanner.get_by_role("button", name="Try again", exact=True).click()
+        page.wait_for_function("cameraProof.calls.length === 2")
+        page.keyboard.press("Escape")
+        stopped()
+        page.keyboard.press("Escape")
+
+    for boundary, message in (("insecure", "Camera requires trusted HTTPS"), ("unsupported", "This browser does not provide camera access")):
+        open_form()
+        camera()
+        page.evaluate("""boundary => {
+          if (boundary === 'insecure') Object.defineProperty(window, 'isSecureContext', {configurable:true, value:false});
+          else Object.defineProperty(navigator, 'mediaDevices', {configurable:true, value:undefined});
+        }""", boundary)
+        trigger.click()
+        expect(scanner.get_by_role("alert")).to_contain_text(message)
+        assert page.evaluate("cameraProof.calls.length") == 0
+        page.keyboard.press("Escape")
+        page.keyboard.press("Escape")
+    page.evaluate("localStorage.setItem('stockos_language', 'id')")
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    print("PASS: denied/missing/busy camera, manual fallback, late stream, cancel/visibility/pagehide cleanup, no auto-resume, insecure/missing API")
+
+
 def creation_defaults(page):
     settings = rpc("get_shop_settings", {})
     request_id = str(uuid.uuid4())
@@ -674,6 +854,8 @@ def run():
             assert not errors, "Photo browser page errors"
             browser.close()
             return
+        barcode_draft(page)
+        barcode_camera(page)
         item, request = add(page, "VERTICAL", 10, 30000)
         assert item["currentStock"] == 10 and item["inventoryCostValue"] == "30000.000000"
         page.reload()

@@ -63,12 +63,14 @@ export function ProductsTable({
     <div className="flex flex-col">
       {/* Table Container */}
       <div className="relative w-full overflow-x-auto">
-        <table className="w-full table-fixed text-left border-collapse min-w-[960px]">
+        <table className="w-full table-fixed text-left border-collapse min-w-[1240px]">
           <colgroup>
-            <col />
+            <col className="w-[240px]" />
+            <col className="w-[190px]" />
             <col className="w-[170px]" />
             <col className="w-[200px]" />
-            <col className="w-[180px]" />
+            <col className="w-[150px]" />
+            <col className="w-[170px]" />
             <col className="w-[150px]" />
             <col className="w-[88px]" />
           </colgroup>
@@ -78,6 +80,9 @@ export function ProductsTable({
                 {t.products.table.colProduct}
               </th>
               <th scope="col" className="px-4 py-3">
+                {t.products.table.colCategory}
+              </th>
+              <th scope="col" className="px-4 py-3">
                 {t.products.table.colSku}
               </th>
               <th scope="col" className="px-4 py-3">
@@ -85,6 +90,9 @@ export function ProductsTable({
               </th>
               <th scope="col" className="px-4 py-3 text-right">
                 {t.products.table.colPrice}
+              </th>
+              <th scope="col" className="px-4 py-3 text-right">
+                {t.products.table.colValue}
               </th>
               <th scope="col" className="px-4 py-3">
                 {t.common.status}
@@ -107,30 +115,29 @@ export function ProductsTable({
                   key={product.id}
                   className="group h-20 align-middle transition-colors hover:bg-acid/10"
                 >
-                  {/* Col 1: Product Name & Category */}
+                  {/* Col 1: Product Name */}
                   <td className="px-4 py-3">
-                    <div className="flex min-w-0 flex-col">
-                      <button type="button" title={product.name} onClick={() => onViewDetails(product)} className="input-focus flex w-full min-w-0 items-center gap-2 text-left font-display font-bold uppercase text-base text-ink hover:underline">
-                        <ProductPhoto photo={product.photo} name={product.name} />
-                        <span className="min-w-0 truncate">{product.name}</span>
-                      </button>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="min-w-0 truncate font-mono text-[11px] opacity-55 uppercase">
-                          {product.category}
+                    <button type="button" title={product.name} onClick={() => onViewDetails(product)} className="input-focus flex w-full min-w-0 items-center gap-2 text-left font-display font-bold uppercase text-base text-ink hover:underline">
+                      <ProductPhoto photo={product.photo} name={product.name} />
+                      <span className="min-w-0 truncate">{product.name}</span>
+                    </button>
+                  </td>
+
+                  {/* Col 2: Category */}
+                  <td className="px-4 py-3">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="truncate font-mono text-xs font-bold uppercase text-ink">
+                        {product.category}
+                      </span>
+                      {product.supplier && (
+                        <span className="truncate font-mono text-[11px] uppercase text-ink/55">
+                          {product.supplier}
                         </span>
-                        {product.supplier && (
-                          <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="font-mono text-[11px] opacity-55 uppercase truncate min-w-0">
-                              {product.supplier}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </td>
 
-                  {/* Col 2: SKU & Barcode */}
+                  {/* Col 3: SKU & Barcode */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-0.5">
                       <SkuBadge code={product.sku} className="block max-w-full truncate" />
@@ -142,7 +149,7 @@ export function ProductsTable({
                     </div>
                   </td>
 
-                  {/* Col 3: Stock Level & Progress Bar */}
+                  {/* Col 4: Stock Level & Progress Bar */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between font-mono tabular-nums">
@@ -183,23 +190,17 @@ export function ProductsTable({
                     </div>
                   </td>
 
-                  {/* Col 4: Price & Valuation (Right-Aligned Numbers) */}
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-ink">
-                        <span className="text-[11px] text-ink/50 mr-1">J:</span>
-                        {formatProductMoney(product.sellingPrice)}
-                      </span>
-                      {product.averagePurchaseCost !== null && (
-                        <span className="text-sm font-bold text-emerald-600 mt-1">
-                          <span className="text-[11px] text-emerald-600/50 mr-1">B:</span>
-                          {formatProductMoney(product.averagePurchaseCost)}
-                        </span>
-                      )}
-                    </div>
+                  {/* Col 5: Selling Price */}
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-bold tabular-nums text-ink">
+                    {formatProductMoney(product.sellingPrice)}
                   </td>
 
-                  {/* Col 6: Disciplined Status Micro-Dot */}
+                  {/* Col 6: Inventory Cost Value */}
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-bold tabular-nums text-emerald-700">
+                    {formatProductMoney(product.inventoryCostValue)}
+                  </td>
+
+                  {/* Col 7: Status */}
                   <td className="px-4 py-3">
                     {product.stockStatus === "in_stock" && (
                       <span className="bg-acid inline-block whitespace-nowrap border-[3px] border-ink px-2 py-1 font-mono text-[11px] font-bold uppercase text-paper">
@@ -219,7 +220,7 @@ export function ProductsTable({
                     {product.archivedAt && <span className="block mt-2 font-mono text-[10px] font-bold">{t.products.persistent.archived}</span>}
                   </td>
 
-                  {/* Col 7: Actions Menu */}
+                  {/* Col 8: Actions Menu */}
                   <td className="px-4 py-3 text-right">
                     <ProductRowActions
                       product={product}
