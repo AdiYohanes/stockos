@@ -1,6 +1,26 @@
 # StockOS — Rencana Implementasi Paralel ke Ready-to-Use
 
-Dibuat: 2026-10-13. Basis status: PROGRESS.md 2026-10-13, docs/OPERATIONS.md gate table, docs/BACKEND_PLAN.md §4–§6.
+Dibuat: 2026-10-13. Basis status historis: PROGRESS.md 2026-10-13, docs/OPERATIONS.md gate table, docs/BACKEND_PLAN.md §4–§6.
+
+## Kandidat operasional — 2026-10-22
+
+Bagian historis di bawah bukan status rilis terkini atau izin membuat resource baru.
+
+- Target owner: online Vercel + Supabase, gunakan layanan/paket existing dahulu; pembelian/upgrade belum disetujui. Owner memegang akses pemulihan. Tujuan backup terenkripsi, kunci, retensi dan jadwal belum terbukti.
+- Cloud existing `ohltpkxtucchqezkgfok` diperlakukan sebagai data nyata yang dilindungi: audit read-only menemukan 1 produk, 1 event stok, dan 11 migrasi sampai `20261013000000`. Migrasi/kolom/bucket foto belum ada. Jangan reset, seed, impor ulang atau memakai data ini untuk proof otomatis.
+- GitHub mencatat Preview `d0b714d` dan Production `98b4514` berhasil; status deployment bukan bukti alur pengguna atau kesesuaian env/backend. Konfigurasi Vercel belum terverifikasi karena akses team 403.
+- Persetujuan rencana hanya meliputi kode/test/dokumentasi lokal dan fixture sintetis baru milik run. Commit/push, Cloud migration/Storage/config, deployment/promosi, email, biaya, export backup hosted dan perubahan data toko memerlukan izin spesifik terpisah.
+
+| Gate | Status saat ini | Bukti/sisa pekerjaan |
+|---|---|---|
+| `LOCAL_VERIFIED` | IN_PROGRESS | Fast checks, typecheck, lint dan production build lulus pada tahap lokal. Regresi production lokal membuktikan outage Auth tidak logout dan `retry()` memulihkan halaman; hydration subset lulus, cleanup PASS. Full 13-suite `--run --prod` lulus 2026-10-22: coverage full, 13/13 suite (termasuk inventory), cleanup PASS (`%TEMP%/stockos-hardening-gktzyze5/evidence.json`); subtotal label page-only dibuktikan dalam suite inventory. Lockfile memperbarui `source-map-js` ke `1.2.2`; audit runtime 0 vulnerability dan clean-install npm build terisolasi lulus. Fingerprint diff tree saat rerun hidup (dokumen diedit dalam window run), jadi fingerprint final perlu dibekukan ulang pada proof serial akhir. |
+| `HOSTED_VERIFIED` | BLOCKED | Akses Vercel, pasangan env/origin/backend, migrasi foto, privacy dan hosted smoke belum terbukti. |
+| `OPERATIONS_VERIFIED` | PARTIAL | Drill lokal 2026-10-22 `PASS_LOCAL_ONLY`: forward migration + restore SQL/Auth + restore bytes foto (manifest/hash/trigger, bucket private, denotasi anon/owner, serving rute foto) lulus (`stockos-operations-2JhqlA`). Backup off-device terenkripsi, recovery email hosted dan restore hosted belum terbukti. |
+| `OWNER_ACCEPTED` | BLOCKED | UAT harian, kamera/foto HP fisik HTTPS dan keputusan go-live belum ada. |
+
+Kandidat sementara: `d0b714d` + working-tree diff; fingerprint final dibekukan setelah semua perbaikan. Full 13-suite `--run --prod` pertama lulus 2026-10-22, tetapi perbaikan review sesudahnya mengubah tree; final proof wajib serial ulang: fast checks/typecheck/lint, full 13-suite `--run --prod`, operations self-test/live drill, isolated clean-install npm build dan review diff. Subset atau baseline lama tidak menutup gate. Tidak menjanjikan nol error selamanya. Perubahan baru dari review (props mati dihapus, error-boundary card bersama, tipe value picker) belum dibuktikan di proof apapun.
+
+---
 
 Kunci paralel: pisah tiga jenis kerja — **keputusan (tanpa repo)**, **kerja repo lokal**, **infra cloud** — karena konflik hanya mungkin di repo dan di config Supabase.
 
