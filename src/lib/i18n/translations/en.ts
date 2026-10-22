@@ -276,7 +276,7 @@ export const enTranslations: Translations = {
     movementAuditTab: "Stock Movement Audit Logs",
     totalValuation: "Total Valuation",
     totalCatalogItems: "total product items",
-    totalUnitsOnHand: "Total Units On-Hand",
+    totalUnitsOnHand: "Page stock units",
     units: "units",
     physicalStockReady: "Physical stock ready",
     stockHealthAlerts: "Stock Health Alerts",

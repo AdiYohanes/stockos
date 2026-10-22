@@ -26,7 +26,7 @@ Lulus suite berarti skenario suite lulus, bukan seluruh requirement sudah tercak
 - Testing memakai resource lokal sintetis baru, bukan reset/mutasi database lokal retained atau data warung nyata.
 - Tidak dilakukan perbaikan source, migrasi baru, perubahan dependency, commit/push, deployment, atau pengiriman email eksternal.
 
-Sumber: `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, `PROGRESS.md`, `design.md`, `GLOSSARY.md`, `docs/BACKEND_PLAN.md`, `docs/DATABASE.md`, `docs/API_CONTRACT.md`, `docs/FULLSTACK_SPEC.md`, `docs/OPERATIONS.md`, `DEPLOY_PLAN.md`, serta kode dan proof scripts aktual.
+Sumber: `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, `PROGRESS.md`, `design.md`, `GLOSSARY.md`, `docs/BACKEND_PLAN.md`, `docs/DATABASE.md`, `docs/API_CONTRACT.md`, `docs/FULLSTACK_SPEC.md`, `docs/OPERATIONS.md`, `docs/DEPLOY_PLAN.md`, serta kode dan proof scripts aktual.
 
 ## 3. Bukti Testing Terbaru
 
@@ -87,7 +87,7 @@ Perbaikan dashboard zero-stock valuation ada sebagai forward migration untracked
 
 Shop-timezone dates, exact totals, pemisahan sold/opname, pagination/bounds, dan CSV formula defense memiliki regresi lokal. Settings defaults, lost-response retry, konflik, dan reset tanpa mengubah saved profile/timezone tercakup.
 
-UI linked quantity correction sudah ada dalam working tree dan ikut suite Inventory terbaru. `CHECKPOINT.md` yang menyebut fitur belum dimulai tidak cocok dengan source saat audit. Asal persetujuan implementasi sebelumnya tidak ditentukan oleh audit ini; jangan menghapus kode atau menganggap dokumen lama sebagai status runtime.
+UI linked quantity correction sudah ada dalam working tree dan ikut suite Inventory terbaru. `docs/CHECKPOINT.md` yang menyebut fitur belum dimulai tidak cocok dengan source saat audit. Asal persetujuan implementasi sebelumnya tidak ditentukan oleh audit ini; jangan menghapus kode atau menganggap dokumen lama sebagai status runtime.
 
 ## 5. Standards
 
@@ -166,7 +166,7 @@ Fix minimum: keys dictionaries existing; hilangkan toggle inert jika grid bukan 
 - Belum ada deklarasi runtime Node/npm dan dependency Python/Playwright yang memadai untuk reproduksi; tidak ada CI workflow ditemukan.
 - Browser archive/reactivation belum tercakup; current dev harness belum menguji production runtime.
 - `README.md:7–25` masih mengklaim mock phase/team settings dan Getting Started belum menjelaskan backend lokal.
-- `CHECKPOINT.md:16–18` dan status terkait `PROGRESS.md` tertinggal dari linked quantity correction working tree.
+- `docs/CHECKPOINT.md:16–18` dan status terkait `PROGRESS.md` tertinggal dari linked quantity correction working tree.
 - Bukti lokal bergantung pada file untracked. HEAD checkout saja tidak mereproduksi baseline audit; release/commit terpisah harus memastikan source yang disetujui tercakup.
 
 ## 8. Performance dan Keamanan: Belum Cukup untuk Klaim Produksi
@@ -221,7 +221,7 @@ Setiap slice harus mendapat persetujuan implementasi. TDD/regresi memakai launch
 
 ### Gate eksternal — Tetap HOLD
 
-Ikuti `DEPLOY_PLAN.md`, tidak menggantinya dengan rencana baru:
+Ikuti `docs/DEPLOY_PLAN.md`, tidak menggantinya dengan rencana baru:
 
 - A1: ownership akun, operator dan penanggung jawab recovery.
 - A2: budget/plan/cost sign-off.

@@ -52,7 +52,7 @@ Perubahan sudah ada sebelum sesi, jangan dibuang/ditimpa:
 - `scripts/check-seeder-safety.mjs` (untracked)
 - `skills-lock.json`
 
-Semua belum di-commit/push. `CHECKPOINT.md` ini catatan tambahan, bukan runtime change.
+Semua belum di-commit/push. `docs/CHECKPOINT.md` ini catatan tambahan, bukan runtime change.
 
 ## Langkah lanjut
 

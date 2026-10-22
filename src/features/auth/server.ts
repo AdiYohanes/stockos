@@ -34,10 +34,21 @@ export function validSetupCode(value: string) {
 export async function getOwnerSession() {
   const client = await createSessionClient();
   const verified = await client.auth.getUser();
-  if (verified.error || !verified.data.user?.email_confirmed_at) return null;
+  if (verified.error) {
+    const error = verified.error;
+    if (error.name === "AuthSessionMissingError" || error.status === 401 ||
+      ["session_not_found", "user_not_found", "bad_jwt", "refresh_token_not_found", "refresh_token_already_used"].includes(error.code ?? "")) return null;
+    throw new Error("Session unavailable");
+  }
+  if (!verified.data.user?.email_confirmed_at) return null;
   const result = await client.rpc("stockos_owner_session");
-  if (result.error) return null;
-  return OwnerSchema.parse(result.data);
+  if (result.error) {
+    if (result.error.code === "42501" && ["UNAUTHENTICATED", "EMAIL_UNVERIFIED", "FORBIDDEN"].includes(result.error.message)) return null;
+    throw new Error("Session unavailable");
+  }
+  const owner = OwnerSchema.parse(result.data);
+  if (owner.id !== verified.data.user.id || owner.email !== verified.data.user.email) return null;
+  return owner;
 }
 
 export async function verifyPasswordPurpose(token: string, purpose: "invite" | "recovery") {

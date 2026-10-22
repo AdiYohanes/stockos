@@ -7,6 +7,7 @@ import type { InventoryMetrics, StockStatus } from "../types";
 
 interface InventoryMetricsProps {
   metrics: InventoryMetrics;
+  showQuantity: boolean;
   selectedStatus: "all" | StockStatus;
   onSelectStatus: (status: "all" | StockStatus) => void;
   onSelectTab: (tab: "stock_levels" | "movements") => void;
@@ -14,6 +15,7 @@ interface InventoryMetricsProps {
 
 export function InventoryMetricsView({
   metrics,
+  showQuantity,
   selectedStatus,
   onSelectStatus,
   onSelectTab,
@@ -21,7 +23,7 @@ export function InventoryMetricsView({
   const { t } = useI18n();
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <section className={`grid grid-cols-1 sm:grid-cols-2 ${showQuantity ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-5 mb-8`}>
       <div className="bg-white border-[3px] border-ink shadow-hard p-5">
         <div className="flex justify-between items-start">
           <span className="font-mono text-[10px] uppercase tracking-widest text-black/50">
@@ -39,7 +41,7 @@ export function InventoryMetricsView({
         </p>
       </div>
 
-      <div className="bg-white border-[3px] border-ink shadow-hard p-5">
+      {showQuantity && <div className="bg-white border-[3px] border-ink shadow-hard p-5">
         <div className="flex justify-between items-start">
           <span className="font-mono text-[10px] uppercase tracking-widest text-black/50">
             {t.inventory.totalUnitsOnHand}
@@ -54,7 +56,7 @@ export function InventoryMetricsView({
         <p className="font-mono text-[9px] uppercase tracking-widest opacity-50 mt-3">
           {t.inventory.units}
         </p>
-      </div>
+      </div>}
 
       <button
         onClick={() => {

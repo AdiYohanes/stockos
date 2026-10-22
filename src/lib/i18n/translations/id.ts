@@ -278,7 +278,7 @@ export const idTranslations: Translations = {
     movementAuditTab: "Log Audit Pergerakan Stok",
     totalValuation: "Total Valuasi",
     totalCatalogItems: "total item produk",
-    totalUnitsOnHand: "Total Unit Tersedia",
+    totalUnitsOnHand: "Unit stok halaman ini",
     units: "unit",
     physicalStockReady: "Stok fisik siap",
     stockHealthAlerts: "Peringatan Kesehatan Stok",

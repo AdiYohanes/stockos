@@ -83,6 +83,35 @@ def run():
                     anonymous.close()
                     page = g["login"](context)
                     settled(page)
+                    if language is None:
+                        previous_diagnostics = list(diagnostics)
+                        # Provider RPC outage must not masquerade as a signed-out owner.
+                        g["sql"]("REVOKE EXECUTE ON FUNCTION public.stockos_owner_session() FROM authenticated")
+                        try:
+                            page.goto(g["BASE"] + "/settings")
+                            expect(page.get_by_role("button", name=re.compile(r"Coba Lagi|Muat Ulang Komponen|Try Again"))).to_be_visible(timeout=30000)
+                            assert "/login" not in page.url, "Provider outage must preserve the owner's route/session"
+                            assert any(cookie["name"].startswith("sb-") for cookie in context.cookies()), "Outage must preserve session cookies"
+                        finally:
+                            g["sql"]("GRANT EXECUTE ON FUNCTION public.stockos_owner_session() TO authenticated")
+                        page.get_by_role("button", name=re.compile(r"Coba Lagi|Muat Ulang Komponen|Try Again")).click()
+                        expect(page.locator("main").get_by_role("heading", name=re.compile(TITLES["/settings"])).first).to_be_visible(timeout=30000)
+                        # Ignore only the expected server-render outage, never hydration or retry errors.
+                        outage = diagnostics[len(previous_diagnostics):]
+                        assert not any(HYDRATION.search(text) for _, _, text in outage), "Hydration failed during outage recovery"
+                        # React replays a server-rendered failed boundary during hydration as Minified React error #419
+                        # with the boundary digest; that replay is the outage itself, not a client mismatch. The
+                        # redacted "Server Components render" text is the production form of the same event.
+                        def expected_outage(text):
+                            return ("Minified React error #419" in text
+                                    or "Server Components render" in text
+                                    or "Session unavailable" in text)
+                        # Diagnostics can contain source snippets; never print complete action/network payloads.
+                        unexpected = [text for _, kind, text in outage
+                                      if kind == "pageerror" and not expected_outage(text)]
+                        assert not unexpected, "Unexpected browser error during outage recovery: " + " | ".join(
+                            text[:400] for text in unexpected)
+                        diagnostics[:] = previous_diagnostics
                     saved = g["rpc"]("get_shop_settings", {})
                     for route in ("/settings", "/", "/products", "/inventory", "/reports"):
                         page.goto(g["BASE"] + route)

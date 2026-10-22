@@ -48,7 +48,9 @@ def guard():
 
 def sql(statement):
     guard()
-    return docker("exec", CONTAINER, "psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "postgres", "-c", statement)
+    result = subprocess.run(["docker", "exec", "-i", CONTAINER, "psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "postgres"], input=statement, capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, "Dedicated SQL failed (output suppressed)"
+    return result.stdout.strip()
 
 
 def quote(value):
@@ -1039,6 +1041,62 @@ def create_fixture(suffix, opening_qty=10, purchase_total=50000, min_stock=5):
     return prod
 
 
+def catalog_picker(page):
+    # Global actions must search beyond both table pages and Dashboard's first 100 rows.
+    for index in range(101):
+        target = create_fixture(f"CATALOG-{index:03}", opening_qty=0, purchase_total=0)
+    page.goto(BASE + "/inventory")
+    page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
+    dialog = page.get_by_role("dialog")
+    page_label = dialog.get_by_text(re.compile(r"(?:Page|Halaman) 1 /", re.I))
+    expect(page_label).to_be_visible()
+    dialog.get_by_role("button", name=re.compile(r"^(Next|Selanjutnya)$", re.I)).click()
+    expect(dialog.get_by_text(re.compile(r"(?:Page|Halaman) 2 /", re.I))).to_be_visible()
+    search = dialog.get_by_role("textbox", name=re.compile(r"Search product|Cari nama produk", re.I))
+    search.fill("NO-MATCH-" + PREFIX)
+    expect(dialog.get_by_role("status")).to_contain_text(re.compile(r"No matching products|Tidak ada produk", re.I))
+    def fail_picker(route):
+        if route.request.method == "POST" and route.request.headers.get("next-action"):
+            route.abort("failed")
+        else:
+            route.continue_()
+    page.route("**/inventory*", fail_picker)
+    try:
+        search.fill(target["sku"])
+        expect(dialog.get_by_role("alert")).to_be_visible()
+    finally:
+        page.unroute("**/inventory*", fail_picker)
+    dialog.get_by_role("button", name=re.compile(r"Ulangi permintaan sama|Retry same request", re.I)).click()
+    select_movement_product(page, target)
+    page.keyboard.press("Escape")
+    expect(dialog).not_to_be_visible()
+    for route in ("/inventory?q=Test%20Item%20A&page=2", "/"):
+        page.goto(BASE + route)
+        page.get_by_role("button", name=re.compile(r"Record Stock Movement|Catat Pergerakan", re.I)).click()
+        dialog = page.get_by_role("dialog")
+        search = dialog.get_by_role("textbox", name=re.compile(r"Search product|Cari nama produk", re.I))
+        expect(search).to_be_visible()
+        search.fill(target["sku"])
+        select_movement_product(page, target)
+        expect(dialog).to_contain_text(target["sku"])
+        expect(dialog.locator("#quantity")).to_be_enabled()
+        page.keyboard.press("Escape")
+        expect(dialog).not_to_be_visible()
+    page.goto(BASE + "/inventory?q=Test%20Item%20A&page=2")
+    page.get_by_role("button", name=re.compile(r"^(Stock Adjustment|Penyesuaian Stok)$")).first.click()
+    dialog = page.get_by_role("dialog")
+    dialog.get_by_role("textbox", name=re.compile(r"Search product|Cari nama produk", re.I)).fill(target["sku"])
+    expect(dialog.locator("#itemSelect option").filter(has_text=target["sku"])).to_have_count(1)
+    dialog.locator("#itemSelect").select_option(target["id"])
+    expect(dialog.locator("#newStock")).to_have_value("0")
+    page.keyboard.press("Escape")
+    page.goto(BASE + "/inventory?q=Test%20Item%20A")
+    expect(page.get_by_text(re.compile(r"Page stock units|Unit stok halaman ini", re.I))).to_be_visible()
+    page.goto(BASE + "/inventory?tab=movements")
+    expect(page.get_by_text(re.compile(r"Page stock units|Unit stok halaman ini", re.I))).to_have_count(0)
+    print("PASS: global stock/opname pickers reach products beyond filtered pages and first 100 Dashboard products; quantity label is page-only and hidden on history")
+
+
 def run():
     provision()
     prod_a = create_fixture("A", opening_qty=10, purchase_total=50000, min_stock=5)
@@ -1065,6 +1123,7 @@ def run():
                 quantity_lost_response(page, browser, prod_a)
                 quantity_conflict(page, browser, prod_a)
                 quantity_read_retry(page, prod_a)
+                catalog_picker(page)
                 for width in (1440, 390):
                     page.set_viewport_size({"width": width, "height": 1000})
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Inventory overflow at {width}px"
