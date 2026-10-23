@@ -56,10 +56,6 @@ export function InventoryContainer({
     return eventsPage ? eventsPage.items.map(mapEventToStockMovement) : [];
   }, [eventsPage]);
 
-  const rawProducts: ProductDto[] = React.useMemo(() => {
-    return stockPage?.items || [];
-  }, [stockPage]);
-
   const computedMetrics: InventoryMetrics = React.useMemo(() => {
     const totalItems = metrics?.totalProducts ?? totalProductsCount;
     const totalValuation = metrics?.totalValuation ? parseFloat(metrics.totalValuation) : 0;
@@ -169,6 +165,7 @@ export function InventoryContainer({
 
       <InventoryMetricsView
         metrics={computedMetrics}
+        showQuantity={filterState.tab === "stock_levels" && stockPage !== null}
         selectedStatus={filterState.status}
         onSelectStatus={filters.setStatus}
         onSelectTab={filters.setTab}
@@ -264,7 +261,6 @@ export function InventoryContainer({
         targetItem={movementModalState.targetItem}
         defaultType={movementModalState.type}
         allItems={inventoryItems}
-        rawProducts={rawProducts}
         onCommitted={handleCommitted}
       />
 
@@ -275,7 +271,6 @@ export function InventoryContainer({
         targetItem={adjustmentModalState.targetItem}
         correction={adjustmentModalState.correction}
         allItems={inventoryItems}
-        rawProducts={rawProducts}
         onCommitted={adjustmentModalState.correction ? handleCorrectionCommitted : handleCommitted}
       />}
     </div>

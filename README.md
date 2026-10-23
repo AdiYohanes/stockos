@@ -74,4 +74,4 @@ node scripts/check-operations.mjs --run               # forward migration + dump
 The operations drill writes `evidence.json` with a final status (`PASS_LOCAL_ONLY` only when cleanup also passed) into a protected temp directory. **Proof directories and dumps contain Auth credentials — never commit or share them.**
 
 ## 🚫 Blocked Gates (external, currently HOLD)
-Cloud provisioning, Vercel deployment, external SMTP delivery, paid resources, production launch, and real-shop data remain excluded pending the A1–A5 decisions in `DEPLOY_PLAN.md`.
+Cloud provisioning, Vercel deployment, external SMTP delivery, paid resources, production launch, and real-shop data remain excluded pending the A1–A5 decisions in `docs/DEPLOY_PLAN.md`.

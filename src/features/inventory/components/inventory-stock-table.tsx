@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { InventoryFilterState, InventoryItem } from "../types";
+import { ProductPhoto } from "@/features/products/components/product-photo";
 
 interface InventoryStockTableProps {
   items: InventoryItem[];
@@ -123,12 +124,10 @@ export function InventoryStockTable({
                     {item.sku}
                   </td>
                   <td className="px-5 py-4 text-ink">
-                    <p className="font-display font-bold uppercase text-sm">
-                      {item.name}
-                    </p>
-                    <p className="font-mono text-[9px] opacity-45">
-                      {item.category}
-                    </p>
+                    <div className="flex items-center gap-2"><ProductPhoto photo={item.photo} name={item.name} /><div className="min-w-0">
+                      <p className="font-display font-bold uppercase text-sm">{item.name}</p>
+                      <p className="font-mono text-[9px] opacity-45">{item.category}</p>
+                    </div></div>
                   </td>
                   <td
                     className={cn(

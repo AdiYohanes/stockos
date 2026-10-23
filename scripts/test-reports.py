@@ -213,7 +213,12 @@ def run():
     assert "Makanan" in cat_names and "Minuman" in cat_names
 
     # Test RPC: Movement
-    mov = rpc("get_movement_report", {"mode": "screen", "startDate": "2026-09-01", "endDate": "2026-10-15", "expectedTimezone": "Asia/Jakarta"})
+    # Query window is [start, end) in shop-local time; end tomorrow includes fixtures recorded now
+    # and keeps the span at 366 days, inside the bounded-report limit.
+    mov = rpc("get_movement_report", {"mode": "screen",
+        "startDate": time.strftime("%Y-%m-%d", time.localtime(time.time() - 365 * 86400)),
+        "endDate": time.strftime("%Y-%m-%d", time.localtime(time.time() + 86400)),
+        "expectedTimezone": "Asia/Jakarta"})
     assert mov["summary"]["totalStockInQty"] >= 10
     assert mov["summary"]["totalStockOutQty"] >= 5
     assert mov["summary"]["totalOpnameDelta"] == 1

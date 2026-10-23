@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/features/auth/server";
 import { getDashboard } from "@/features/dashboard/server";
-import { listProducts } from "@/features/products/server";
 import { getShopSettings } from "@/features/settings/server";
 import {
   DashboardHeader,
@@ -42,9 +41,8 @@ export default async function DashboardPage() {
   const user = await getOwnerSession();
   if (!user) redirect("/login");
 
-  const [dashboardResult, productsResult, settingsResult] = await Promise.all([
+  const [dashboardResult, settingsResult] = await Promise.all([
     getDashboard(),
-    listProducts({ pageSize: 100 }),
     getShopSettings(),
   ]);
 
@@ -56,7 +54,6 @@ export default async function DashboardPage() {
   }
 
   const { metrics, health, attentionItems, movements } = dashboardResult.data;
-  const rawProducts = productsResult.ok ? productsResult.data.items : [];
 
   const overviewMetrics: OverviewMetric[] = [
     {
@@ -132,7 +129,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full">
       {/* 1. Header with integrated Quick Actions */}
-      <DashboardHeader userName={user?.name} rawProducts={rawProducts}
+      <DashboardHeader userName={user?.name}
         creationDefaults={settingsResult.ok ? { defaultUnit: settingsResult.data.defaultUnit, defaultMinStock: settingsResult.data.defaultMinStock } : null} />
 
       {/* 2. Overview Metrics Cards (4 cards) */}

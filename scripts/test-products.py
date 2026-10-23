@@ -2,6 +2,7 @@
 Edge + actual Next Server Action POSTs + real isolated Supabase. No mock cookies/env edits.
 Native stock suite must release empty fixture first. Cleanup refuses uncaptured records.
 """
+import base64
 import json
 import re
 import subprocess
@@ -165,6 +166,11 @@ def is_mutation(request):
 def capture(request):
     if is_mutation(request):
         REQUESTS.add(str(uuid.UUID(json.loads(request.post_data)[0]["requestId"])))
+    elif request.method == "POST" and request.headers.get("next-action") and request.post_data_buffer:
+        # Photo actions carry FormData; capture the durable JSON argument inside multipart fields.
+        text = request.post_data_buffer.decode("utf-8", errors="ignore")
+        for value in re.findall(r'"requestId"\s*:\s*"([0-9a-f-]{36})"', text):
+            REQUESTS.add(str(uuid.UUID(value)))
 
 
 def action_result(text):
@@ -485,6 +491,186 @@ def lifecycle(page, context, browser):
     # Pending uncertainty resolved: product stays archived until explicit reactivate.
     print("PASS: zero-stock archive gate, nonzero rejection, identity/history retention, reload/cross-route, stale VERSION_CONFLICT, lost-response retry")
 
+def barcode_draft(page):
+    page.goto(BASE + "/products")
+    page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+    page.locator("#product-name").fill("Barcode draft proof")
+    page.locator("#product-barcode").fill("001-OLD")
+    before = set(REQUESTS)
+    page.get_by_role("button", name=re.compile(r"^(Scan barcode|Pindai barcode)$")).click()
+    scanner = page.get_by_role("dialog").filter(has=page.get_by_role("heading", name=re.compile(r"^(Scan barcode|Pindai barcode)$")))
+    expect(scanner).to_be_visible()
+    page.keyboard.press("Escape")
+    expect(scanner).not_to_be_visible()
+    expect(page.locator("#product-name")).to_have_value("Barcode draft proof")
+    expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+    expect(page.get_by_role("button", name=re.compile(r"^(Scan barcode|Pindai barcode)$"))).to_be_focused()
+    assert REQUESTS == before, "Scanner submitted product without explicit save"
+    page.keyboard.press("Escape")
+    print("PASS: scanner cancel preserves draft, focus and explicit-save boundary")
+
+
+def barcode_camera(page):
+    fixture = subprocess.run(["node", "--input-type=module", "-e", """
+import { readFile } from 'node:fs/promises';
+import { prepareZXingModule, writeBarcode } from 'zxing-wasm/writer';
+prepareZXingModule({ overrides: { wasmBinary: await readFile('node_modules/zxing-wasm/dist/writer/zxing_writer.wasm') } });
+const image = await writeBarcode('0123456789012', { format: 'EAN13', scale: 3 });
+if (image.error || !image.image) throw new Error('Barcode fixture generation failed');
+console.log(Buffer.from(await image.image.arrayBuffer()).toString('base64'));
+"""], cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, timeout=30)
+    assert fixture.returncode == 0, "Synthetic barcode fixture failed"
+    image = fixture.stdout.strip()
+    scan_name = re.compile(r"^(Scan barcode|Pindai barcode)$")
+    scanner = page.get_by_role("dialog").filter(has=page.get_by_role("heading", name=scan_name))
+    trigger = page.get_by_role("button", name=scan_name)
+
+    def open_form(path="/products"):
+        page.goto(BASE + path)
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add (?:New )?Product")).first.click()
+        page.locator("#product-name").fill("Barcode draft proof")
+        page.locator("#product-barcode").fill("001-OLD")
+
+    def camera(mode="image"):
+        page.evaluate("""({image, mode}) => {
+          window.cameraProof = {mode, tracks: [], calls: [], release: null};
+          Object.defineProperty(navigator, 'mediaDevices', {configurable: true, value: {
+            getUserMedia: async constraints => {
+              const proof = window.cameraProof;
+              proof.calls.push(constraints);
+              if (proof.mode.endsWith('Error')) throw new DOMException('Synthetic camera failure', proof.mode);
+              const canvas = document.createElement('canvas');
+              canvas.width = 900; canvas.height = 600;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 900, 600);
+              if (proof.mode === 'image') {
+                const img = new Image(); img.src = 'data:image/png;base64,' + image;
+                await img.decode();
+                ctx.drawImage(img, (900-img.width)/2, (600-img.height)/2);
+              }
+              const stream = canvas.captureStream(10);
+              proof.tracks.push(...stream.getTracks());
+              if (proof.mode === 'delayed') await new Promise(resolve => { proof.release = resolve; });
+              return stream;
+            }
+          }});
+        }""", {"image": image, "mode": mode})
+
+    def stopped():
+        page.wait_for_function("window.cameraProof.tracks.length > 0 && window.cameraProof.tracks.every(t => t.readyState === 'ended')")
+        assert page.locator("video").evaluate_all("els => els.every(el => el.srcObject === null)"), "Preview retained stopped stream"
+
+    for path, language, width in (("/products", "id", 390), ("/", "en", 1440)):
+        page.evaluate("language => localStorage.setItem('stockos_language', language)", language)
+        page.set_viewport_size({"width": width, "height": 1000})
+        open_form(path)
+        camera()
+        before = set(REQUESTS)
+        trigger.click()
+        use = scanner.get_by_role("button", name=re.compile(r"^(Use barcode|Pakai barcode)$"))
+        expect(use).to_be_visible(timeout=30000)
+        expect(scanner.get_by_text("0123456789012", exact=True)).to_be_visible()
+        stopped()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        assert REQUESTS == before, "Scan mutated product before explicit save"
+        assert page.evaluate("cameraProof.calls.every(c => c.audio === false && c.video.facingMode.ideal === 'environment')")
+        for _ in range(8):
+            page.keyboard.press("Tab")
+            assert scanner.evaluate("el => el.contains(document.activeElement)"), "Scanner focus escaped"
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Scanner overflow"
+        scanner.get_by_role("button", name=re.compile(r"^(Scan again|Scan ulang)$")).click()
+        expect(use).to_be_visible(timeout=30000)
+        page.wait_for_function("cameraProof.calls.length === 2")
+        stopped()
+        use.click()
+        expect(scanner).not_to_be_visible()
+        expect(page.locator("#product-barcode")).to_have_value("0123456789012")
+        expect(page.locator("#product-barcode")).to_be_focused()
+        expect(page.locator("#product-name")).to_have_value("Barcode draft proof")
+        assert REQUESTS == before, "Apply submitted parent form"
+        sku = f"{PREFIX}-SCAN-{language.upper()}"
+        for field, value in {"sku": sku, "category": "Browser proof", "unit": "Pcs", "min-stock": "0", "sell": "10000"}.items():
+            page.locator(f"#product-{field}").fill(value)
+        with page.expect_request(is_mutation) as posted:
+            page.get_by_role("dialog").locator('button[type="submit"]').click()
+        response = posted.value.response()
+        assert response and action_result(response.text())["ok"] is True
+        item = product(sku)
+        assert item["barcode"] == "0123456789012" and item["currentStock"] == 0 and history(item)["total"] == 0
+        expect(page.get_by_role("heading", name=re.compile(r"Produk Berhasil Ditambahkan|Product Added Successfully"))).to_be_visible(timeout=30000)
+        page.get_by_role("button", name=re.compile(r"Tambah Produk Lain|Add Another", re.I)).click()
+        expect(page.locator("#product-barcode")).to_have_value("")
+        page.keyboard.press("Escape")
+    print("PASS: real browser decoder, review/rescan/apply/save, duplicate barcode, Add Another, both entrypoints/languages/viewports")
+
+    # Camera boundary failures remain local; persistence still uses real Server Actions/RPCs.
+    for mode, message in (("NotAllowedError", "Camera permission denied"), ("NotFoundError", "No camera found"), ("NotReadableError", "Camera is busy")):
+        open_form()
+        camera(mode)
+        before = set(REQUESTS)
+        trigger.click()
+        expect(scanner.get_by_role("alert")).to_contain_text(message, timeout=30000)
+        scanner.get_by_role("button", name="Cancel", exact=True).click()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        assert REQUESTS == before
+        page.locator("#product-barcode").fill("  000-MANUAL  ")
+        expect(page.locator("#product-barcode")).to_have_value("  000-MANUAL  ")
+        page.keyboard.press("Escape")
+
+    for mode in ("blank", "delayed"):
+        open_form()
+        camera(mode)
+        trigger.click()
+        page.wait_for_function("cameraProof.tracks.length > 0")
+        scanner.get_by_role("button", name="Cancel", exact=True).click()
+        if mode == "delayed":
+            page.evaluate("cameraProof.release()")
+        stopped()
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        expect(trigger).to_be_focused()
+        page.keyboard.press("Escape")
+
+    for event in ("visibilitychange", "pagehide"):
+        open_form()
+        camera("blank")
+        trigger.click()
+        page.wait_for_function("cameraProof.tracks.length > 0")
+        page.evaluate("""event => {
+          if (event === 'visibilitychange') {
+            Object.defineProperty(document, 'hidden', {configurable:true, value:true});
+            document.dispatchEvent(new Event(event));
+          } else window.dispatchEvent(new Event(event));
+        }""", event)
+        expect(scanner.get_by_role("alert")).to_contain_text("Camera stopped")
+        stopped()
+        page.evaluate("""() => {
+          Object.defineProperty(document, 'hidden', {configurable:true, value:false});
+          document.dispatchEvent(new Event('visibilitychange'));
+        }""")
+        assert page.evaluate("cameraProof.calls.length") == 1, "Camera auto-resumed"
+        scanner.get_by_role("button", name="Try again", exact=True).click()
+        page.wait_for_function("cameraProof.calls.length === 2")
+        page.keyboard.press("Escape")
+        stopped()
+        page.keyboard.press("Escape")
+
+    for boundary, message in (("insecure", "Camera requires trusted HTTPS"), ("unsupported", "This browser does not provide camera access")):
+        open_form()
+        camera()
+        page.evaluate("""boundary => {
+          if (boundary === 'insecure') Object.defineProperty(window, 'isSecureContext', {configurable:true, value:false});
+          else Object.defineProperty(navigator, 'mediaDevices', {configurable:true, value:undefined});
+        }""", boundary)
+        trigger.click()
+        expect(scanner.get_by_role("alert")).to_contain_text(message)
+        assert page.evaluate("cameraProof.calls.length") == 0
+        page.keyboard.press("Escape")
+        page.keyboard.press("Escape")
+    page.evaluate("localStorage.setItem('stockos_language', 'id')")
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    print("PASS: denied/missing/busy camera, manual fallback, late stream, cancel/visibility/pagehide cleanup, no auto-resume, insecure/missing API")
+
+
 def creation_defaults(page):
     settings = rpc("get_shop_settings", {})
     request_id = str(uuid.uuid4())
@@ -533,6 +719,120 @@ def creation_defaults(page):
     print("PASS: Settings defaults on Products/Dashboard, user overrides, Add Another, existing products unchanged, desktop/mobile")
 
 
+def photo_flow(page, context):
+    page.goto(BASE + "/products")
+    page.get_by_role("button", name=re.compile(r"Tambah Produk Baru|Tambah Produk|Add Product")).first.click()
+    sku = PREFIX + "-PHOTO"
+    for field, value in {"name": "Foto browser proof", "sku": sku, "category": "Uji", "unit": "Pcs", "min-stock": "0", "sell": "1000"}.items():
+        page.locator(f"#product-{field}").fill(value)
+    picker = page.locator('input[type="file"]')
+    picker.set_input_files({"name": "wrong.txt", "mimeType": "text/plain", "buffer": b"not a photo"})
+    expect(page.get_by_role("alert")).to_contain_text(re.compile(r"JPEG"))
+    expect(page.locator("#product-name")).to_have_value("Foto browser proof")
+    picker.set_input_files({"name": "large.png", "mimeType": "image/png", "buffer": bytes(10 * 1024 * 1024 + 1)})
+    expect(page.get_by_role("alert")).to_contain_text(re.compile(r"10 MiB"))
+    image = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#543afd';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
+    picker.set_input_files({"name": "photo.png", "mimeType": "image/png", "buffer": base64.b64decode(image)})
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    submit = page.get_by_role("dialog").locator('button[type="submit"]')
+    expect(submit).to_be_enabled()
+    # Losing upload before product mutation must keep draft and same retry request/files.
+    def fail_storage(route):
+        if route.request.method == "POST" and route.request.headers.get("next-action"):
+            route.abort("failed")
+        else:
+            route.continue_()
+    page.route("**/products**", fail_storage)
+    submit.click()
+    expect(page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$"))).to_be_visible(timeout=20000)
+    expect(page.locator("#product-name")).to_have_value("Foto browser proof")
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    page.unroute("**/products**", fail_storage)
+    with page.expect_response(lambda response: response.request.method == "POST" and bool(response.request.headers.get("next-action"))) as retried:
+        page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    result = action_result(retried.value.text())
+    assert result["ok"], "Photo retry rejected: " + str(result.get("code")) + " fields=" + str(result.get("fieldErrors", {}))
+    expect(page.get_by_role("heading", name=re.compile(r"Produk Berhasil Ditambahkan|Product Added Successfully"))).to_be_visible(timeout=30000)
+    item = product(sku)
+    assert item["photo"]["display"]["width"] == 512 and item["photo"]["display"]["height"] == 384
+    assert item["photo"]["thumb"]["width"] == 96 and item["photo"]["thumb"]["height"] == 72
+    assert history(item)["total"] == 0
+    page.get_by_role("button", name=re.compile(r"^(Selesai|Done)$")).click()
+    for width in (1440, 390):
+        page.set_viewport_size({"width": width, "height": 1000})
+        found = row(page, item)
+        expect(found.locator('img[src*="/thumb/"]')).to_be_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), "Photo page overflow"
+        page.screenshot(path=str(Path(sys.argv[2]).parent / f"photos-products-{width}.png"), full_page=True)
+    row_action(page, item, re.compile(r"^(Details|Detail)$"))
+    expect(page.get_by_role("dialog").locator('img[src*="/display/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    page.goto(BASE + "/inventory?search=" + sku)
+    inventory_row = page.get_by_role("row").filter(has=page.get_by_role("cell", name=sku, exact=False))
+    expect(inventory_row.locator('img[src*="/thumb/"]')).to_be_visible()
+    inventory_row.get_by_role("cell", name=sku, exact=False).click()
+    expect(page.get_by_role("dialog").locator('img[src*="/display/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    page.get_by_role("button", name=re.compile(r"^(Record Stock Movement|Catat Pergerakan Stok)$")).click()
+    for kind in (r"^(Stock In|Stok Masuk) ", r"^(Stock Out|Stok Keluar) "):
+        page.get_by_role("dialog").get_by_role("button", name=re.compile(kind)).click()
+        page.locator("#itemSelect").click()
+        option = page.get_by_role("option").filter(has_text=sku)
+        expect(option.locator('img[src*="/thumb/"]')).to_be_visible()
+        option.click()
+        expect(page.locator('#itemSelect img[src*="/thumb/"]')).to_be_visible()
+    page.keyboard.press("Escape")
+    row_action(page, item, re.compile(r"^(Edit|Ubah)$"))
+    replacement = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#e75423';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
+    page.locator('input[type="file"]').set_input_files({"name": "replacement.png", "mimeType": "image/png", "buffer": base64.b64decode(replacement)})
+    expect(page.locator('img[src^="blob:"]')).to_be_visible()
+    # Fail the actual provider's thumbnail write after display upload succeeds.
+    # SQL helper pins this run-owned local fixture; never touch retained or Cloud Storage.
+    audit_before = sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid")
+    sql("""CREATE FUNCTION stockos_private.proof_photo_outage() RETURNS trigger
+      LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic thumbnail upload outage'; END $$;
+      CREATE TRIGGER proof_photo_outage BEFORE INSERT OR UPDATE ON storage.objects
+      FOR EACH ROW WHEN (NEW.bucket_id = 'product-photos' AND NEW.name LIKE 'products/thumb/%')
+      EXECUTE FUNCTION stockos_private.proof_photo_outage();""")
+    def photo_mutation(response):
+        request = response.request
+        return request.method == "POST" and bool(request.headers.get("next-action")) and bool(re.search(rb'"requestId"\s*:\s*"[0-9a-f-]{36}"', request.post_data_buffer or b""))
+    try:
+        with page.expect_response(photo_mutation) as failed_upload:
+            page.get_by_role("dialog").locator('button[type="submit"]').click()
+        failure = action_result(failed_upload.value.text())
+        assert not failure["ok"] and failure.get("code") == "INTERNAL_ERROR", "Expected Storage outage rejection: " + str({key: failure.get(key) for key in ("ok", "code", "fieldErrors")})
+        expect(page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$"))).to_be_visible()
+        expect(page.locator('img[src^="blob:"]')).to_be_visible()
+        expect(page.locator("#edit-name")).to_have_value(item["name"])
+        unchanged = product(sku)
+        assert unchanged["photo"] == item["photo"] and unchanged["metadataVersion"] == item["metadataVersion"]
+        assert sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid") == audit_before
+        assert sql("select count(*) from storage.objects where bucket_id='product-photos' and name like 'products/display/%'") == "2", "Display uploaded before thumbnail outage"
+        assert sql("select count(*) from storage.objects where bucket_id='product-photos' and name like 'products/thumb/%'") == "1", "Thumbnail upload must fail"
+    finally:
+        sql("DROP TRIGGER proof_photo_outage ON storage.objects; DROP FUNCTION stockos_private.proof_photo_outage();")
+    with page.expect_response(photo_mutation) as storage_retry:
+        page.get_by_role("button", name=re.compile(r"^(Retry same request|Ulangi permintaan sama)$")).click()
+    failed_ids = re.findall(rb'"requestId"\s*:\s*"([0-9a-f-]{36})"', failed_upload.value.request.post_data_buffer)
+    retry_ids = re.findall(rb'"requestId"\s*:\s*"([0-9a-f-]{36})"', storage_retry.value.request.post_data_buffer)
+    assert failed_ids and failed_ids == retry_ids, "Provider retry must preserve durable request ID"
+    assert action_result(storage_retry.value.text())["ok"], "Provider retry must succeed"
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    replaced = product(sku)
+    assert replaced["photo"]["display"]["hash"] != item["photo"]["display"]["hash"]
+    assert history(replaced)["total"] == 0
+    assert sql("select count(*) from stockos_private.administrative_events where product_id=" + quote(item["id"]) + "::uuid and kind='photo_replaced'") == "1"
+    row_action(page, replaced, re.compile(r"^(Edit|Ubah)$"))
+    page.get_by_role("button", name=re.compile(r"^(Remove photo|Hapus foto)$")).click()
+    page.get_by_role("dialog").locator('button[type="submit"]').click()
+    expect(page.get_by_role("dialog")).not_to_be_visible(timeout=20000)
+    assert product(sku)["photo"] is None and history(item)["total"] == 0
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    print("PASS: photo processing, invalid/oversized input, failed upload draft/retry, thumbnails/detail/mobile/remove")
+
+
 def run():
     provision()
     with sync_playwright() as playwright:
@@ -549,6 +849,13 @@ def run():
             lifecycle(page, context, browser)
             browser.close()
             return
+        if "--photos" in sys.argv:
+            photo_flow(page, context)
+            assert not errors, "Photo browser page errors"
+            browser.close()
+            return
+        barcode_draft(page)
+        barcode_camera(page)
         item, request = add(page, "VERTICAL", 10, 30000)
         assert item["currentStock"] == 10 and item["inventoryCostValue"] == "30000.000000"
         page.reload()

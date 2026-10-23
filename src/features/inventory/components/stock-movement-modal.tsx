@@ -21,16 +21,17 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { inventoryStockInAction, inventoryStockOutAction } from "../actions";
 import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
-import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
 import type { InventoryItem } from "../types";
+import { ProductPhoto } from "@/features/products/components/product-photo";
+import { StockProductPicker } from "./stock-product-picker";
+import { mapProductToInventoryItem } from "../adapters";
 
 export interface StockMovementModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetItem: InventoryItem | null;
   defaultType: "in" | "out" | null;
-  allItems: InventoryItem[];
-  rawProducts?: ProductDto[];
+  allItems?: InventoryItem[];
   onCommitted?: OnProductCommitted;
 }
 
@@ -54,9 +55,7 @@ function StockMovementForm({
   const { t } = useI18n();
   const c = t.products.persistent;
 
-  const [selectedItemId, setSelectedItemId] = React.useState<string>(
-    initialItem ? initialItem.id : allItems[0]?.id || ""
-  );
+  const [selectedItem, setSelectedItem] = React.useState<InventoryItem | null>(initialItem ?? allItems[0] ?? null);
   const [type, setType] = React.useState<"in" | "out">(initialType || "in");
   const isIn = type === "in";
 
@@ -68,7 +67,7 @@ function StockMovementForm({
   const [reference, setReference] = React.useState<string>("");
   const [note, setNote] = React.useState<string>("");
 
-  const activeItem = allItems.find((i) => i.id === selectedItemId) || initialItem;
+  const activeItem = selectedItem;
 
   const computedQty = isIn && cartons ? Number(cartonCount) * Number(unitsPerCarton) : Number(quantity);
 
@@ -190,7 +189,8 @@ function StockMovementForm({
           </Label>
           {initialItem ? (
             <div className="p-3 border-[3px] border-ink bg-paper text-xs flex items-center justify-between">
-              <div className="flex flex-col gap-1 min-w-0 pr-2">
+              <ProductPhoto photo={initialItem.photo} name={initialItem.name} className="mr-2" />
+              <div className="flex flex-1 flex-col gap-1 min-w-0 pr-2">
                 <SkuBadge code={initialItem.sku} />
                 <span className="font-sans font-bold text-ink truncate">{initialItem.name}</span>
                 <span className="font-mono text-[10px] text-ink/60">
@@ -203,19 +203,8 @@ function StockMovementForm({
               </span>
             </div>
           ) : (
-            <select
-              id="itemSelect"
-              value={selectedItemId}
-              disabled={submission.blocked}
-              onChange={(e) => setSelectedItemId(e.target.value)}
-              className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
-            >
-              {allItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.sku} - {item.name} ({item.currentStock} {item.unit})
-                </option>
-              ))}
-            </select>
+            <StockProductPicker value={activeItem} disabled={submission.blocked}
+              onSelect={product => setSelectedItem(mapProductToInventoryItem(product))} />
           )}
         </div>
 
@@ -390,7 +379,7 @@ export function StockMovementModal({
   onOpenChange,
   targetItem,
   defaultType,
-  allItems,
+  allItems = [],
   onCommitted,
 }: StockMovementModalProps) {
   const [blocked, setBlocked] = React.useState(false);

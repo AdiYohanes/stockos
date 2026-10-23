@@ -1,0 +1,34 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_ANON_KEY: ci-synthetic-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: ci-synthetic-service-role-key
+      STOCKOS_APP_URL: http://localhost:3000
+      STOCKOS_SETUP_SECRET: ci-synthetic-setup-secret-not-for-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: npm ci
+      - run: npm run check
+      - run: npm run typecheck
+      - run: npm run lint -- --max-warnings 0
+      - run: npm run build

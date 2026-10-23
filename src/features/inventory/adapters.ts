@@ -20,6 +20,7 @@ export function mapProductToInventoryItem(product: ProductDto): InventoryItem {
     status: product.stockStatus,
     lastMovementAt: product.updatedAt,
     stockVersion: product.stockVersion,
+    photo: product.photo,
   };
 }
 

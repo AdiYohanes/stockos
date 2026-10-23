@@ -12,22 +12,17 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { ProductAddModal, type ProductCreationDefaults } from "@/features/products/components/product-add-modal";
 import { StockMovementModal } from "@/features/inventory/components/stock-movement-modal";
-import { mapProductToInventoryItem } from "@/features/inventory/adapters";
-import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
 
 interface DashboardHeaderProps {
   userName?: string;
-  rawProducts?: ProductDto[];
   creationDefaults: ProductCreationDefaults | null;
 }
 
-export function DashboardHeader({ userName, rawProducts = [], creationDefaults }: DashboardHeaderProps) {
+export function DashboardHeader({ userName, creationDefaults }: DashboardHeaderProps) {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [movementOpen, setMovementOpen] = React.useState(false);
   const { t } = useI18n();
-
-  const allItems = React.useMemo(() => rawProducts.map(mapProductToInventoryItem), [rawProducts]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -97,8 +92,6 @@ export function DashboardHeader({ userName, rawProducts = [], creationDefaults }
           onOpenChange={setMovementOpen}
           targetItem={null}
           defaultType={null}
-          allItems={allItems}
-          rawProducts={rawProducts}
           onCommitted={async () => {
             router.refresh();
           }}

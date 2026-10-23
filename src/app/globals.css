@@ -319,6 +319,35 @@
   color: var(--muted-foreground);
 }
 
+/* Warehouse loading scene */
+.stock-loader-surface { fill: var(--card); }
+.stock-loader-parcel { fill: var(--primary); stroke: var(--color-ink); }
+.stock-loader-tape { fill: var(--color-paper); stroke: var(--color-ink); }
+
+.stock-loader-box {
+  color: var(--color-ink);
+  transform: translateX(16px);
+  animation: stock-loader-conveyor 4.8s linear infinite;
+  animation-delay: -0.8s;
+}
+.stock-loader-box:nth-of-type(3) {
+  transform: translateX(136px);
+  animation-delay: -2.4s;
+}
+.stock-loader-box:nth-of-type(4) {
+  transform: translateX(256px);
+  animation-delay: -4s;
+}
+
+@keyframes stock-loader-conveyor {
+  from { transform: translateX(-44px); }
+  to { transform: translateX(316px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stock-loader-box { animation: none; }
+}
+
 /* Checkmarks (keep for UI) */
 @keyframes checkmark-draw-circle { 0% { stroke-dashoffset: 160; } 100% { stroke-dashoffset: 0; } }
 @keyframes checkmark-draw-check { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }

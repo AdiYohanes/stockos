@@ -12,6 +12,14 @@ _Avoid_: Warehouse, tenant, company group
 The sole account holder who registers and operates the single warung in StockOS. Staff accounts and registration for multiple independent shops are outside the agreed initial scope.
 _Avoid_: Customer, supplier
 
+**SKU**:
+The warung's required unique product code, retained across product archives. It identifies the product independently of its packaging barcode.
+_Avoid_: Barcode, product name
+
+**Barcode**:
+An optional code on product packaging recorded against a product, separate from its SKU. Several products may share the same barcode; scanning it fills a product draft, not a stock movement or automatic product match.
+_Avoid_: SKU, unique product identity, restock command
+
 **Satuan stok (Stock unit)**:
 The product's unit for counting whole quantities of goods, such as pcs, bottles, or packs. Fractional quantities for weighed goods are outside the agreed initial scope.
 _Avoid_: Weight, fractional stock
@@ -67,3 +75,7 @@ _Avoid_: Purchase order, sales revenue
 **Stok keluar (Stock out)**:
 Sold goods manually recorded to reduce stock when no POS integration exists. It records sold quantity, not payment, a sales invoice, or realized revenue.
 _Avoid_: Damage/loss transaction, POS sale, payment record
+
+**Foto produk (Product photo)**:
+One optional image per product, compressed at upload into fixed-size variants and identified by content hash. Several products may reference one stored image without copying it. Replacing a photo is an auditable product change, not a stock movement; a product may remain without a photo.
+_Avoid_: Product gallery, multiple photos per product, visual matching, image URL from outside

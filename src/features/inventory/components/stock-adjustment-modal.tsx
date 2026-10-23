@@ -26,33 +26,31 @@ import type { InventoryItem, StockMovement } from "../types";
 import { getProductAction } from "@/features/products/actions";
 import { formatProductMoney } from "@/features/products/format";
 import { mapProductToInventoryItem } from "../adapters";
+import { StockProductPicker } from "./stock-product-picker";
 
 export interface StockAdjustmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetItem: InventoryItem | null;
   allItems: InventoryItem[];
-  rawProducts?: ProductDto[];
   correction?: StockMovement | null;
   onCommitted?: OnProductCommitted;
 }
 
 interface FormInnerProps {
+  selectedProduct: ProductDto | InventoryItem | null;
   initialItem: InventoryItem | null;
-  allItems: InventoryItem[];
-  rawProducts: ProductDto[];
   correction?: StockMovement | null;
   selectedId: string;
-  onSelect: (id: string) => void;
+  onSelect: (product: ProductDto) => void;
   onClose: () => void;
   onBlocked: (blocked: boolean) => void;
   onCommitted?: OnProductCommitted;
 }
 
 function StockAdjustmentForm({
+  selectedProduct,
   initialItem,
-  allItems,
-  rawProducts,
   selectedId,
   onSelect,
   onClose,
@@ -64,9 +62,7 @@ function StockAdjustmentForm({
   const c = t.products.persistent;
   const q = t.inventory.quantityCorrection;
 
-  const [snapshot, setSnapshot] = React.useState<ProductDto | InventoryItem | null>(() =>
-    rawProducts.find((p) => p.id === selectedId) ?? allItems.find((i) => i.id === selectedId) ?? initialItem
-  );
+  const [snapshot, setSnapshot] = React.useState<ProductDto | InventoryItem | null>(() => selectedProduct ?? initialItem);
   const activeItem = snapshot && ("archivedAt" in snapshot ? mapProductToInventoryItem(snapshot) : snapshot);
   const archived = snapshot && "archivedAt" in snapshot ? !!snapshot.archivedAt : false;
 
@@ -200,19 +196,7 @@ function StockAdjustmentForm({
               </span>
             </div>
           ) : (
-            <select
-              id="itemSelect"
-              value={selectedId}
-              onChange={(e) => onSelect(e.target.value)}
-              disabled={submission.blocked}
-              className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
-            >
-              {allItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.sku} - {item.name} ({item.currentStock} {item.unit})
-                </option>
-              ))}
-            </select>
+            <StockProductPicker value={activeItem} disabled={submission.blocked} native onSelect={onSelect} />
           )}
         </div>
 
@@ -351,17 +335,16 @@ export function StockAdjustmentModal({
   onOpenChange,
   targetItem,
   allItems,
-  rawProducts = [],
   correction = null,
   onCommitted,
 }: StockAdjustmentModalProps) {
   const [blocked, setBlocked] = React.useState(false);
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = React.useState<ProductDto | null>(null);
   const { t } = useI18n();
-  const [product, setProduct] = React.useState<ProductDto | null>(null);
+  const [correctionProduct, setCorrectionProduct] = React.useState<ProductDto | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [attempt, setAttempt] = React.useState(0);
-  const itemId = correction?.itemId || targetItem?.id || selectedId || allItems[0]?.id || "";
+  const itemId = correction?.itemId || targetItem?.id || selectedProduct?.id || allItems[0]?.id || "";
   React.useEffect(() => {
     if (!open || !correction) return;
     let active = true;
@@ -369,7 +352,7 @@ export function StockAdjustmentModal({
       try {
         const result = await getProductAction({ id: itemId });
         if (!active) return;
-        if (result.ok && result.data.id === itemId) setProduct(result.data);
+        if (result.ok && result.data.id === itemId) setCorrectionProduct(result.data);
         else setError(!result.ok ? t.products.persistent.errors[result.code] || t.common.error : t.common.error);
       } catch { if (active) setError(t.common.error); }
     }
@@ -381,14 +364,13 @@ export function StockAdjustmentModal({
       <DialogPortal>
         <DialogBackdrop />
         <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
-          {!correction || product ? <StockAdjustmentForm
+          {!correction || correctionProduct ? <StockAdjustmentForm
             key={`${itemId}:${correction?.id || "opname"}`}
-            initialItem={correction && product ? mapProductToInventoryItem(product) : targetItem}
-            allItems={allItems}
-            rawProducts={correction && product ? [product] : rawProducts}
+            selectedProduct={correction && correctionProduct ? correctionProduct : targetItem ?? selectedProduct ?? allItems[0] ?? null}
+            initialItem={correction && correctionProduct ? mapProductToInventoryItem(correctionProduct) : targetItem}
             correction={correction}
             selectedId={itemId}
-            onSelect={setSelectedId}
+            onSelect={setSelectedProduct}
             onClose={() => onOpenChange(false)}
             onBlocked={setBlocked}
             onCommitted={onCommitted}

@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { getProductHistoryAction } from "../actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { formatProductMoney } from "../format";
+import { ProductPhoto } from "./product-photo";
 
 type HistoryData = Extract<Awaited<ReturnType<typeof getProductHistoryAction>>, { ok: true }>["data"];
 interface ProductDetailSheetProps {
@@ -60,7 +61,7 @@ export function ProductDetailSheet({ product, open, onOpenChange, onEdit, onMove
     <SheetClose render={<Button variant="outline" size="icon-sm" className="absolute right-3 top-3" />}><X className="h-4 w-4" /><span className="sr-only">{t.common.close}</span></SheetClose>
     <div className="flex border-b-[3px] border-ink px-4 py-2 gap-2"><Button variant={tab === "specs" ? "default" : "outline"} size="sm" aria-pressed={tab === "specs"} onClick={() => setTab("specs")}><Info className="h-4 w-4" />{t.products.sheet.specsAndStock}</Button><Button variant={tab === "history" ? "default" : "outline"} size="sm" aria-pressed={tab === "history"} onClick={() => setTab("history")}><History className="h-4 w-4" />{c.history}</Button></div>
     <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
-      {tab === "specs" ? <><div className="border-[3px] border-ink bg-paper p-4 space-y-2"><p className="text-xs uppercase font-bold">{t.products.sheet.inventoryLevel}</p><p className="text-3xl font-mono font-bold">{product.currentStock} <span className="text-sm">{product.unit}</span></p><p className="font-mono text-xs">{t.products.sheet.minThreshold}: {product.minStock} {product.unit}</p></div>
+      {tab === "specs" ? <><ProductPhoto photo={product.photo} name={product.name} display /><div className="border-[3px] border-ink bg-paper p-4 space-y-2"><p className="text-xs uppercase font-bold">{t.products.sheet.inventoryLevel}</p><p className="text-3xl font-mono font-bold">{product.currentStock} <span className="text-sm">{product.unit}</span></p><p className="font-mono text-xs">{t.products.sheet.minThreshold}: {product.minStock} {product.unit}</p></div>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">{values.map(([label, value]) => <div key={label} className="border-[3px] border-ink p-3"><dt className="text-xs font-bold">{label}</dt><dd className="font-mono font-bold break-words mt-1">{money(value)}</dd></div>)}</dl>
         <dl className="border-[3px] border-ink p-4 space-y-3">{[[t.products.form.supplierLabel, product.supplier], [c.shelfLocation, product.shelfLocation], [t.products.sheet.barcodeUpc, product.barcode], [t.products.form.descLabel, product.description], [t.products.sheet.registeredDate, product.createdAt], [c.metadataVersion, product.metadataVersion], [c.stockVersion, product.stockVersion]].map(([label, value]) => <div key={label}><dt className="text-xs text-ink/70">{label}</dt><dd className="text-sm break-words font-mono">{value || "—"}</dd></div>)}</dl></> : <section aria-busy={loading} className="space-y-3">
           {loading && <p role="status">{c.pending}</p>}

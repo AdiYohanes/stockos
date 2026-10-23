@@ -2,6 +2,8 @@
 
 ## Architecture Status
 
+Product photos local implementation requested 2026-10-21 via `/implement` issue #8. Browser canvas produces bounded WebP display/thumbnail variants; private Supabase Storage holds content-addressed bytes, products hold nullable hash/size/dimension references only. Existing Create/Update Server Actions upload before owner-checked metadata RPCs; one owner-guarded route serves cached images. New forward migration and fresh run-owned local proof only; no Cloud Storage enablement or deployment. See ADR 0001; unfinished work/proof is tracked in `PROGRESS.md`.
+
 Separate opening-stock exception approved 2026-10-17: one operator CLI may import the approved 48-row source into existing Cloud project `ohltpkxtucchqezkgfok` through a verified normal owner session and existing RPCs. A private external manifest freezes payloads/request IDs before writes. No new runtime layer, API, migration, dependency or privileged business-write client; localhost seeders/proofs stay localhost-only. This exception does not authorize production launch or further real-shop use.
 
 Private-test exception approved 2026-10-17: existing Supabase Cloud project `ohltpkxtucchqezkgfok` may host the existing PostgreSQL/Auth boundary while Next.js remains local. Reuse the session/admin clients, owner-checked RPCs, existing forward migrations and auth templates; no new application layer or provider. Hosted compatibility and email behavior need separate verification. No Vercel deployment, paid changes, real-shop use/import or production-readiness claim. Historical local-only scope below describes earlier slices.

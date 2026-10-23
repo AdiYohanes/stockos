@@ -23,6 +23,8 @@ const createdRequests = new Set();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const sqlString = (value) => `'${value.replaceAll("'", "''")}'`;
 
+let ownerSession;
+let secondOwnerSession;
 let prepared = false;
 let failure;
 
@@ -219,6 +221,10 @@ async function setupOwnerSession() {
   success(await request("/auth/v1/user", { method: "PUT", token: invitation.access_token, body: { password } }), "Initial password");
   success(await request("/auth/v1/logout?scope=local", { token: invitation.access_token }), "Logout invitation session");
   const login = success(await request("/auth/v1/token?grant_type=password", { body: { email: ownerEmail, password } }), "Fresh owner password login");
+  ownerSession = login;
+  if (process.argv.includes("--photos")) {
+    secondOwnerSession = success(await request("/auth/v1/token?grant_type=password", { body: { email: ownerEmail, password } }), "Second owner password session");
+  }
   return login.access_token;
 }
 
@@ -707,6 +713,14 @@ try {
     UPDATE stockos_private.inventory_events SET recorded_at = '2026-10-09T17:00:00Z' WHERE request_id = ${sqlString(failureInput.requestId)}::uuid;`);
   const dated = success(await call("list_inventory_events", { productId: product.id, startDate: "2026-10-09", endDate: "2026-10-10" }), "Shop timezone boundaries").data;
   assert.deepEqual(dated.items.map((e) => e.id), [createResult.data.eventId]);
+
+  if (process.argv.includes("--photos")) {
+    const { checkProductPhotos } = await import("./check-product-photos.mjs");
+    await checkProductPhotos({ status, accessToken, ownerSession, secondOwnerSession, call, callSecond: async (name, input) => {
+      if (input?.requestId) createdRequests.add(input.requestId);
+      return rpc(`stockos_${name}`, { p_input: input }, secondOwnerSession.access_token, status.ANON_KEY);
+    }, success, failureResult, sql });
+  }
 
   const sessionId = JSON.parse(Buffer.from(accessToken.split(".")[1], "base64url").toString()).session_id;
   assert.match(sessionId, uuid);

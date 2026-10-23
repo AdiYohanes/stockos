@@ -41,6 +41,8 @@ Initial product scope should prioritize simple operational workflows rather than
 
 ## 4. MVP Scope
 
+Product photos local implementation requested 2026-10-21 via `/implement` issue #8: one optional photo per product, browser-processed display/thumbnail WebP variants, exact-content dedup, private owner-only delivery and auditable metadata changes. Products, Inventory and stock pickers show photos; Dashboard/Reports and the approved opening-stock batch remain unchanged. Oversized/unsupported files are rejected before upload; upload failure preserves the draft. Cloud Storage enablement and deployment remain separately gated. See issue #8 and ADR 0001 for acceptance/design details.
+
 ### Authentication
 
 Frontend flows:
