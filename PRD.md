@@ -91,6 +91,7 @@ Users should eventually be able to:
 - Add products
 - Edit products
 - Archive or deactivate products
+- Permanently delete an active or archived product only when current stock is zero and no inventory event exists
 
 Basic product information may include:
 
@@ -102,7 +103,7 @@ Basic product information may include:
 - Minimum stock threshold
 - Status
 
-Confirmed product fields and constraints are specified in `docs/DATABASE.md`. SKU is trimmed/uppercase/unique across archives; SKU/base unit lock after inventory history exists. Names/category/supplier use text suggestions rather than fixed technical enums; supplier and shelf are optional. Archive requires zero stock and preserves identity/history; reactivation reuses the SKU. No permanent product/history deletion through the app. Existing-product restock selects ID/SKU, never merges by name alone.
+Confirmed product fields and constraints are specified in `docs/DATABASE.md`. SKU is trimmed/uppercase/unique across archives; SKU/base unit lock after inventory history exists. Names/category/supplier use text suggestions rather than fixed technical enums; supplier and shelf are optional. Archive requires zero stock and preserves identity/history; reactivation reuses the SKU. Permanent deletion approved 2026-10-23 is limited to active or archived products with current stock zero and no inventory events of any kind, including unchanged opname or cost adjustment. Products with any stock history are never deleted. Administrative evidence and durable retry results survive eligible deletion, with original product ID/snapshot retained after detaching administrative foreign keys. Only eligible deletion releases the SKU for a new product. Existing-product restock selects ID/SKU, never merges by name alone.
 
 ---
 

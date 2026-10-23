@@ -12,6 +12,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false --pretty false",
     "check:domain": "node scripts/check-domain-stores.cjs",
+    "check:deletion": "node --experimental-strip-types scripts/check-product-deletion.mjs",
     "check:dashboard": "node scripts/check-dashboard-metrics.cjs",
     "check:catalog": "node scripts/check-warung-catalog.mjs",
     "check:smtp": "node scripts/check-smtp-readiness.mjs --self-test",
@@ -20,7 +21,7 @@
     "check:settings": "node scripts/check-settings-state.mjs",
     "check:seeder": "node scripts/check-seeder-safety.mjs",
     "check:operations": "node scripts/check-operations.mjs --self-test",
-    "check": "npm run check:barcode && npm run check:domain && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations"
+    "check": "npm run check:barcode && npm run check:domain && npm run check:deletion && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

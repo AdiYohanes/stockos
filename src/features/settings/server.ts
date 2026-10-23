@@ -25,6 +25,7 @@ const settingsMessages: Record<ProductErrorCode, string> = {
   SKU_EXISTS: "SKU sudah digunakan.",
   PRODUCT_ARCHIVED: "Produk diarsipkan.",
   PRODUCT_HAS_STOCK: "Produk masih memiliki stok.",
+  PRODUCT_HAS_HISTORY: "Produk memiliki riwayat stok dan tidak bisa dihapus permanen.",
   IDENTITY_LOCKED: "Identitas terkunci.",
   INSUFFICIENT_STOCK: "Stok tidak mencukupi.",
   VERSION_CONFLICT: "Pengaturan telah diperbarui oleh sesi lain. Muat ulang dan periksa data terbaru sebelum menyimpan.",

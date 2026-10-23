@@ -19,7 +19,8 @@ const messages: Record<ProductErrorCode, string> = {
   FORBIDDEN: "This account or session cannot access products.",
   NOT_FOUND: "Product not found.", SKU_EXISTS: "This SKU is already in use, including archived products.",
   PRODUCT_ARCHIVED: "Reactivate this product before editing or recording stock.",
-  PRODUCT_HAS_STOCK: "Only products with zero stock can be archived.",
+  PRODUCT_HAS_STOCK: "Only products with zero stock can be archived or deleted.",
+  PRODUCT_HAS_HISTORY: "Products with stock history cannot be permanently deleted. Archive instead.",
   IDENTITY_LOCKED: "SKU and unit cannot change after stock history exists.",
   INSUFFICIENT_STOCK: "Sold quantity exceeds available stock.",
   VERSION_CONFLICT: "Product changed. Review current data before submitting again.",
@@ -96,7 +97,7 @@ export async function productRead<Input, Output>(rpc: string, schema: z.ZodType<
 }
 
 // The signed client was independently authorized by the invoking action before input validation.
-export async function productMutation<Input>(client: SessionClient, rpc: "stockos_create_product" | "stockos_update_product" | "stockos_archive_product" | "stockos_reactivate_product" | "stockos_record_stock_in" | "stockos_record_stock_out" | "stockos_record_opname" | "stockos_adjust_inventory_cost", schema: z.ZodType<Input>, input: unknown): Promise<ProductMutationResult> {
+export async function productMutation<Input>(client: SessionClient, rpc: "stockos_create_product" | "stockos_update_product" | "stockos_archive_product" | "stockos_delete_product" | "stockos_reactivate_product" | "stockos_record_stock_in" | "stockos_record_stock_out" | "stockos_record_opname" | "stockos_adjust_inventory_cost", schema: z.ZodType<Input>, input: unknown): Promise<ProductMutationResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
   try {

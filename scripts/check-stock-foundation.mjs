@@ -214,7 +214,7 @@ async function setupOwnerSession() {
   const invitation = success(await request("/auth/v1/verify", { body: { token_hash: hash, type: "invite" } }), "Verify invitation");
   captureUser(invitation);
   failureResult(await rpc("stockos_get_product", { p_input: { id: randomUUID() } }, invitation.access_token, status.ANON_KEY), "Invitation business access", "FORBIDDEN");
-  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions", "stockos_delete_product"]) {
     failureResult(await rpc(name, { p_input: { injected: true } }, invitation.access_token, status.ANON_KEY), "OTP catalog access before validation", "FORBIDDEN");
   }
   const password = `StockOS-test-${randomUUID()}!`;
@@ -647,6 +647,47 @@ try {
   assert.equal(archiveRace.filter((r) => r.data?.ok === true).length, 1);
   assert.ok(["PRODUCT_ARCHIVED", "VERSION_CONFLICT"].includes(archiveRace.find((r) => r.data?.ok === false)?.data.code));
 
+  // Permanent deletion: exercise the public owner RPC; never delete stock evidence.
+  const unusedInput = { sku: "TEST-DELETE-UNUSED", name: "Unused product", category: "Cat", unit: "Pcs", sellingPrice: "0", minStock: 0 };
+  for (const archived of [false, true]) {
+    const creation = { ...unusedInput, requestId: randomUUID() };
+    let unused = success(await call("create_product", creation), "Create unused product").data.product;
+    if (archived) unused = success(await call("archive_product", {
+      requestId: randomUUID(), productId: unused.id, expectedMetadataVersion: unused.metadataVersion, expectedStockVersion: unused.stockVersion,
+    }), "Archive unused product").data.product;
+    const deletion = { requestId: randomUUID(), productId: unused.id, expectedMetadataVersion: unused.metadataVersion, expectedStockVersion: unused.stockVersion };
+    failureResult(await call("delete_product", { ...deletion, expectedMetadataVersion: "0" }), "Reject stale deletion", "VERSION_CONFLICT");
+    const deleted = success(await call("delete_product", deletion), "Delete unused product");
+    assert.equal(deleted.data.product.id, unused.id);
+    failureResult(await call("get_product", { id: unused.id }), "Deleted product absent", "NOT_FOUND");
+    const replay = success(await call("delete_product", deletion), "Replay deleted product request");
+    assert.equal(replay.replayed, true);
+    assert.deepEqual(replay.data, deleted.data);
+    const creationReplay = success(await call("create_product", creation), "Creation replay after deletion");
+    assert.equal(creationReplay.replayed, true);
+    assert.equal(creationReplay.data.product.id, unused.id);
+    failureResult(await call("get_product", { id: unused.id }), "Creation replay does not resurrect product", "NOT_FOUND");
+    assert.equal(sql(`SELECT count(*) FROM stockos_private.administrative_events WHERE changes -> 'deletedProduct' ->> 'id' = ${sqlString(unused.id)} AND product_id IS NULL`), archived ? "3" : "2", "Administrative evidence retained");
+    failureResult(await call("delete_product", { ...deletion, expectedStockVersion: "1" }), "Reject changed replay", "REQUEST_ID_CONFLICT");
+  }
+  // Same SKU was reused in the archived iteration; old replay must never remove a replacement.
+  const replacement = success(await call("create_product", { ...unusedInput, requestId: randomUUID() }), "Reuse deleted SKU").data.product;
+  let counted = success(await call("record_opname", { requestId: randomUUID(), productId: replacement.id, expectedStockVersion: "0", countedQuantity: 0 }), "Unchanged zero count").data.product;
+  failureResult(await call("delete_product", { requestId: randomUUID(), productId: counted.id, expectedMetadataVersion: counted.metadataVersion, expectedStockVersion: counted.stockVersion }), "Count history blocks deletion", "PRODUCT_HAS_HISTORY");
+  counted = success(await call("archive_product", { requestId: randomUUID(), productId: counted.id, expectedMetadataVersion: counted.metadataVersion, expectedStockVersion: counted.stockVersion }), "Archive counted product").data.product;
+  failureResult(await call("delete_product", { requestId: randomUUID(), productId: counted.id, expectedMetadataVersion: counted.metadataVersion, expectedStockVersion: counted.stockVersion }), "Archived count history blocks deletion", "PRODUCT_HAS_HISTORY");
+  let received = success(await call("create_product", { ...unusedInput, sku: "TEST-DELETE-RECEIVED", requestId: randomUUID(), openingQuantity: 1, purchaseTotal: "1" }), "Create stocked product").data.product;
+  failureResult(await call("delete_product", { requestId: randomUUID(), productId: received.id, expectedMetadataVersion: received.metadataVersion, expectedStockVersion: received.stockVersion }), "Stock blocks deletion", "PRODUCT_HAS_STOCK");
+  received = success(await call("record_stock_out", { requestId: randomUUID(), productId: received.id, quantity: 1 }), "Sell final unit").data.product;
+  failureResult(await call("delete_product", { requestId: randomUUID(), productId: received.id, expectedMetadataVersion: received.metadataVersion, expectedStockVersion: received.stockVersion }), "Sold-to-zero history blocks deletion", "PRODUCT_HAS_HISTORY");
+  const raceProduct = success(await call("create_product", { ...unusedInput, sku: "TEST-DELETE-RACE", requestId: randomUUID() }), "Create deletion race product").data.product;
+  const deletionRace = await Promise.all([
+    call("delete_product", { requestId: randomUUID(), productId: raceProduct.id, expectedMetadataVersion: raceProduct.metadataVersion, expectedStockVersion: raceProduct.stockVersion }),
+    call("record_stock_in", { requestId: randomUUID(), productId: raceProduct.id, quantity: 1, purchaseTotal: "1" }),
+  ]);
+  assert.equal(deletionRace.filter((result) => result.data?.ok === true).length, 1, "Delete and receipt cannot both commit");
+  assert.ok(["VERSION_CONFLICT", "NOT_FOUND"].includes(deletionRace.find((result) => result.data?.ok === false)?.data.code));
+
   // Inject an evidence-write failure, then prove balance/history/retry roll back together.
   const beforeFailure = success(await call("get_product", { id: product.id }), "Before failure").data;
   const beforeHistory = success(await call("list_inventory_events", { productId: product.id }), "Before failure history").data;
@@ -680,7 +721,7 @@ try {
     LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) acl
     WHERE n.nspname = 'public' AND p.proname IN ('stockos_product_metrics','stockos_text_suggestions')
       AND acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'`), "0");
-  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions", "stockos_delete_product"]) {
     const denied = await rpc(name, { p_input: { injected: true } }, undefined, status.ANON_KEY);
     assert.equal(denied.status, 401, "Anonymous catalog grant denied");
     assert.equal(denied.data?.code, "42501", "Anonymous denied by function grant");
@@ -692,7 +733,7 @@ try {
   }), "Create unbound fixture user"));
   const outsiderLogin = success(await request("/auth/v1/token?grant_type=password", { body: { email: outsider.email, password: "StockOS-outsider-test!" } }), "Unbound password login");
   failureResult(await rpc("stockos_get_product", { p_input: { id: randomUUID() } }, outsiderLogin.access_token, status.ANON_KEY), "Unbound existence protection", "FORBIDDEN");
-  for (const name of ["stockos_product_metrics", "stockos_text_suggestions"]) {
+  for (const name of ["stockos_product_metrics", "stockos_text_suggestions", "stockos_delete_product"]) {
     failureResult(await rpc(name, { p_input: { injected: true } }, outsiderLogin.access_token, status.ANON_KEY), "Unbound catalog authorization before validation", "FORBIDDEN");
   }
 

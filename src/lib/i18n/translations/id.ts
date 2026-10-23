@@ -110,16 +110,18 @@ export const idTranslations: Translations = {
   products: {
     photo: {
       label: "Foto produk (opsional)", help: "JPEG, PNG, atau WebP, maksimal 10 MiB / 40 megapiksel. Hanya salinan WebP terkompresi yang diunggah.",
-      remove: "Hapus foto", processing: "Menyiapkan foto…",
+      takePhoto: "Ambil foto", remove: "Hapus foto", processing: "Menyiapkan foto…",
       unsupported: "Pilih foto JPEG, PNG, atau WebP yang didukung peramban ini.",
       tooLarge: "Foto melebihi 10 MiB, 40 megapiksel, atau batas ukuran kompresi. Pilih foto lebih kecil.",
       invalid: "Foto tidak bisa dibaca. Pilih berkas lain.",
+      insecure: "Pemrosesan foto memerlukan HTTPS tepercaya. Buka aplikasi melalui HTTPS, bukan HTTP alamat IP lokal.",
     },
     scanner: {
       scan: "Pindai barcode", title: "Pindai barcode", description: "Kamera hanya membaca barcode di perangkat ini. Tidak menyimpan gambar atau produk. Input manual tetap tersedia.",
       starting: "Menyiapkan kamera…", aim: "Arahkan kamera ke barcode. EAN-13, EAN-8, UPC-A, UPC-E, atau Code 128; bukan QR.", result: "Barcode terbaca — tinjau sebelum dipakai",
       use: "Pakai barcode", rescan: "Scan ulang", retry: "Coba lagi", cancel: "Batal", stopped: "Kamera dihentikan. Mulai lagi jika ingin memindai.",
-      insecure: "Kamera memerlukan HTTPS tepercaya. Tutup dan isi barcode manual.", unsupported: "Browser ini tidak menyediakan akses kamera. Isi barcode manual.",
+      insecure: "Kamera langsung memerlukan HTTPS tepercaya. Gunakan foto barcode atau isi manual.", unsupported: "Browser ini tidak menyediakan kamera langsung. Gunakan foto barcode atau isi manual.",
+      fromPhoto: "Ambil foto barcode", readingPhoto: "Membaca foto barcode…", notDetected: "Barcode tidak ditemukan. Ambil foto lebih dekat dan tajam atau isi manual.", invalidPhoto: "Foto tidak dapat dibaca. Gunakan JPEG, PNG, atau WebP, maksimal 10 MiB / 40 megapiksel.",
       denied: "Izin kamera ditolak. Periksa izin browser atau isi manual.", notFound: "Kamera tidak ditemukan. Isi barcode manual.", busy: "Kamera sedang digunakan atau tidak dapat dibuka. Tutup aplikasi kamera lain lalu coba lagi.",
       loadFailed: "Pembaca barcode gagal dimuat. Coba lagi atau isi manual.", cameraFailed: "Kamera gagal membaca gambar. Coba lagi atau isi manual.", invalid: "Hasil barcode tidak valid atau lebih dari 64 karakter. Scan ulang atau isi manual.",
     },
@@ -128,6 +130,7 @@ export const idTranslations: Translations = {
       openingQuantity: "Jumlah stok awal", purchaseTotal: "Total biaya beli (rupiah bulat)", cartonMode: "Terima dalam karton", cartonCount: "Jumlah karton", unitsPerCarton: "Unit dasar per karton",
       shelfLocation: "Lokasi rak", reference: "Nota / referensi (opsional)", receipt: "Stok Masuk — penerimaan", sold: "Stok Keluar — barang terjual saja", archive: "Arsipkan", reactivate: "Aktifkan kembali",
       archiveHelp: "Arsip mempertahankan SKU dan riwayat. Hanya produk stok nol dapat diarsipkan.", zeroStockRequired: "Stok harus nol sebelum diarsipkan.", archivedHelp: "Aktifkan kembali sebelum mengedit atau mencatat stok.", identityLocked: "SKU dan unit dasar terkunci setelah ada riwayat inventaris.",
+      deletePermanently: "Hapus permanen", deleteHelp: "Hapus produk ini secara permanen? Tidak bisa dibatalkan. Hanya produk stok nol tanpa riwayat stok yang boleh dihapus. SKU bisa dipakai kembali; bukti administrasi tetap disimpan.", deleteUnavailable: "Hapus permanen memerlukan stok nol dan belum pernah ada riwayat stok, termasuk opname.",
       retry: "Ulangi permintaan sama", uncertain: "Hasil belum pasti. Isian tersimpan; ulangi permintaan sama sebelum meninggalkan formulir.", pending: "Menyimpan…", conflict: "Produk berubah. Tinjau nilai terkini sebelum mengirim ulang draft.", reviewCurrent: "Tinjau data terkini", reviewed: "Sudah ditinjau — pertahankan draft dan kirim ulang",
       currentState: "Data terkini", metadataVersion: "Revisi metadata", stockVersion: "Revisi stok", inventoryCostValue: "Nilai modal stok",
       averagePurchaseCost: "Rata-rata modal beli", potentialSellingValue: "Potensi Pendapatan", potentialGrossProfit: "Potensi Laba Kotor", history: "Riwayat inventaris",
@@ -137,7 +140,7 @@ export const idTranslations: Translations = {
       errors: {
         VALIDATION_ERROR: "Periksa isian; jumlah bulat dan biaya rupiah bulat wajib.", UNAUTHENTICATED: "Sesi berakhir. Masuk kembali; draft tetap tersimpan.", FORBIDDEN: "Akses pemilik diperlukan.",
         SKU_EXISTS: "SKU sudah ada, termasuk produk arsip.", VERSION_CONFLICT: "Produk berubah. Tinjau data terkini sebelum mengulang.", IDENTITY_LOCKED: "SKU dan unit dasar terkunci oleh riwayat inventaris.",
-        PRODUCT_HAS_STOCK: "Arsip memerlukan stok nol.", PRODUCT_ARCHIVED: "Aktifkan produk kembali dahulu.", NOT_FOUND: "Produk tidak ditemukan.", INSUFFICIENT_STOCK: "Jumlah terjual melebihi stok tersedia.",
+        PRODUCT_HAS_STOCK: "Arsip atau hapus memerlukan stok nol.", PRODUCT_HAS_HISTORY: "Produk dengan riwayat stok tidak bisa dihapus permanen. Gunakan arsip.", PRODUCT_ARCHIVED: "Aktifkan produk kembali dahulu.", NOT_FOUND: "Produk tidak ditemukan.", INSUFFICIENT_STOCK: "Jumlah terjual melebihi stok tersedia.",
         REQUEST_ID_CONFLICT: "ID permintaan dipakai dengan isian berbeda. Tinjau sebelum pengiriman baru.", INTERNAL_ERROR: "Hasil belum pasti. Ulangi permintaan sama.",
       },
     },

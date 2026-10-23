@@ -26,6 +26,7 @@ interface ProductsTableProps {
   onViewDetails: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onPermanentDelete: (product: Product) => void;
   onQuickMovement: (product: Product, type: "in" | "out") => void;
   onAddProductClick: () => void;
 }
@@ -40,6 +41,7 @@ export function ProductsTable({
   onViewDetails,
   onEdit,
   onDelete,
+  onPermanentDelete,
   onQuickMovement,
   onAddProductClick,
 }: ProductsTableProps) {
@@ -227,6 +229,7 @@ export function ProductsTable({
                       onViewDetails={onViewDetails}
                       onEdit={onEdit}
                       onDelete={onDelete}
+                      onPermanentDelete={onPermanentDelete}
                       onQuickMovement={onQuickMovement}
                     />
                   </td>

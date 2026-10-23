@@ -17,7 +17,7 @@ import { ProductAddModal, type ProductCreationDefaults } from "./product-add-mod
 import type { ProductFilterState } from "../types";
 import type { ProductDto, ProductsPage, ProductMetrics, ProductFailure } from "../schemas/product-rpc.schema";
 
-type Mode = "detail" | "edit" | "lifecycle" | "in" | "out";
+type Mode = "detail" | "edit" | "lifecycle" | "delete" | "in" | "out";
 interface ProductsContainerProps {
   filterState: ProductFilterState;
   catalog: ProductsPage | null;
@@ -65,6 +65,12 @@ export function ProductsContainer({ filterState, catalog, metrics, categories, f
     setSelection((previous) => previous?.id === snapshot.id ? { ...previous, product: current.data } : previous);
     router.refresh();
   }
+  async function deleted(snapshot: ProductDto) {
+    const current = await getProductAction({ id: snapshot.id });
+    if (current.ok || current.code !== "NOT_FOUND") throw new Error(p.refreshError);
+    setSelection(null);
+    router.refresh();
+  }
   function close(opened: boolean) {
     if (!opened) { request.current++; setSelection(null); }
   }
@@ -85,12 +91,13 @@ export function ProductsContainer({ filterState, catalog, metrics, categories, f
       <ProductsTable products={catalog.items} totalCount={catalog.total} filterState={filterState} hasActiveFilters={filters.hasActiveFilters}
         onPageChange={filters.setPage} onResetFilters={filters.resetFilters} onViewDetails={(product) => void open(product, "detail")}
         onEdit={(product) => void open(product, "edit")} onDelete={(product) => void open(product, "lifecycle")}
+        onPermanentDelete={(product) => void open(product, "delete")}
         onQuickMovement={(product, type) => void open(product, type)} onAddProductClick={() => { if (creationDefaults) setAddOpen(true); else router.refresh(); }} />
     </div>}
     {selected && selection?.mode === "detail" && <ProductDetailSheet key={selected.id} product={selected} open onOpenChange={close}
       onEdit={(product) => void open(product, "edit")} onMovement={(product, type) => void open(product, type)} onLifecycle={(product) => void open(product, "lifecycle")} />}
     {selected && selection?.mode === "edit" && <EditProductModal key={selected.id} product={selected} open onOpenChange={close} onCommitted={committed} identityLocked={selection.identityLocked} />}
-    {selected && selection?.mode === "lifecycle" && <DeleteProductDialog key={selected.id} product={selected} open onOpenChange={close} onCommitted={committed} />}
+    {selected && (selection?.mode === "lifecycle" || selection?.mode === "delete") && <DeleteProductDialog key={`${selected.id}:${selection.mode}`} product={selected} open onOpenChange={close} permanent={selection.mode === "delete"} onCommitted={selection.mode === "delete" ? deleted : committed} />}
     {selected && (selection?.mode === "in" || selection?.mode === "out") && <QuickMovementModal key={`${selected.id}:${selection.mode}`} product={selected} type={selection.mode} open onOpenChange={close} onCommitted={committed} />}
     {creationDefaults && <ProductAddModal defaults={creationDefaults} open={addOpen} onOpenChange={setAddOpen} onCommitted={committed} />}
   </div>;

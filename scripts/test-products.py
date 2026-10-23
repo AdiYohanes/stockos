@@ -664,7 +664,12 @@ console.log(Buffer.from(await image.image.arrayBuffer()).toString('base64'));
         trigger.click()
         expect(scanner.get_by_role("alert")).to_contain_text(message)
         assert page.evaluate("cameraProof.calls.length") == 0
-        page.keyboard.press("Escape")
+        photo_picker = scanner.locator('input[type="file"][capture="environment"]')
+        photo_picker.set_input_files({"name": "barcode.png", "mimeType": "image/png", "buffer": base64.b64decode(image)})
+        expect(scanner.get_by_role("button", name="Use barcode", exact=True)).to_be_visible(timeout=30000)
+        expect(page.locator("#product-barcode")).to_have_value("001-OLD")
+        scanner.get_by_role("button", name="Use barcode", exact=True).click()
+        expect(page.locator("#product-barcode")).to_have_value("0123456789012")
         page.keyboard.press("Escape")
     page.evaluate("localStorage.setItem('stockos_language', 'id')")
     page.set_viewport_size({"width": 1440, "height": 1000})
@@ -725,14 +730,17 @@ def photo_flow(page, context):
     sku = PREFIX + "-PHOTO"
     for field, value in {"name": "Foto browser proof", "sku": sku, "category": "Uji", "unit": "Pcs", "min-stock": "0", "sell": "1000"}.items():
         page.locator(f"#product-{field}").fill(value)
-    picker = page.locator('input[type="file"]')
+    picker = page.locator('input[type="file"]:not([capture])')
+    camera_picker = page.locator('input[type="file"][capture="environment"]')
+    expect(camera_picker).to_have_count(1)
+    expect(page.get_by_role("button", name=re.compile(r"^(Take photo|Ambil foto)$"))).to_be_enabled()
     picker.set_input_files({"name": "wrong.txt", "mimeType": "text/plain", "buffer": b"not a photo"})
     expect(page.get_by_role("alert")).to_contain_text(re.compile(r"JPEG"))
     expect(page.locator("#product-name")).to_have_value("Foto browser proof")
     picker.set_input_files({"name": "large.png", "mimeType": "image/png", "buffer": bytes(10 * 1024 * 1024 + 1)})
     expect(page.get_by_role("alert")).to_contain_text(re.compile(r"10 MiB"))
     image = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#543afd';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
-    picker.set_input_files({"name": "photo.png", "mimeType": "image/png", "buffer": base64.b64decode(image)})
+    camera_picker.set_input_files({"name": "photo.png", "mimeType": "image/png", "buffer": base64.b64decode(image)})
     expect(page.locator('img[src^="blob:"]')).to_be_visible()
     submit = page.get_by_role("dialog").locator('button[type="submit"]')
     expect(submit).to_be_enabled()
@@ -785,7 +793,7 @@ def photo_flow(page, context):
     page.keyboard.press("Escape")
     row_action(page, item, re.compile(r"^(Edit|Ubah)$"))
     replacement = page.evaluate("""() => {const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#e75423';x.fillRect(0,0,800,600);return c.toDataURL('image/png').split(',')[1];}""")
-    page.locator('input[type="file"]').set_input_files({"name": "replacement.png", "mimeType": "image/png", "buffer": base64.b64decode(replacement)})
+    page.locator('input[type="file"]:not([capture])').set_input_files({"name": "replacement.png", "mimeType": "image/png", "buffer": base64.b64decode(replacement)})
     expect(page.locator('img[src^="blob:"]')).to_be_visible()
     # Fail the actual provider's thumbnail write after display upload succeeds.
     # SQL helper pins this run-owned local fixture; never touch retained or Cloud Storage.

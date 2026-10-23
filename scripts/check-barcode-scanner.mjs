@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { prepareZXingModule, writeBarcode } from "zxing-wasm/writer";
-import { loadBarcodeReader, barcodeCandidate } from "../src/features/products/barcode-scanner.ts";
+import { loadBarcodeReader, barcodeCandidate, readBarcodePhoto } from "../src/features/products/barcode-scanner.ts";
+import { processProductPhoto } from "../src/features/products/product-photo.ts";
 
 prepareZXingModule({ overrides: { wasmBinary: await readFile(new URL("../node_modules/zxing-wasm/dist/writer/zxing_writer.wasm", import.meta.url)) } });
 const read = await loadBarcodeReader(await readFile(new URL("../node_modules/zxing-wasm/dist/reader/zxing_reader.wasm", import.meta.url)));
@@ -30,4 +31,17 @@ for (const result of [
   { isValid: true, format: "Code128", text: "A".repeat(65) },
 ]) assert.equal(barcodeCandidate(result), null);
 assert.equal(barcodeCandidate({ isValid: true, format: "Code128", text: " 001-A " }), "001-A");
-console.log("Barcode decoder contract passed; physical camera compatibility not tested.");
+for (const file of [
+  new File(["bad"], "wrong.txt", { type: "text/plain" }),
+  new File([], "empty.jpg", { type: "image/jpeg" }),
+  new File([new Uint8Array(10 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" }),
+]) await assert.rejects(readBarcodePhoto(file, read), /invalidPhoto/);
+const cryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+try {
+  Object.defineProperty(globalThis, "crypto", { configurable: true, value: undefined });
+  await assert.rejects(processProductPhoto(new File(["photo"], "photo.jpg", { type: "image/jpeg" })), /insecure/);
+} finally {
+  if (cryptoDescriptor) Object.defineProperty(globalThis, "crypto", cryptoDescriptor);
+  else delete globalThis.crypto;
+}
+console.log("Barcode decoder, photo input limits and insecure photo processing guards passed; physical camera compatibility not tested.");

@@ -21,7 +21,7 @@ Use strict Zod input schemas and PostgreSQL constraints. Reject unknown fields; 
 
 Mutations return a serializable discriminated result: success has `ok=true`, `requestId`, committed `data`, and `replayed`; failure has `ok=false`, stable `code`, safe `message`, optional `fieldErrors`, and a support `traceId` for unexpected errors. No provider token, raw SQL error, setup secret, or password is returned. Auth actions use the same error semantics without storing secrets/idempotency payloads.
 
-Errors: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `EMAIL_UNVERIFIED`, `FORBIDDEN`, `NOT_FOUND`, `SKU_EXISTS`, `PRODUCT_ARCHIVED`, `PRODUCT_HAS_STOCK`, `IDENTITY_LOCKED`, `INSUFFICIENT_STOCK`, `VERSION_CONFLICT`, `REQUEST_ID_CONFLICT`, `SETUP_CLOSED`, `SETUP_PENDING`, `RATE_LIMITED`, `LIMIT_EXCEEDED`, `INTERNAL_ERROR`. Unauthorized checks precede resource existence disclosure. Expected errors preserve form drafts; unexpected errors provide a retry/support message.
+Errors: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `EMAIL_UNVERIFIED`, `FORBIDDEN`, `NOT_FOUND`, `SKU_EXISTS`, `PRODUCT_ARCHIVED`, `PRODUCT_HAS_STOCK`, `PRODUCT_HAS_HISTORY`, `IDENTITY_LOCKED`, `INSUFFICIENT_STOCK`, `VERSION_CONFLICT`, `REQUEST_ID_CONFLICT`, `SETUP_CLOSED`, `SETUP_PENDING`, `RATE_LIMITED`, `LIMIT_EXCEEDED`, `INTERNAL_ERROR`. Unauthorized checks precede resource existence disclosure. Expected errors preserve form drafts; unexpected errors provide a retry/support message.
 
 These are application codes, not HTTP-status promises for the framework's Server Action protocol. Framework redirects remain framework control flow; do not catch redirects as ordinary internal failures. An expired mutation session returns a recoverable auth failure before UI offers login; server page reads can redirect safely.
 
@@ -66,7 +66,7 @@ Event DTO returns kind, before/after/delta quantities and cost, purchase total w
 
 ## 4. Mutation Contracts
 
-Every row below also takes `requestId`; returns committed Product/Settings data and event/admin-evidence IDs as applicable.
+Every row below also takes `requestId`; returns committed Product/Settings data and event/admin-evidence IDs as applicable. Product deletion returns the pre-deletion Product DTO in the existing `ProductMutationResult`, not a live entity.
 
 | Action | Input | Atomic behavior and checks |
 | --- | --- | --- |
@@ -74,6 +74,7 @@ Every row below also takes `requestId`; returns committed Product/Settings data 
 | `updateProduct` | Product ID, expectedMetadataVersion, allowlisted metadata patch | Cannot change stock/cost/history; SKU/unit changes rejected once any inventory event exists; selling-price edit changes potentials, not modal |
 | `archiveProduct` | Product ID, expectedMetadataVersion, expectedStockVersion | Locked quantity must be zero; retain SKU/history; same-request replay returns original success; a fresh request for an already archived product returns PRODUCT_ARCHIVED |
 | `reactivateProduct` | Product ID, expectedMetadataVersion | Restore active lifecycle without renaming/reassigning identity |
+| `deleteProduct` (`deleteProductAction` / `stockos_delete_product`) | Product ID, expectedMetadataVersion, expectedStockVersion | Owner-only; active or archived allowed. Lock product, require both revisions, zero current stock and no inventory events of any kind. Nonzero stock fails PRODUCT_HAS_STOCK; any event, including unchanged opname or cost adjustment, fails PRODUCT_HAS_HISTORY. Preserve/detach administrative evidence with original ID/snapshot in `changes.deletedProduct`, append `product_deleted`, remove eligible product, retain durable pre-deletion DTO result atomically; SKU becomes reusable |
 | `recordStockIn` | Product ID, positive quantity, required whole-IDR purchaseTotal, optional reference/note, optional carton pair | Reject archived; update stock and exact cost under row lock; preserve receipt cost; auto-generate reference when absent |
 | `recordStockOut` | Product ID, positive sold quantity, optional reference/note | Sold-only; reject archived or insufficient stock; consume weighted-average cost; no reason selector, payment, customer, or actual-sale-price input |
 | `recordOpname` | Product ID, expectedStockVersion, countedQuantity, optional note, optional correctionOfEventId, foundPurchaseTotal required only when prior quantity zero and count positive | Retain zero-difference evidence; reject stale; derive delta/cost. Linked correction requires same-product earlier event and nonblank explanation. Opname is not sold volume |
@@ -84,7 +85,7 @@ Carton mode accepts positive integer `cartonCount` and `unitsPerCarton`; server 
 
 A bare category/supplier name never creates a new managed entity. Existing-product restock selects product ID/SKU; duplicate name does not merge goods. Barcode is optional and not an approved unique identity; SKU is.
 
-Archive and lifecycle operations fail for conflicting revisions. Inventory events for archived products are rejected; reactivate before accepting new stock or corrections. Audited replacement total cost is whole IDR by design, even when prior weighted cost value has fractional residuals.
+Archive and lifecycle operations fail for conflicting revisions. Permanent deletion approved 2026-10-23 never removes a product with stock history, even after its stock returns to zero. Retry lookup precedes entity existence/eligibility checks: identical deletion replay returns original success after deletion; prior mutation replay remains valid after deletion or SKU reuse, without recreating the product. A fresh deletion request for a missing product returns NOT_FOUND. After committed deletion, refresh authoritative lists/metrics rather than reinserting the returned historical DTO. UI requires explicit permanent-deletion confirmation and retains frozen request ID/payload across uncertainty. Inventory events for archived products are rejected; reactivate before accepting new stock or corrections. Audited replacement total cost is whole IDR by design, even when prior weighted cost value has fractional residuals.
 
 ## 5. Authentication and Setup Contracts
 
