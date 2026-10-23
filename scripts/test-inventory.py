@@ -201,6 +201,7 @@ def open_opname(page, product):
     row = page.get_by_role("row").filter(has=page.get_by_text(product["sku"], exact=True))
     row.locator("button[title*='Stock Adjustment'], button[title*='Penyesuaian']").click()
     expect(page.get_by_role("dialog")).to_be_visible()
+    expect(page.get_by_role("dialog")).to_contain_text(product["sku"])
 
 
 def assert_close_blocked(page):

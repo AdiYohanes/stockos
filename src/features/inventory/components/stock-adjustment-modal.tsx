@@ -366,7 +366,7 @@ export function StockAdjustmentModal({
         <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
           {!correction || correctionProduct ? <StockAdjustmentForm
             key={`${itemId}:${correction?.id || "opname"}`}
-            selectedProduct={correction && correctionProduct ? correctionProduct : selectedProduct ?? allItems[0] ?? null}
+            selectedProduct={correction && correctionProduct ? correctionProduct : targetItem ?? selectedProduct ?? allItems[0] ?? null}
             initialItem={correction && correctionProduct ? mapProductToInventoryItem(correctionProduct) : targetItem}
             correction={correction}
             selectedId={itemId}
