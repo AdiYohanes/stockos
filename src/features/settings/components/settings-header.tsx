@@ -12,7 +12,6 @@ interface SettingsHeaderProps {
   lastSavedMessage: string | null;
   updatedAt: string;
   timezone: TimezoneCode;
-  version?: string;
   isSaving?: boolean;
   disabled?: boolean;
   onSave: () => void;
@@ -24,7 +23,6 @@ export function SettingsHeader({
   lastSavedMessage,
   updatedAt,
   timezone,
-  version,
   isSaving = false,
   disabled = false,
   onSave,
@@ -64,14 +62,6 @@ export function SettingsHeader({
               >
                 {t.settings.badgeText}
               </Badge>
-              {version && (
-                <Badge
-                  variant="outline"
-                  className="border-black bg-slate-200 font-mono text-[12px] text-slate-800"
-                >
-                  Rev {version}
-                </Badge>
-              )}
               {hasUnsavedChanges && (
                 <Badge className="animate-pulse border-black bg-amber-400 font-mono text-[13px] uppercase tracking-wider text-black shadow-neo-sm">
                   <AlertCircle className="mr-1 h-3.5 w-3.5" />{" "}

@@ -522,7 +522,6 @@ export interface Translations {
     activeStatus: string;
     tabTeamAccess: string;
     membersCount: string;
-    tabSystemMaintenance: string;
     resetSettingsDefaults: string;
     criticalWarning: string;
     resetWarningDesc: string;

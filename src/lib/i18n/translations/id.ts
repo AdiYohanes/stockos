@@ -469,7 +469,6 @@ export const idTranslations: Translations = {
     activeStatus: "Aktif",
     tabTeamAccess: "Tim & Akses",
     membersCount: "Anggota",
-    tabSystemMaintenance: "Sistem & Pemeliharaan",
     resetSettingsDefaults: "Reset Pengaturan & Data Standar",
     criticalWarning: "Peringatan Bahaya:",
     resetWarningDesc: "Tindakan ini hanya mengembalikan satuan dan ambang batas stok bawaan untuk produk baru ke standar awal. Profil usaha, zona waktu, katalog produk, dan catatan transaksi operasional tidak berubah. Perubahan profil yang belum disimpan tetap berada di formulir.",

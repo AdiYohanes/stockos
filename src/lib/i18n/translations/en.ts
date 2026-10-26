@@ -464,7 +464,6 @@ export const enTranslations: Translations = {
     activeStatus: "Active",
     tabTeamAccess: "Team & Access",
     membersCount: "Members",
-    tabSystemMaintenance: "System & Maintenance",
     resetSettingsDefaults: "Reset System Settings & Defaults",
     criticalWarning: "Critical Warning:",
     resetWarningDesc: "This action only restores the default unit and low-stock threshold for new products. Store profile, timezone, product catalog, and operational transaction records remain unchanged. Unsaved profile changes stay in the form.",
