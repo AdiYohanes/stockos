@@ -180,6 +180,25 @@ Proposed targets from `BACKEND_PLAN.md`: **RPO ≤24 hours, RTO ≤one business 
 
 Monitoring scope is a checklist, not deployed infrastructure: backup age/restore success, Auth availability/SMTP bounces, DB disk/connections/latency, function errors, costs and owner-access denials. Do not log passwords, callback tokens, service credentials, raw provider/SQL errors or inventory payloads. Existing application safe trace IDs can be used. No email/webhook stock-notification feature is introduced.
 
+## LAN HTTPS dev access from a phone (camera)
+
+Browser camera access (`getUserMedia`, barcode scanner, product photo capture) requires a secure context: HTTPS or `localhost`. A phone reaching the dev server over `http://<lan-ip>:3000` is not one, so the camera stays blocked even though the same page works on the PC.
+
+One-time setup (operator, local only — no Cloud resources involved):
+
+1. Install mkcert (standalone binary, not an npm dependency): `choco install mkcert` or download from the mkcert releases page.
+2. Trust the local CA on the PC: `mkcert -install`.
+3. Prepare the certificate and origins in one step: `npm run dev:https`. The script resolves the current LAN IPv4, generates `certificates/https-cert.pem` / `https-key.pem` for it (reused while the IP is unchanged), and rewrites `allowedDevOrigins` in `next.config.ts` to that IP. Files under `certificates/` stay gitignored.
+4. Trust the CA on the Android phone once: copy `%LOCALAPPDATA%\mkcert\rootCA.pem` to the phone (USB or any local transfer; avoid email), then Android Settings → Security → More security settings → Encryption & credentials → Install a certificate → CA certificate. Chrome will then treat `https://<lan-ip>:3000` as trusted without interstitials.
+5. Start the server with `npm run dev:https` and open `https://<lan-ip>:3000` on the phone. Barcode scanning and product photo capture now behave as on desktop; photo uploads use the existing product photo flow unchanged.
+
+Notes:
+
+- Certificates are per-IP. When the DHCP address changes, rerun `npm run dev:https` (it regenerates and updates the config); the phone CA install survives because it trusts the root, not the leaf.
+- Prefer a static/reserved DHCP address for the PC at the router so regeneration stays rare.
+- `npm run check:dev-cert` self-tests the script's IP-resolution and regenerate/reuse decisions without mkcert or a network. It is part of the standard `npm run check` chain.
+- Scope: loopback/LAN only. Never expose the dev server through a public tunnel or redirect this flow to Cloud resources.
+
 ## Release decision
 
 Do not launch while external SMTP, named responsibility, off-device encrypted restore, budget/region/capacity, hosted runtime/callback/session proof, deployment approval or real-data permission is missing. Tickets 9–11 and a passing ticket 12 local drill cannot close these gates by themselves.
