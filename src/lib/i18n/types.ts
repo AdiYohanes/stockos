@@ -626,7 +626,6 @@ export interface Translations {
       nameLabel: string;
       namePlaceholder: string;
       skuLabel: string;
-      skuPlaceholder: string;
       categoryLabel: string;
       selectCategory: string;
       unitLabel: string;

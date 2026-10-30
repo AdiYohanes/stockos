@@ -21,9 +21,10 @@
     "check:proof": "python -I scripts/launch-hardening-proof.py --self-test",
     "check:settings": "node scripts/check-settings-state.mjs",
     "check:seeder": "node scripts/check-seeder-safety.mjs",
+    "check:sku": "node --experimental-strip-types scripts/check-sku-rule.mjs",
     "check:operations": "node scripts/check-operations.mjs --self-test",
     "check:dev-cert": "node scripts/dev-cert.mjs --self-test",
-    "check": "npm run check:barcode && npm run check:domain && npm run check:deletion && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations && npm run check:dev-cert"
+    "check": "npm run check:barcode && npm run check:domain && npm run check:deletion && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:sku && npm run check:operations && npm run check:dev-cert"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
