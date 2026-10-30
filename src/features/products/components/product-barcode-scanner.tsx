@@ -140,7 +140,7 @@ function CameraSession({ stopRef, onApply, onClose, blocked }: { stopRef: StopRe
   return <>
     <div className="space-y-3 p-5 min-w-0">
       <video ref={videoRef} muted playsInline aria-label={c.title} className={candidate || error || readingPhoto ? "hidden" : "aspect-[4/3] w-full border-[3px] border-ink bg-black object-contain"} />
-      <input ref={photoRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label={c.fromPhoto} disabled={blocked || readingPhoto} onChange={selectPhoto} className="hidden" />
+      <input ref={photoRef} type="file" accept="image/*" capture="environment" aria-label={c.fromPhoto} disabled={blocked || readingPhoto} onChange={selectPhoto} className="hidden" />
       <Button type="button" variant="outline" className="w-full" disabled={blocked || readingPhoto} onClick={() => { stopRef.current(); setCandidate(null); setMessage("stopped"); setError(true); photoRef.current?.click(); }}>{c.fromPhoto}</Button>
       <p role={error ? "alert" : "status"} aria-live="polite" className="text-sm">{c[message]}</p>
       {candidate !== null && <p className="break-all border-[3px] border-ink bg-purple-50 p-3 font-mono text-ink">{candidate}</p>}

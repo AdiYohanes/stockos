@@ -51,7 +51,7 @@ export function ProductPhotoField({ value, photo, disabled }: { value: ReturnTyp
       <ProductPhoto photo={current} preview={value.draft?.preview} name={c.label} className="h-20 w-20" />
       <div className="min-w-0 flex-1 space-y-2">
         <input id={id} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled || value.processing} onChange={select} aria-describedby={`${id}-help${error ? ` ${id}-error` : ""}`} className="input-focus w-full min-w-0 text-sm file:mr-2 file:border-[3px] file:border-ink file:bg-paper file:px-2 file:py-1 file:font-bold" />
-        <input ref={cameraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={disabled || value.processing} onChange={select} aria-label={c.takePhoto} className="hidden" />
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" disabled={disabled || value.processing} onChange={select} aria-label={c.takePhoto} className="hidden" />
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" disabled={disabled || value.processing} onClick={() => cameraRef.current?.click()}>{c.takePhoto}</Button>
           {current && <Button type="button" variant="outline" disabled={disabled || value.processing} onClick={() => { value.change(null); setError(null); }}>{c.remove}</Button>}
