@@ -44,10 +44,6 @@ export function DashboardHeader({ userName, creationDefaults }: DashboardHeaderP
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {t.nav.dashboard}
           </h1>
-          <span className="inline-flex items-center gap-1.5 rounded-none border-[3px] border-black dark:border-white bg-[#dcfce7] dark:bg-[#052e16] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#15803d] dark:text-[#4ade80]">
-            <span className="h-1.5 w-1.5 rounded-none bg-[#15803d] dark:bg-[#4ade80] animate-pulse" />
-            {t.dashboard.badgeText}
-          </span>
         </div>
         <span className="hidden lg:inline text-muted-foreground/30 text-base shrink-0">•</span>
         <p

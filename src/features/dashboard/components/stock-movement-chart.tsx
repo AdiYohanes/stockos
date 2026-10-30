@@ -121,6 +121,8 @@ export function StockMovementChart({ movements }: StockMovementChartProps) {
 
   const currentData: StockMovementData = timeframe === "7d" ? movements.days7 : movements.days30;
 
+  const hasMovement = currentData.totalIn !== 0 || currentData.totalOut !== 0;
+
   // Calculate high volume period
   const peakItem = React.useMemo(() => {
     return [...currentData.data].sort(
@@ -132,6 +134,9 @@ export function StockMovementChart({ movements }: StockMovementChartProps) {
     const totalVolume = currentData.totalIn + currentData.totalOut;
     return Math.round(totalVolume / (currentData.data.length || 1));
   }, [currentData]);
+
+  // Hide net badge when there is no movement at all — "+0" carries no meaning.
+  const showNetBadge = hasMovement;
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white border-[3px] border-ink shadow-hard-sm">
@@ -182,15 +187,17 @@ export function StockMovementChart({ movements }: StockMovementChartProps) {
             </div>
 
             {/* Net Badge */}
-            <span
-              className={cn(
-                "px-2 py-1 font-mono text-[10px] font-bold uppercase border-[3px] border-ink",
-                currentData.netChange >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-              )}
-            >
-              {t.dashboard.net}: {currentData.netChange >= 0 ? "+" : ""}
-              {formatNumber(currentData.netChange)}
-            </span>
+            {showNetBadge && (
+              <span
+                className={cn(
+                  "px-2 py-1 font-mono text-[10px] font-bold uppercase border-[3px] border-ink",
+                  currentData.netChange >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                )}
+              >
+                {t.dashboard.net}: {currentData.netChange >= 0 ? "+" : ""}
+                {formatNumber(currentData.netChange)}
+              </span>
+            )}
           </div>
         </div>
 
@@ -249,7 +256,17 @@ export function StockMovementChart({ movements }: StockMovementChartProps) {
       <div className="px-5 pb-5 pt-3 flex-1 flex flex-col min-h-0">
         {/* Recharts Bar Chart */}
         <div className="flex-1 w-full min-h-[224px]">
-          {mounted ? (
+          {!hasMovement ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 border-[3px] border-dashed border-ink/30 bg-paper px-4 text-center">
+              <Activity className="h-6 w-6 text-ink/40" aria-hidden="true" />
+              <p className="font-heading font-bold uppercase text-sm text-ink/80">
+                {t.dashboard.noMovementData}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-ink/60 max-w-[280px]">
+                {t.dashboard.noMovementHint}
+              </p>
+            </div>
+          ) : mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={currentData.data}
@@ -320,16 +337,18 @@ export function StockMovementChart({ movements }: StockMovementChartProps) {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 pt-3 font-mono text-[10px] uppercase font-bold tracking-widest text-ink/70 shrink-0 mt-auto border-t-[3px] border-ink">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 border border-ink bg-[#543afd]" />
-            <span className="text-ink">{t.dashboard.stockInbound}</span>
+        {hasMovement && (
+          <div className="flex items-center justify-center gap-6 pt-3 font-mono text-[10px] uppercase font-bold tracking-widest text-ink/70 shrink-0 mt-auto border-t-[3px] border-ink">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 border border-ink bg-[#543afd]" />
+              <span className="text-ink">{t.dashboard.stockInbound}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 border border-ink bg-[#09090b]" />
+              <span className="text-ink">{t.dashboard.stockOutbound}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 border border-ink bg-[#09090b]" />
-            <span className="text-ink">{t.dashboard.stockOutbound}</span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

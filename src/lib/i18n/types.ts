@@ -49,7 +49,6 @@ export interface Translations {
   dashboard: {
     title: string;
     subtitle: string;
-    badgeText: string;
     totalProducts: string;
     lowStockAlerts: string;
     activeSuppliers: string;
@@ -92,10 +91,14 @@ export interface Translations {
     itemAndSku: string;
     stockMin: string;
     noAttentionItems: string;
+    allStockHealthy: string;
     outOfStockBadge: string;
     lowStockBadge: string;
     inventoryHealthTitle: string;
     optimal: string;
+    healthEmpty: string;
+    noMovementData: string;
+    noMovementHint: string;
     healthDistribution: string;
     topMovingProducts: string;
     refresh: string;

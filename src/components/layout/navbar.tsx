@@ -36,13 +36,14 @@ export function Navbar({ user }: NavbarProps) {
           <span className="font-heading font-[900] text-lg uppercase">StockOS</span>
         </div>
 
-        {/* Breadcrumbs for desktop */}
-        <div className="hidden md:flex items-center gap-4">
-          <h1 className="font-heading font-[900] uppercase tracking-tighter text-2xl">
+        {/* Breadcrumb for desktop (page title lives in the content header) */}
+        <div className="hidden md:flex items-center gap-2">
+          <span className="font-mono text-[10px] uppercase tracking-[.18em] text-foreground/50">
+            {t.nav.platform}
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[.18em] text-foreground/50">/</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-foreground">
             {currentPageTitle}
-          </h1>
-          <span className="bg-primary border-[3px] border-border px-2 py-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
-            <i className="w-1.5 h-1.5 bg-white"></i>Live
           </span>
         </div>
       </div>

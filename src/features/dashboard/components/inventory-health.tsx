@@ -32,10 +32,16 @@ export function InventoryHealth({ data, className }: InventoryHealthProps) {
           <span
             className={cn(
               "px-2 py-1 font-mono text-[10px] font-bold uppercase border-[3px] border-ink",
-              data.healthScore >= 80 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+              data.totalProducts === 0
+                ? "bg-paper text-ink/60"
+                : data.healthScore >= 80
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-amber-100 text-amber-800"
             )}
           >
-            {data.healthScore}% {t.dashboard.optimal}
+            {data.totalProducts === 0
+              ? t.dashboard.healthEmpty
+              : `${data.healthScore}% ${t.dashboard.optimal}`}
           </span>
         </div>
 
