@@ -16,10 +16,11 @@ interface ProductRowActionsProps {
   onViewDetails: (product: ProductDto) => void;
   onEdit: (product: ProductDto) => void;
   onDelete: (product: ProductDto) => void;
+  onPermanentDelete: (product: ProductDto) => void;
   onQuickMovement?: (product: ProductDto, type: "in" | "out") => void;
 }
 
-export function ProductRowActions({ product, onViewDetails, onEdit, onDelete, onQuickMovement }: ProductRowActionsProps) {
+export function ProductRowActions({ product, onViewDetails, onEdit, onDelete, onPermanentDelete, onQuickMovement }: ProductRowActionsProps) {
   const { t } = useI18n();
   const p = t.products.persistent;
   const item = "min-h-11 rounded-none px-3 py-2 font-mono text-xs font-bold focus:bg-acid/15 data-highlighted:bg-acid/15";
@@ -40,6 +41,7 @@ export function ProductRowActions({ product, onViewDetails, onEdit, onDelete, on
         </>}
         <DropdownMenuSeparator className="bg-ink" />
         <DropdownMenuItem className={item} onClick={() => onDelete(product)}>{product.archivedAt ? p.reactivate : p.archive}</DropdownMenuItem>
+        <DropdownMenuItem className={`${item} text-destructive`} disabled={product.currentStock !== 0 || BigInt(product.stockVersion) !== BigInt(0)} onClick={() => onPermanentDelete(product)}>{p.deletePermanently}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -49,7 +49,6 @@ export interface Translations {
   dashboard: {
     title: string;
     subtitle: string;
-    badgeText: string;
     totalProducts: string;
     lowStockAlerts: string;
     activeSuppliers: string;
@@ -92,10 +91,14 @@ export interface Translations {
     itemAndSku: string;
     stockMin: string;
     noAttentionItems: string;
+    allStockHealthy: string;
     outOfStockBadge: string;
     lowStockBadge: string;
     inventoryHealthTitle: string;
     optimal: string;
+    healthEmpty: string;
+    noMovementData: string;
+    noMovementHint: string;
     healthDistribution: string;
     topMovingProducts: string;
     refresh: string;
@@ -108,20 +111,22 @@ export interface Translations {
   };
   products: {
     photo: {
-      label: string; help: string; remove: string; processing: string;
-      unsupported: string; tooLarge: string; invalid: string;
+      label: string; help: string; takePhoto: string; remove: string; processing: string;
+      unsupported: string; tooLarge: string; invalid: string; insecure: string;
     };
     scanner: {
       scan: string; title: string; description: string; starting: string; aim: string; result: string;
       use: string; rescan: string; retry: string; cancel: string; stopped: string;
       insecure: string; unsupported: string; denied: string; notFound: string; busy: string;
       loadFailed: string; cameraFailed: string; invalid: string;
+      fromPhoto: string; readingPhoto: string; notDetected: string; invalidPhoto: string;
     };
     persistent: {
       create: string; restock: string; lookup: string; selectProduct: string; search: string;
       openingQuantity: string; purchaseTotal: string; cartonMode: string; cartonCount: string; unitsPerCarton: string;
       shelfLocation: string; reference: string; receipt: string; sold: string; archive: string; reactivate: string;
       archiveHelp: string; zeroStockRequired: string; archivedHelp: string; identityLocked: string;
+      deletePermanently: string; deleteHelp: string; deleteUnavailable: string;
       retry: string; uncertain: string; pending: string; conflict: string; reviewCurrent: string; reviewed: string;
       currentState: string; metadataVersion: string; stockVersion: string; inventoryCostValue: string;
       averagePurchaseCost: string; potentialSellingValue: string; potentialGrossProfit: string; history: string;
@@ -520,7 +525,6 @@ export interface Translations {
     activeStatus: string;
     tabTeamAccess: string;
     membersCount: string;
-    tabSystemMaintenance: string;
     resetSettingsDefaults: string;
     criticalWarning: string;
     resetWarningDesc: string;

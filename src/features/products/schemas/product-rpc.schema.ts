@@ -50,6 +50,7 @@ export const ReactivateProductInputSchema = z.strictObject({
   requestId: z.uuid(), productId: z.uuid(), expectedMetadataVersion: revision,
 });
 export const ArchiveProductInputSchema = ReactivateProductInputSchema.extend({ expectedStockVersion: revision });
+export const DeleteProductInputSchema = ArchiveProductInputSchema;
 export const StockOutInputSchema = z.strictObject({
   requestId: z.uuid(), productId: z.uuid(), quantity: positiveQuantity,
   reference: nullableText(120), note: nullableText(1000),
@@ -103,7 +104,7 @@ export const TextSuggestionsSchema = z.array(text(120)).max(30);
 export const ProductMutationDataSchema = z.strictObject({ product: ProductDtoSchema, eventId: z.uuid().nullable(), administrativeEventId: z.uuid().nullable() });
 export const ProductErrorCodeSchema = z.enum([
   "VALIDATION_ERROR", "UNAUTHENTICATED", "EMAIL_UNVERIFIED", "FORBIDDEN", "NOT_FOUND", "SKU_EXISTS",
-  "PRODUCT_ARCHIVED", "PRODUCT_HAS_STOCK", "IDENTITY_LOCKED", "INSUFFICIENT_STOCK", "VERSION_CONFLICT",
+  "PRODUCT_ARCHIVED", "PRODUCT_HAS_STOCK", "PRODUCT_HAS_HISTORY", "IDENTITY_LOCKED", "INSUFFICIENT_STOCK", "VERSION_CONFLICT",
   "REQUEST_ID_CONFLICT", "LIMIT_EXCEEDED", "INTERNAL_ERROR",
 ]);
 export const ProductRpcFailureSchema = z.strictObject({

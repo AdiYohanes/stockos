@@ -1,11 +1,12 @@
 import type { ProductPhoto } from "./schemas/product-rpc.schema";
 
 export type PhotoDraft = { photo: ProductPhoto; files: FormData; preview: string };
-export type PhotoError = "unsupported" | "tooLarge" | "invalid";
+export type PhotoError = "unsupported" | "tooLarge" | "invalid" | "insecure";
 
 export async function processProductPhoto(file: File): Promise<PhotoDraft> {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("unsupported" satisfies PhotoError);
   if (!file.size || file.size > 10 * 1024 * 1024) throw new Error("tooLarge" satisfies PhotoError);
+  if (!globalThis.crypto?.subtle) throw new Error("insecure" satisfies PhotoError);
   const image = await createImageBitmap(file).catch(() => { throw new Error("invalid" satisfies PhotoError); });
   try {
     if (!image.width || !image.height || image.width * image.height > 40_000_000) throw new Error("tooLarge" satisfies PhotoError);

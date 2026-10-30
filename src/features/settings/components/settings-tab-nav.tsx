@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Building2, Boxes, ShieldAlert } from "lucide-react";
+import { Building2, Boxes } from "lucide-react";
 import { SettingsTab } from "../types";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -33,11 +33,6 @@ export function SettingsTabNav({
       id: "inventory",
       label: t.settings.tabStockRules,
       icon: Boxes,
-    },
-    {
-      id: "system",
-      label: t.settings.tabSystemMaintenance,
-      icon: ShieldAlert,
     },
   ];
 

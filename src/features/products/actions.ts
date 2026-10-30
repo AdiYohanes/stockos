@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import {
-  ArchiveProductInputSchema, CreateProductInputSchema, ReactivateProductInputSchema,
+  ArchiveProductInputSchema, CreateProductInputSchema, DeleteProductInputSchema, ReactivateProductInputSchema,
   StockInInputSchema, StockOutInputSchema, UpdateProductInputSchema,
   type ProductMutationResult,
 } from "./schemas/product-rpc.schema";
@@ -55,6 +55,19 @@ export async function archiveProductAction(input: unknown): Promise<ProductMutat
   if (!authorization.ok) return authorization;
   const result = await productMutation(authorization.client, "stockos_archive_product", ArchiveProductInputSchema, input);
   if (result.ok) revalidateAll();
+  return result;
+}
+export async function deleteProductAction(input: unknown): Promise<ProductMutationResult> {
+  const authorization = await authorizeProducts(true);
+  if (!authorization.ok) return authorization;
+  const result = await productMutation(authorization.client, "stockos_delete_product", DeleteProductInputSchema, input);
+  if (result.ok) {
+    revalidateAll();
+    revalidatePath("/");
+    revalidatePath("/reports");
+    const photo = result.data.product.photo;
+    if (photo) await removeUnreferencedPhotos([photo.display.hash, photo.thumb.hash], authorization.client);
+  }
   return result;
 }
 export async function reactivateProductAction(input: unknown): Promise<ProductMutationResult> {

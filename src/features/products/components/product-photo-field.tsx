@@ -25,6 +25,7 @@ export function ProductPhotoField({ value, photo, disabled }: { value: ReturnTyp
   const { t } = useI18n();
   const c = t.products.photo;
   const id = React.useId();
+  const cameraRef = React.useRef<HTMLInputElement>(null);
   const [error, setError] = React.useState<PhotoError | null>(null);
   const alive = React.useRef(true);
   React.useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -38,7 +39,7 @@ export function ProductPhotoField({ value, photo, disabled }: { value: ReturnTyp
       const draft = await processProductPhoto(file);
       if (alive.current) value.change(draft); else URL.revokeObjectURL(draft.preview);
     } catch (failure) {
-      if (alive.current) setError(failure instanceof Error && ["unsupported", "tooLarge"].includes(failure.message) ? failure.message as PhotoError : "invalid");
+      if (alive.current) setError(failure instanceof Error && ["unsupported", "tooLarge", "insecure"].includes(failure.message) ? failure.message as PhotoError : "invalid");
     } finally {
       if (alive.current) value.setProcessing(false);
     }
@@ -50,7 +51,11 @@ export function ProductPhotoField({ value, photo, disabled }: { value: ReturnTyp
       <ProductPhoto photo={current} preview={value.draft?.preview} name={c.label} className="h-20 w-20" />
       <div className="min-w-0 flex-1 space-y-2">
         <input id={id} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled || value.processing} onChange={select} aria-describedby={`${id}-help${error ? ` ${id}-error` : ""}`} className="input-focus w-full min-w-0 text-sm file:mr-2 file:border-[3px] file:border-ink file:bg-paper file:px-2 file:py-1 file:font-bold" />
-        {current && <Button type="button" variant="outline" disabled={disabled || value.processing} onClick={() => { value.change(null); setError(null); }}>{c.remove}</Button>}
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" disabled={disabled || value.processing} onChange={select} aria-label={c.takePhoto} className="hidden" />
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" disabled={disabled || value.processing} onClick={() => cameraRef.current?.click()}>{c.takePhoto}</Button>
+          {current && <Button type="button" variant="outline" disabled={disabled || value.processing} onClick={() => { value.change(null); setError(null); }}>{c.remove}</Button>}
+        </div>
       </div>
     </div>
     <p id={`${id}-help`} className="text-xs text-ink/70">{c.help}</p>

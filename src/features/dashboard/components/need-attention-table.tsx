@@ -103,8 +103,13 @@ export function NeedAttentionTable({ items, className }: NeedAttentionTableProps
             <tbody className="divide-y-[2px] divide-black/10">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-[10px] uppercase tracking-widest text-ink/60 font-mono bg-paper">
-                    {t.dashboard.noAttentionItems}
+                  <td colSpan={3} className="py-10 text-center bg-paper">
+                    <p className="font-heading font-bold uppercase text-sm text-ink/80">
+                      {t.dashboard.noAttentionItems}
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink/60 max-w-[320px] mx-auto">
+                      {t.dashboard.allStockHealthy}
+                    </p>
                   </td>
                 </tr>
               ) : (

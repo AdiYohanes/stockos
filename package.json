@@ -7,11 +7,13 @@
     "prebuild": "node scripts/prepare-barcode-wasm.mjs",
     "check:barcode": "node --experimental-strip-types scripts/check-barcode-scanner.mjs",
     "dev": "next dev",
+    "dev:https": "node scripts/dev-cert.mjs && next dev --experimental-https --experimental-https-cert certificates/https-cert.pem --experimental-https-key certificates/https-key.pem",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false --pretty false",
     "check:domain": "node scripts/check-domain-stores.cjs",
+    "check:deletion": "node --experimental-strip-types scripts/check-product-deletion.mjs",
     "check:dashboard": "node scripts/check-dashboard-metrics.cjs",
     "check:catalog": "node scripts/check-warung-catalog.mjs",
     "check:smtp": "node scripts/check-smtp-readiness.mjs --self-test",
@@ -20,7 +22,8 @@
     "check:settings": "node scripts/check-settings-state.mjs",
     "check:seeder": "node scripts/check-seeder-safety.mjs",
     "check:operations": "node scripts/check-operations.mjs --self-test",
-    "check": "npm run check:barcode && npm run check:domain && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations"
+    "check:dev-cert": "node scripts/dev-cert.mjs --self-test",
+    "check": "npm run check:barcode && npm run check:domain && npm run check:deletion && npm run check:dashboard && npm run check:catalog && npm run check:smtp && npm run check:reports && npm run check:proof && npm run check:settings && npm run check:seeder && npm run check:operations && npm run check:dev-cert"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

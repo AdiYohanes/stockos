@@ -5,7 +5,7 @@ import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DialogRoot, DialogPortal, DialogBackdrop, DialogPopup, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/context";
-import { barcodeCandidate, loadBarcodeReader } from "../barcode-scanner";
+import { barcodeCandidate, loadBarcodeReader, readBarcodePhoto } from "../barcode-scanner";
 
 type StopRef = React.MutableRefObject<() => void>;
 
@@ -17,6 +17,35 @@ function CameraSession({ stopRef, onApply, onClose, blocked }: { stopRef: StopRe
   const [message, setMessage] = React.useState<keyof typeof c>("starting");
   const [error, setError] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
+  const [readingPhoto, setReadingPhoto] = React.useState(false);
+  const photoRef = React.useRef<HTMLInputElement>(null);
+  const photoRequest = React.useRef(0);
+  React.useEffect(() => () => { photoRequest.current += 1; }, []);
+
+  async function selectPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || blocked || readingPhoto) return;
+    stopRef.current();
+    const request = ++photoRequest.current;
+    setCandidate(null);
+    setError(false);
+    setReadingPhoto(true);
+    setMessage("readingPhoto");
+    try {
+      const read = await loadBarcodeReader();
+      if (request !== photoRequest.current) return;
+      const value = await readBarcodePhoto(file, read);
+      if (request !== photoRequest.current) return;
+      setCandidate(value);
+      setMessage(value === null ? "notDetected" : "result");
+      setError(value === null);
+    } catch {
+      if (request === photoRequest.current) { setMessage("invalidPhoto"); setError(true); }
+    } finally {
+      if (request === photoRequest.current) setReadingPhoto(false);
+    }
+  }
 
   React.useEffect(() => {
     let disposed = false;
@@ -100,7 +129,7 @@ function CameraSession({ stopRef, onApply, onClose, blocked }: { stopRef: StopRe
   }, [attempt, stopRef]);
 
   function restart() {
-    if (blocked) return;
+    if (blocked || readingPhoto) return;
     stopRef.current();
     setCandidate(null);
     setError(false);
@@ -110,13 +139,15 @@ function CameraSession({ stopRef, onApply, onClose, blocked }: { stopRef: StopRe
 
   return <>
     <div className="space-y-3 p-5 min-w-0">
-      <video ref={videoRef} muted playsInline aria-label={c.title} className={candidate || error ? "hidden" : "aspect-[4/3] w-full border-[3px] border-ink bg-black object-contain"} />
+      <video ref={videoRef} muted playsInline aria-label={c.title} className={candidate || error || readingPhoto ? "hidden" : "aspect-[4/3] w-full border-[3px] border-ink bg-black object-contain"} />
+      <input ref={photoRef} type="file" accept="image/*" capture="environment" aria-label={c.fromPhoto} disabled={blocked || readingPhoto} onChange={selectPhoto} className="hidden" />
+      <Button type="button" variant="outline" className="w-full" disabled={blocked || readingPhoto} onClick={() => { stopRef.current(); setCandidate(null); setMessage("stopped"); setError(true); photoRef.current?.click(); }}>{c.fromPhoto}</Button>
       <p role={error ? "alert" : "status"} aria-live="polite" className="text-sm">{c[message]}</p>
       {candidate !== null && <p className="break-all border-[3px] border-ink bg-purple-50 p-3 font-mono text-ink">{candidate}</p>}
     </div>
     <DialogFooter className="flex-wrap border-t-[3px] border-ink">
       <Button type="button" variant="outline" onClick={onClose}>{c.cancel}</Button>
-      {(candidate !== null || error) && <Button type="button" variant="outline" disabled={blocked} onClick={restart}>{candidate !== null ? c.rescan : c.retry}</Button>}
+      {(candidate !== null || error) && <Button type="button" variant="outline" disabled={blocked || readingPhoto} onClick={restart}>{candidate !== null ? c.rescan : c.retry}</Button>}
       {candidate !== null && <Button type="button" disabled={blocked} onClick={() => { if (!blocked) onApply(candidate); }}>{c.use}</Button>}
     </DialogFooter>
   </>;
