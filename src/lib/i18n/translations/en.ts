@@ -232,7 +232,7 @@ export const enTranslations: Translations = {
     },
     form: {
       nameLabel: "Product Name",
-      skuLabel: "SKU Code",
+      skuLabel: "SKU Code (automatic)",
       categoryLabel: "Product Category",
       priceLabel: "Unit Price (IDR)",
       minStockLabel: "Minimum Stock Threshold",
@@ -619,8 +619,7 @@ export const enTranslations: Translations = {
       subtitle: "Register a new product with SKU & details",
       nameLabel: "Product Name",
       namePlaceholder: "e.g. ESP32-WROOM-32D Module",
-      skuLabel: "SKU Code",
-      skuPlaceholder: "e.g. ELEC-ESP-32",
+      skuLabel: "SKU Code (automatic)",
       categoryLabel: "Category",
       selectCategory: "Select category",
       unitLabel: "Unit",

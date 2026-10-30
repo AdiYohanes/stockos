@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 import { createProductAction, getTextSuggestionsAction } from "../actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
+import { skuFromName } from "../sku";
 import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../constants";
 import { ProductBarcodeScanner } from "./product-barcode-scanner";
 import { ProductPhotoField, usePhotoDraft } from "./product-photo-field";
@@ -47,6 +49,8 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
   });
   React.useEffect(() => { onBlocked(submission.blocked || photo.processing); return () => onBlocked(false); }, [submission.blocked, photo.processing, onBlocked]);
   const computed = cartons ? Number(count) * Number(units) : Number(quantity);
+  const [productName, setProductName] = React.useState("");
+  const sku = skuFromName(productName || "PRODUK", submission.code === "SKU_EXISTS" ? 1 : 0);
 
   React.useEffect(() => {
     let active = true;
@@ -72,7 +76,7 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
     const data = new FormData(event.currentTarget);
     const text = (name: string) => String(data.get(name) ?? "").trim();
     const receipt = { ...(computed > 0 ? { purchaseTotal: text("purchaseTotal") } : {}), ...(cartons ? { cartonCount: Number(count), unitsPerCarton: Number(units) } : {}) };
-    submission.submit({ name: text("name"), sku: text("sku"), category: text("category"), unit: text("unit"), minStock: Number(text("minStock")), sellingPrice: text("sellingPrice"), supplier: text("supplier") || null, shelfLocation: text("shelfLocation") || null, barcode: text("barcode") || null, description: text("description") || null, openingQuantity: computed, ...receipt, ...photo.patch });
+    submission.submit({ name: text("name"), sku, category: text("category"), unit: text("unit"), minStock: Number(text("minStock")), sellingPrice: text("sellingPrice"), supplier: text("supplier") || null, shelfLocation: text("shelfLocation") || null, barcode: text("barcode") || null, description: text("description") || null, openingQuantity: computed, ...receipt, ...photo.patch });
   }
 
   if (created) return <div className="p-6 text-center space-y-5"><div className="mx-auto flex h-20 w-20 items-center justify-center border-[3px] border-ink bg-emerald-50 shadow-hard-sm motion-safe:animate-check-pop"><Check className="h-12 w-12 text-emerald-700" /></div><DialogTitle className="font-bold uppercase text-xl">{t.modals.addProduct.successTitle}</DialogTitle><DialogDescription>{created.name} · {created.sku}</DialogDescription><Button onClick={onClose}>{t.modals.finish}</Button><Button variant="outline" onClick={() => { photo.reset(); setFormDefaults(defaults); setCreated(null); setBarcode(""); setQuantity("0"); setCartons(false); setCount(""); setUnits(""); }}>{t.modals.addProduct.addAnother}</Button></div>;
@@ -84,8 +88,12 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
       <fieldset disabled={submission.blocked || photo.processing} className="space-y-4">
         <ProductPhotoField value={photo} disabled={submission.blocked} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <ProductFormField id="product-name" name="name" label={`${t.products.form.nameLabel} *`} required maxLength={120} error={submission.fieldErrors.name?.[0]} />
-          <ProductFormField id="product-sku" name="sku" label={`${t.products.form.skuLabel} *`} required minLength={3} maxLength={64} error={submission.fieldErrors.sku?.[0]} />
+          <ProductFormField id="product-name" name="name" label={`${t.products.form.nameLabel} *`} required maxLength={120} error={submission.fieldErrors.name?.[0]} onChange={(e) => setProductName(e.currentTarget.value)} />
+          <div className="space-y-1.5 min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.products.form.skuLabel}</span>
+            <code id="product-sku" className={cn("inline-flex h-10 items-center px-1.5 text-sm font-mono tabular-nums font-bold bg-white text-ink border-[3px] border-ink uppercase", submission.code === "SKU_EXISTS" && "border-destructive text-destructive")}>{sku}</code>
+            {submission.code === "SKU_EXISTS" && <p role="alert" className="text-xs text-destructive">{t.products.persistent.errors.SKU_EXISTS}</p>}
+          </div>
           <ProductFormField id="product-category" name="category" label={`${t.products.form.categoryLabel} *`} required maxLength={120} list="add-categories" />
           <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} list="add-units" defaultValue={formDefaults.defaultUnit} />
           <ProductFormField id="product-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} type="number" required min={0} max={1_000_000_000} step={1} defaultValue={formDefaults.defaultMinStock} />
