@@ -234,7 +234,7 @@ export const idTranslations: Translations = {
     },
     form: {
       nameLabel: "Nama Produk",
-      skuLabel: "Kode SKU (otomatis)",
+      skuLabel: "Kode SKU / PLU (otomatis)",
       categoryLabel: "Kategori Produk",
       priceLabel: "Harga Satuan (IDR)",
       minStockLabel: "Batas Stok Minimum",
@@ -624,7 +624,7 @@ export const idTranslations: Translations = {
       subtitle: "Daftarkan produk baru dengan SKU & detail",
       nameLabel: "Nama Produk",
       namePlaceholder: "contoh: ESP32-WROOM-32D Module",
-      skuLabel: "Kode SKU (otomatis)",
+      skuLabel: "Kode SKU / PLU (otomatis)",
       categoryLabel: "Kategori",
       selectCategory: "Pilih kategori",
       unitLabel: "Satuan",
