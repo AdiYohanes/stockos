@@ -10,7 +10,7 @@ _Avoid_: Warehouse, tenant, company group
 
 **Pemilik (Owner)**:
 The sole account holder who registers and operates the single warung in StockOS. Staff accounts and registration for multiple independent shops are outside the agreed initial scope.
-_Avoid_: Customer, supplier
+_Avoid_: Customer, buyer, tenant
 
 **SKU**:
 The warung's required unique product code, retained across product archives. It identifies the product independently of its packaging barcode. Only eligible permanent deletion releases a SKU for reuse by a new product; retained evidence still identifies the original product.
@@ -83,3 +83,11 @@ _Avoid_: Damage/loss transaction, POS sale, payment record
 **Foto produk (Product photo)**:
 One optional image per product, compressed at upload into fixed-size variants and identified by content hash. Several products may reference one stored image without copying it. Replacing a photo is an auditable product change, not a stock movement; a product may remain without a photo.
 _Avoid_: Product gallery, multiple photos per product, visual matching, image URL from outside
+
+**Kategori (Product category)**:
+A managed grouping for organizing warung goods and guiding automated SKU prefixing. Products store the category name directly to keep historical records resilient against category modifications.
+_Avoid_: Department, aisle, taxonomy hierarchy
+
+**Pemasok (Supplier)**:
+A lightweight directory of distributors, sales agents, or wholesale shops where the warung restocks goods, with optional contact details. It serves as an operational reference and does not represent purchase orders, credit accounts, or accounts payable.
+_Avoid_: Vendor ledger, creditor, purchasing lifecycle

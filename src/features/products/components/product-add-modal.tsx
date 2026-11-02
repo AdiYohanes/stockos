@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { createProductAction, getTextSuggestionsAction } from "../actions";
+import { createCategoryAction } from "@/features/settings/actions";
 import type { ProductDto } from "../schemas/product-rpc.schema";
 import { useProductSubmission, type OnProductCommitted } from "../hooks/use-product-submission";
 import { skuFromPlu } from "../sku";
 import { WARUNG_CATEGORIES, WARUNG_UNITS } from "../constants";
 import { ProductBarcodeScanner } from "./product-barcode-scanner";
 import { ProductPhotoField, usePhotoDraft } from "./product-photo-field";
+import { SupplierQuickAddDialog } from "./supplier-quick-add-dialog";
 
 export type ProductCreationDefaults = { defaultUnit: string; defaultMinStock: number };
 
@@ -28,6 +30,33 @@ interface ProductAddModalProps {
 
 export function ProductFormField({ label, id, error, ...props }: React.ComponentProps<typeof Input> & { label: string; id: string; error?: string }) {
   return <div className="space-y-1.5 min-w-0"><Label htmlFor={id} className="text-[10px] font-bold uppercase tracking-widest text-ink">{label}</Label><Input {...props} id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} className="h-10 rounded-none border-[3px] border-ink bg-white font-mono shadow-none focus-visible:shadow-hard-sm" />{error && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">{error}</p>}</div>;
+}
+
+// Quick "+ Tambah '[X]'" helper for the category combobox, shared by add and edit modals.
+export function useTaxonomyQuickAdd(refresh: () => void) {
+  const { t } = useI18n();
+  const [pendingKind, setPendingKind] = React.useState<"category" | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function add(kind: "category", name: string): Promise<string | null> {
+    const trimmed = name.trim();
+    if (!trimmed || pendingKind) return null;
+    setPendingKind(kind);
+    setError(null);
+    const result = await createCategoryAction({ requestId: crypto.randomUUID(), name: trimmed });
+    setPendingKind(null);
+    if (!result.ok) {
+      const message = result.code === "TAXONOMY_EXISTS" || result.code === "VALIDATION_ERROR"
+        ? result.message
+        : t.products.persistent.errors[result.code] || t.common.error;
+      setError(message);
+      return null;
+    }
+    refresh();
+    return trimmed;
+  }
+
+  return { pendingKind, error, setError, add };
 }
 
 function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaults: ProductCreationDefaults; active: boolean; onClose: () => void; onCommitted: OnProductCommitted; onBlocked: (blocked: boolean) => void }) {
@@ -51,22 +80,24 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
   const computed = cartons ? Number(count) * Number(units) : Number(quantity);
   const [productName, setProductName] = React.useState("");
   const [productCategory, setProductCategory] = React.useState("");
+  const [productSupplier, setProductSupplier] = React.useState("");
+  const [supplierDialogOpen, setSupplierDialogOpen] = React.useState(false);
   const sku = skuFromPlu(productCategory, productName || "PRODUK", submission.code === "SKU_EXISTS" ? 1 : 0);
 
-  React.useEffect(() => {
-    let active = true;
+  const loadSuggestions = React.useCallback(() => {
     React.startTransition(async () => {
       try {
         const categories = await getTextSuggestionsAction({ kind: "category", prefix: "" });
         const suppliers = await getTextSuggestionsAction({ kind: "supplier", prefix: "" });
-        if (active) setSuggestions({
+        setSuggestions({
           category: categories.ok && categories.data.length > 0 ? Array.from(new Set([...categories.data, ...WARUNG_CATEGORIES])) : [...WARUNG_CATEGORIES],
           supplier: suppliers.ok ? suppliers.data.slice(0, 30) : [],
         });
       } catch { /* Suggestions are optional; free text remains available. */ }
     });
-    return () => { active = false; };
   }, []);
+  React.useEffect(() => { loadSuggestions(); }, [loadSuggestions]);
+  const quickAdd = useTaxonomyQuickAdd(loadSuggestions);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,12 +111,13 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
     submission.submit({ name: text("name"), sku, category: text("category"), unit: text("unit"), minStock: Number(text("minStock")), sellingPrice: text("sellingPrice"), supplier: text("supplier") || null, shelfLocation: text("shelfLocation") || null, barcode: text("barcode") || null, description: text("description") || null, openingQuantity: computed, ...receipt, ...photo.patch });
   }
 
-  if (created) return <div className="p-6 text-center space-y-5"><div className="mx-auto flex h-20 w-20 items-center justify-center border-[3px] border-ink bg-emerald-50 shadow-hard-sm motion-safe:animate-check-pop"><Check className="h-12 w-12 text-emerald-700" /></div><DialogTitle className="font-bold uppercase text-xl">{t.modals.addProduct.successTitle}</DialogTitle><DialogDescription>{created.name} · {created.sku}</DialogDescription><Button onClick={onClose}>{t.modals.finish}</Button><Button variant="outline" onClick={() => { photo.reset(); setFormDefaults(defaults); setCreated(null); setBarcode(""); setQuantity("0"); setCartons(false); setCount(""); setUnits(""); setProductName(""); setProductCategory(""); }}>{t.modals.addProduct.addAnother}</Button></div>;
+  if (created) return <div className="p-6 text-center space-y-5"><div className="mx-auto flex h-20 w-20 items-center justify-center border-[3px] border-ink bg-emerald-50 shadow-hard-sm motion-safe:animate-check-pop"><Check className="h-12 w-12 text-emerald-700" /></div><DialogTitle className="font-bold uppercase text-xl">{t.modals.addProduct.successTitle}</DialogTitle><DialogDescription>{created.name} · {created.sku}</DialogDescription><Button onClick={onClose}>{t.modals.finish}</Button><Button variant="outline" onClick={() => { photo.reset(); setFormDefaults(defaults); setCreated(null); setBarcode(""); setQuantity("0"); setCartons(false); setCount(""); setUnits(""); setProductName(""); setProductCategory(""); setProductSupplier(""); }}>{t.modals.addProduct.addAnother}</Button></div>;
 
   return <form onSubmit={submit}>
     <div className="border-b-[3px] border-ink px-5 py-4"><DialogTitle className="flex items-center gap-3 text-lg font-bold uppercase"><PackagePlus className="h-5 w-5" />{t.modals.addProduct.title}</DialogTitle><DialogDescription className="text-xs font-mono mt-1">{c.create}</DialogDescription></div>
     <DialogBody className="max-h-[65vh] overflow-y-auto">
       {submission.error && <p role="alert" className="text-sm text-destructive">{submission.error}</p>}
+      {quickAdd.error && <p role="alert" className="text-xs text-destructive">{quickAdd.error}</p>}
       <fieldset disabled={submission.blocked || photo.processing} className="space-y-4">
         <ProductPhotoField value={photo} disabled={submission.blocked} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -95,11 +127,42 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
             <code id="product-sku" className={cn("inline-flex h-10 items-center px-1.5 text-sm font-mono tabular-nums font-bold bg-white text-ink border-[3px] border-ink uppercase", submission.code === "SKU_EXISTS" && "border-destructive text-destructive")}>{sku}</code>
             {submission.code === "SKU_EXISTS" && <p role="alert" className="text-xs text-destructive">{t.products.persistent.errors.SKU_EXISTS}</p>}
           </div>
-          <ProductFormField id="product-category" name="category" label={`${t.products.form.categoryLabel} *`} required maxLength={120} list="add-categories" onChange={(e) => setProductCategory(e.currentTarget.value)} />
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="product-category" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.products.form.categoryLabel} *</Label>
+              {productCategory.trim() && !suggestions.category.includes(productCategory.trim()) && (
+                <Button type="button" variant="outline" size="sm" disabled={quickAdd.pendingKind !== null} onClick={() => { void quickAdd.add("category", productCategory).then(added => { if (added) setProductCategory(added); }); }}
+                  className="h-5 rounded-none border-[1.5px] border-ink px-1.5 py-0 font-mono text-[10px] font-bold shadow-neo-sm">
+                  <Plus className="mr-0.5 h-3 w-3" />{t.settings.taxonomyQuickAddCategory.replace("{name}", productCategory.trim())}
+                </Button>
+              )}
+            </div>
+            <Input
+              id="product-category" name="category" required maxLength={120} list="add-categories" value={productCategory}
+              onChange={(e) => setProductCategory(e.currentTarget.value)}
+              aria-invalid={!!(submission.fieldErrors.category?.[0] || quickAdd.error && quickAdd.pendingKind === "category")}
+              className="h-10 rounded-none border-[3px] border-ink bg-white font-mono shadow-none focus-visible:shadow-hard-sm"
+            />
+            {submission.fieldErrors.category?.[0] && <p id="product-category-error" role="alert" className="text-xs text-destructive">{submission.fieldErrors.category?.[0]}</p>}
+          </div>
           <ProductFormField id="product-unit" name="unit" label={`${t.modals.addProduct.unitLabel} *`} required maxLength={30} list="add-units" defaultValue={formDefaults.defaultUnit} />
           <ProductFormField id="product-min-stock" name="minStock" label={`${t.products.form.minStockLabel} *`} type="number" required min={0} max={1_000_000_000} step={1} defaultValue={formDefaults.defaultMinStock} />
           <ProductFormField id="product-sell" name="sellingPrice" label={`${t.products.form.priceLabel} *`} required inputMode="numeric" pattern="[0-9]{1,13}" maxLength={13} error={submission.fieldErrors.sellingPrice?.[0]} />
-          <ProductFormField id="product-supplier" name="supplier" label={t.products.form.supplierLabel} maxLength={120} list="add-suppliers" />
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="product-supplier" className="text-[10px] font-bold uppercase tracking-widest text-ink">{t.products.form.supplierLabel}</Label>
+              <button type="button" aria-label={t.settings.taxonomyQuickAddSupplierTitle}
+                onClick={() => setSupplierDialogOpen(true)}
+                className="inline-flex h-5 items-center rounded-none border-[1.5px] border-ink px-1.5 font-mono text-[10px] font-bold shadow-neo-sm hover:bg-slate-100 disabled:opacity-50">
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+            <Input
+              id="product-supplier" name="supplier" maxLength={120} list="add-suppliers" value={productSupplier}
+              onChange={(e) => setProductSupplier(e.currentTarget.value)}
+              className="h-10 rounded-none border-[3px] border-ink bg-white font-mono shadow-none focus-visible:shadow-hard-sm"
+            />
+          </div>
           <ProductFormField id="product-shelf" name="shelfLocation" label={c.shelfLocation} maxLength={80} />
           <div className="min-w-0 space-y-2"><ProductFormField ref={barcodeRef} id="product-barcode" name="barcode" label={t.products.sheet.barcodeUpc} maxLength={64} value={barcode} onChange={event => setBarcode(event.target.value)} error={submission.fieldErrors.barcode?.[0]} /><ProductBarcodeScanner key={`${active}-${submission.blocked}`} active={active} blocked={submission.blocked} onApply={setBarcode} inputRef={barcodeRef} /></div>
           <ProductFormField id="product-description" name="description" label={t.products.form.descLabel} maxLength={2000} />
@@ -116,6 +179,8 @@ function AddForm({ defaults, active, onClose, onCommitted, onBlocked }: { defaul
       </fieldset>
     </DialogBody>
     <DialogFooter className="border-t-[3px] border-ink"><Button type="button" variant="outline" disabled={submission.blocked || photo.processing} onClick={onClose}>{t.common.cancel}</Button>{submission.uncertain || submission.refreshFailed ? <Button type="button" disabled={submission.pending} onClick={submission.retry}>{c.retry}</Button> : <Button type="submit" disabled={submission.pending || photo.processing}><Plus className="h-4 w-4" />{submission.pending ? c.pending : t.modals.addProduct.submit}</Button>}</DialogFooter>
+    <SupplierQuickAddDialog open={supplierDialogOpen} initialName={productSupplier} onClose={() => setSupplierDialogOpen(false)}
+      onCreated={name => { loadSuggestions(); setProductSupplier(name); setSupplierDialogOpen(false); }} />
   </form>;
 }
 

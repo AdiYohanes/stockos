@@ -6,6 +6,8 @@ import {
   SettingsTabNav,
   CompanySettingsForm,
   InventorySettingsForm,
+  CategoriesSettingsSection,
+  SuppliersSettingsSection,
   SystemResetModal,
   SettingsTab,
   type ShopSettingsDto,
@@ -264,6 +266,10 @@ export function SettingsContainer({
             onChange={changeDraft}
           />
         )}
+
+        {activeTab === "categories" && <CategoriesSettingsSection disabled={blocked} />}
+
+        {activeTab === "suppliers" && <SuppliersSettingsSection disabled={blocked} />}
       </div>
 
       {/* System Reset Modal */}
