@@ -36,6 +36,7 @@ export const idTranslations: Translations = {
   },
   nav: {
     dashboard: "Dashboard",
+    kasir: "Kasir",
     products: "Produk",
     inventory: "Inventaris",
     suppliers: "Pemasok",

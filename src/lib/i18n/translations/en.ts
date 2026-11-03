@@ -36,6 +36,7 @@ export const enTranslations: Translations = {
   },
   nav: {
     dashboard: "Dashboard",
+    kasir: "Cashier",
     products: "Products",
     inventory: "Inventory",
     suppliers: "Suppliers",

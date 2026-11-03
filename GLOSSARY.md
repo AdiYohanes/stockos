@@ -80,6 +80,10 @@ _Avoid_: Purchase order, sales revenue
 Sold goods manually recorded to reduce stock when no POS integration exists. It records sold quantity, not payment, a sales invoice, or realized revenue.
 _Avoid_: Damage/loss transaction, POS sale, payment record
 
+**Kasir harian (Daily sales tally)**:
+A high-speed operational tally sheet for recording walk-in sales throughout the day, reconciled and committed as a single batch of sold stock movements at closing. It calculates expected cash from selling prices without maintaining a cash drawer ledger or printing per-customer receipts.
+_Avoid_: POS, mesin kasir, invoice penjualan, buku kas harian
+
 **Foto produk (Product photo)**:
 One optional image per product, compressed at upload into fixed-size variants and identified by content hash. Several products may reference one stored image without copying it. Replacing a photo is an auditable product change, not a stock movement; a product may remain without a photo.
 _Avoid_: Product gallery, multiple photos per product, visual matching, image URL from outside

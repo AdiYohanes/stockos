@@ -36,6 +36,7 @@ export interface Translations {
   };
   nav: {
     dashboard: string;
+    kasir: string;
     products: string;
     inventory: string;
     suppliers: string;

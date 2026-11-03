@@ -7,8 +7,8 @@ import { NAV_ITEMS } from "@/components/layout/sidebar";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
-// We select top 4 items for mobile bottom nav
-const MOBILE_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
+// We select primary 5 items for mobile bottom nav
+const MOBILE_NAV_ITEMS = NAV_ITEMS.slice(0, 5);
 
 export function MobileBottomNav() {
   const pathname = usePathname();
