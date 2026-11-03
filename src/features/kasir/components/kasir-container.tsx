@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
+import type { CloseDailyRegisterResult } from "../types";
+import type { CloseDailyRegisterServerInput } from "../actions";
 import { useKasir } from "../hooks/use-kasir";
 import { ProductCatalogGrid } from "./product-catalog-grid";
 import { TallySheet } from "./tally-sheet";
@@ -11,9 +13,10 @@ import { CheckCircle2, Calculator, X } from "lucide-react";
 
 interface KasirContainerProps {
   products: ProductDto[];
+  onCloseRegister?: (input: CloseDailyRegisterServerInput) => Promise<CloseDailyRegisterResult>;
 }
 
-export function KasirContainer({ products }: KasirContainerProps) {
+export function KasirContainer({ products, onCloseRegister }: KasirContainerProps) {
   const {
     products: filteredProducts,
     tally,
@@ -158,6 +161,7 @@ export function KasirContainer({ products }: KasirContainerProps) {
         tally={tally}
         totals={totals}
         onSuccess={handleSuccessClose}
+        onCloseRegister={onCloseRegister}
       />
     </div>
   );

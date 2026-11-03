@@ -13,9 +13,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, DollarSign, Loader2 } from "lucide-react";
-import type { TallyItem, TallyTotals } from "../types";
+import type { TallyItem, TallyTotals, CloseDailyRegisterResult } from "../types";
 import { calculateCashDiscrepancy } from "../tally";
-import { closeDailyRegisterAction } from "../actions";
+import { closeDailyRegisterAction, type CloseDailyRegisterServerInput } from "../actions";
 
 interface ClosingModalProps {
   open: boolean;
@@ -23,6 +23,7 @@ interface ClosingModalProps {
   tally: TallyItem[];
   totals: TallyTotals;
   onSuccess: (summary: { totalUnits: number; expectedRevenue: number; reference: string }) => void;
+  onCloseRegister?: (input: CloseDailyRegisterServerInput) => Promise<CloseDailyRegisterResult>;
 }
 
 export function ClosingModal({
@@ -31,6 +32,7 @@ export function ClosingModal({
   tally,
   totals,
   onSuccess,
+  onCloseRegister,
 }: ClosingModalProps) {
   const [actualCashStr, setActualCashStr] = React.useState("");
   const [note, setNote] = React.useState("");
@@ -68,7 +70,8 @@ export function ClosingModal({
     setErrorMessage(null);
 
     try {
-      const res = await closeDailyRegisterAction({
+      const executeClose = onCloseRegister ?? closeDailyRegisterAction;
+      const res = await executeClose({
         items: tally.map((item) => ({
           productId: item.productId,
           name: item.name,

@@ -13,6 +13,7 @@ import {
 import { uploadProductPhoto, removeUnreferencedPhotos } from "./photo-storage";
 
 function revalidateAll() {
+  revalidatePath("/dashboard");
   revalidatePath("/products");
   revalidatePath("/inventory");
 }
@@ -63,7 +64,7 @@ export async function deleteProductAction(input: unknown): Promise<ProductMutati
   const result = await productMutation(authorization.client, "stockos_delete_product", DeleteProductInputSchema, input);
   if (result.ok) {
     revalidateAll();
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     revalidatePath("/reports");
     const photo = result.data.product.photo;
     if (photo) await removeUnreferencedPhotos([photo.display.hash, photo.thumb.hash], authorization.client);

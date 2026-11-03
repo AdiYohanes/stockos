@@ -47,8 +47,8 @@ export function SettingsTabNav({
   ];
 
   return (
-    <div className="flex border-b border-slate-200 bg-white overflow-x-auto no-scrollbar">
-      <nav className="flex gap-2 p-1" aria-label="Settings Tabs">
+    <div className="flex border-b-[3px] border-ink bg-white overflow-x-auto no-scrollbar">
+      <nav className="flex gap-1.5" aria-label="Settings Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -61,13 +61,13 @@ export function SettingsTabNav({
               aria-current={isActive ? "page" : undefined}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex items-center gap-2 rounded-none px-3.5 py-2 font-mono text-xs font-semibold transition-all whitespace-nowrap",
+                "flex items-center gap-2 rounded-none px-3.5 py-2 font-mono text-xs font-semibold uppercase tracking-wider transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid",
                 isActive
-                  ? "bg-[#543afd] text-white border-1.5 border-black shadow-neo-sm"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  ? "bg-acid text-ink -mb-[3px] border-[3px] border-b-0 border-black shadow-none"
+                  : "text-ink/60 hover:bg-paper hover:text-ink"
               )}
             >
-              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-slate-500")} />
+              <Icon className="h-4 w-4 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );

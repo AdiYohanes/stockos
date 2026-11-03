@@ -142,7 +142,7 @@ export function SuppliersSettingsSection({ disabled }: { disabled?: boolean }) {
             <CardDescription className="text-xs text-ink/60">{t.settings.suppliersSubtitle}</CardDescription>
           </div>
           <Button size="sm" disabled={blocked} onClick={openCreate}
-            className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#4527e0]">
+            className="h-9 border-[1.5px] border-black bg-acid font-mono text-xs font-bold text-white shadow-hard-sm hover:bg-acid/85">
             <Plus className="mr-1 h-3.5 w-3.5" />{t.settings.addSupplier}
           </Button>
         </div>
@@ -164,12 +164,12 @@ export function SuppliersSettingsSection({ disabled }: { disabled?: boolean }) {
               </thead>
               <tbody>
                 {items.map(item => (
-                  <tr key={item.id} className="border-b border-slate-200">
+                  <tr key={item.id} className="border-b border-ink/15">
                     <td className="py-2 pr-3 font-bold text-ink">{item.name}</td>
                     <td className="py-2 pr-3 font-mono text-ink/80">
                       {item.phone ? (
                         <a href={`https://wa.me/${item.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 underline decoration-ink/30 underline-offset-4 hover:bg-emerald-50 hover:decoration-emerald-600">
+                          className="inline-flex items-center gap-1 underline decoration-ink/30 underline-offset-4 hover:bg-paper hover:decoration-acid">
                           <Phone className="h-3 w-3 text-ink/50" />{item.phone}
                         </a>
                       ) : "—"}
@@ -182,7 +182,7 @@ export function SuppliersSettingsSection({ disabled }: { disabled?: boolean }) {
                         <Button variant="outline" size="sm" disabled={blocked} aria-label={`${t.settings.editSupplier}: ${item.name}`} className="h-7 border-[1.5px] border-ink px-2" onClick={() => openEdit(item)}>
                           <Edit2 className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="outline" size="sm" disabled={blocked} aria-label={`${t.settings.deleteSupplier}: ${item.name}`} className="h-7 border-[1.5px] border-ink px-2 hover:bg-red-50 hover:text-destructive"
+                        <Button variant="outline" size="sm" disabled={blocked} aria-label={`${t.settings.deleteSupplier}: ${item.name}`} className="h-7 border-[1.5px] border-ink px-2 hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => { setDeleting(item); setDeleteError(null); setEditing(null); setCreating(false); }}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -228,7 +228,7 @@ export function SuppliersSettingsSection({ disabled }: { disabled?: boolean }) {
               <DialogFooter className="border-t-[3px] border-ink pt-3">
                 <Button type="button" variant="outline" size="sm" disabled={pending} onClick={closeDialogs}>{t.settings.taxonomyCancel}</Button>
                 <Button type="button" size="sm" disabled={pending}
-                  className="border-1.5 border-black bg-red-600 font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-red-700"
+                  className="border-[1.5px] border-black bg-destructive font-mono text-xs font-bold text-white shadow-hard-sm hover:brightness-95"
                   onClick={remove}>{pending ? t.products.persistent.pending : t.settings.taxonomyDeleteConfirm}</Button>
               </DialogFooter>
             </div>

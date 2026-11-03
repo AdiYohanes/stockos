@@ -23,7 +23,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { titleKey: "dashboard", href: "/", icon: LayoutDashboard },
+  { titleKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
   { titleKey: "kasir", href: "/kasir", icon: Calculator },
   { titleKey: "products", href: "/products", icon: Package },
   { titleKey: "inventory", href: "/inventory", icon: Boxes },
@@ -50,7 +50,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       {/* Brand Header */}
       <div className="p-5 border-b-[3px] border-border flex items-center gap-3">
         <Link
-          href="/"
+          href="/dashboard"
           onClick={onNavigate}
           className="flex items-center gap-3 hover:opacity-90"
         >
@@ -71,8 +71,8 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
         </p>
         {NAV_ITEMS.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           const title = t.nav[item.titleKey];

@@ -36,7 +36,7 @@ export function LoginForm() {
         return;
       }
       setPassword("");
-      router.replace("/");
+      router.replace("/dashboard");
       router.refresh();
     } catch {
       setMessage(t.auth.errors.INTERNAL_ERROR);

@@ -85,6 +85,7 @@ export async function closeDailyRegisterAction(
   revalidatePath("/inventory");
   revalidatePath("/reports");
   revalidatePath("/kasir");
+  revalidatePath("/dashboard");
   revalidatePath("/");
 
   return {

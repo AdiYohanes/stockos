@@ -55,6 +55,7 @@ next-env.d.ts
 .mcp.json
 .impeccable/
 .superdesign/
+.commandcode/
 .agents/
 .claude/worktrees/
 .claude/skills/

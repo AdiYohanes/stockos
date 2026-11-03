@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Save, RotateCcw, CheckCircle2, AlertCircle, Settings, Database } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Save, RotateCcw, CheckCircle2, AlertCircle } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import type { TimezoneCode } from "../types";
 
@@ -11,6 +9,7 @@ interface SettingsHeaderProps {
   hasUnsavedChanges: boolean;
   lastSavedMessage: string | null;
   updatedAt: string;
+  version: string;
   timezone: TimezoneCode;
   isSaving?: boolean;
   disabled?: boolean;
@@ -22,6 +21,7 @@ export function SettingsHeader({
   hasUnsavedChanges,
   lastSavedMessage,
   updatedAt,
+  version,
   timezone,
   isSaving = false,
   disabled = false,
@@ -45,81 +45,72 @@ export function SettingsHeader({
   }, [updatedAt, language, timezone]);
 
   return (
-    <div className="flex flex-col gap-4 border-b border-ink pb-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-none border border-black bg-[#543afd] text-white shadow-neo shrink-0">
-            <Settings className="h-5.5 w-5.5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                {t.settings.title}
-              </h1>
-              <Badge
-                variant="outline"
-                className="border-black bg-muted font-mono text-[13px] uppercase tracking-wider text-foreground shadow-neo-sm"
-              >
-                {t.settings.badgeText}
-              </Badge>
-              {hasUnsavedChanges && (
-                <Badge className="animate-pulse border-black bg-amber-400 font-mono text-[13px] uppercase tracking-wider text-black shadow-neo-sm">
-                  <AlertCircle className="mr-1 h-3.5 w-3.5" />{" "}
-                  {t.settings.unsavedChanges}
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
-              {t.settings.subtitle}
-            </p>
-          </div>
+    <div className="flex flex-col gap-5 border-b-[3px] border-ink pb-6">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[.18em] text-ink/50 mb-2">
+            {t.nav.platform} / {t.nav.settings}
+          </p>
+          <h1 className="font-heading font-[900] uppercase tracking-tighter text-4xl md:text-5xl leading-[.9]">
+            {t.settings.title}{" "}
+            <span className="bg-acid px-2 mt-1 xl:mt-0 inline-block w-fit">
+              {t.settings.badgeText}
+            </span>
+          </h1>
+          {hasUnsavedChanges && (
+            <span className="mt-3 inline-flex items-center animate-pulse border-[1.5px] border-ink bg-status-warning px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-ink shadow-hard-sm">
+              <AlertCircle className="mr-1 h-3 w-3" />
+              {t.settings.unsavedChanges}
+            </span>
+          )}
+          <p className="text-sm text-ink/60 mt-2 max-w-prose">
+            {t.settings.subtitle}
+          </p>
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={onResetModalOpen}
             disabled={disabled || isSaving}
-            className="h-9 border-black font-mono text-xs font-semibold text-ink hover:bg-amber-50 hover:text-amber-950 active:translate-y-px"
+            className="press inline-flex h-10 items-center justify-center gap-2 border-[3px] border-ink bg-white px-4 font-display font-bold uppercase text-xs text-ink shadow-hard-sm hover:bg-paper disabled:opacity-50 disabled:shadow-none"
           >
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{" "}
+            <RotateCcw className="h-3.5 w-3.5" />
             {t.settings.resetSystemData}
-          </Button>
+          </button>
 
-          <Button
-            size="sm"
+          <button
+            type="button"
             onClick={onSave}
             disabled={!hasUnsavedChanges || disabled || isSaving}
-            className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#462ee0] active:translate-y-px disabled:opacity-50 disabled:shadow-none"
+            className="press inline-flex h-10 items-center justify-center gap-2 border-[3px] border-ink bg-acid px-5 font-display font-[900] uppercase text-xs text-ink shadow-hard hover:brightness-105 disabled:opacity-50 disabled:shadow-none"
           >
-            <Save className={`mr-1.5 h-3.5 w-3.5 ${isSaving ? "animate-spin" : ""}`} />{" "}
+            <Save className={`h-3.5 w-3.5 ${isSaving ? "animate-spin" : ""}`} />
             {isSaving ? t.products.persistent.pending : t.settings.saveChanges}
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Meta feedback bar */}
-      <div className="flex items-center justify-between rounded-none border border-ink bg-slate-100/70 px-3.5 py-2 font-mono text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-ink bg-paper px-3.5 py-2 font-mono text-[11px]">
         <div className="flex items-center gap-2">
-          <span className="text-slate-500">
+          <span className="uppercase tracking-wider text-ink/60">
             {t.settings.lastUpdated}
           </span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-bold tabular-nums text-ink">
             {formattedDate}
+          </span>
+          <span aria-hidden="true" className="text-ink/30">·</span>
+          <span className="font-bold tabular-nums text-ink">
+            v{version}
           </span>
         </div>
 
-        {lastSavedMessage ? (
-          <div role="status" className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+        {lastSavedMessage && (
+          <div role="status" className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-ink">
+            <CheckCircle2 className="h-4 w-4 text-status-healthy" />
             <span>{lastSavedMessage}</span>
           </div>
-        ) : (
-          <span className="text-[11px] text-slate-600 flex items-center gap-1.5">
-            <Database className="h-3.5 w-3.5 text-[#543afd]" />
-            Tersimpan di Supabase PostgreSQL
-          </span>
         )}
       </div>
     </div>

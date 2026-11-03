@@ -165,9 +165,11 @@ begin
     'data', jsonb_build_object(case v_table when 'categories' then 'category' else 'supplier' end, v_after, 'administrativeEventId', v_admin));
   update stockos_private.mutation_requests set result = v_result, completed_at = clock_timestamp() where request_id = v_request;
   return v_result;
-exception when unique_violation then
-  return stockos_private.safe_failure('TAXONOMY_EXISTS');
-exception when others then return stockos_private.safe_failure(sqlerrm);
+exception
+  when unique_violation then
+    return stockos_private.safe_failure('TAXONOMY_EXISTS');
+  when others then
+    return stockos_private.safe_failure(sqlerrm);
 end $$;
 
 create function public.stockos_create_category(p_input jsonb)

@@ -121,7 +121,7 @@ export function CategoriesSettingsSection({ disabled }: { disabled?: boolean }) 
             <CardDescription className="text-xs text-ink/60">{t.settings.categoriesSubtitle}</CardDescription>
           </div>
           <Button size="sm" disabled={blocked} onClick={() => { setEditing(null); setCreating(true); setName(""); setDialogError(null); setDeleting(null); setDeleteError(null); }}
-            className="h-9 border-1.5 border-black bg-[#543afd] font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-[#4527e0]">
+            className="h-9 border-[1.5px] border-black bg-acid font-mono text-xs font-bold text-white shadow-hard-sm hover:bg-acid/85">
             <Plus className="mr-1 h-3.5 w-3.5" />{t.settings.addCategory}
           </Button>
         </div>
@@ -142,7 +142,7 @@ export function CategoriesSettingsSection({ disabled }: { disabled?: boolean }) 
               </thead>
               <tbody>
                 {items.map(item => (
-                  <tr key={item.id} className="border-b border-slate-200">
+                  <tr key={item.id} className="border-b border-ink/15">
                     <td className="py-2 pr-3 font-bold text-ink">{item.name}</td>
                     <td className="py-2 pr-3 text-right">
                       <Badge variant="outline" className="rounded-none border-[1.5px] border-ink font-mono text-[10px]">{item.productCount}</Badge>
@@ -153,7 +153,7 @@ export function CategoriesSettingsSection({ disabled }: { disabled?: boolean }) 
                           onClick={() => { setEditing(item); setName(item.name); setDialogError(null); setDeleting(null); setDeleteError(null); }}>
                           <Edit2 className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="outline" size="sm" disabled={blocked} aria-label={`${t.settings.deleteCategory}: ${item.name}`} className="h-7 border-[1.5px] border-ink px-2 hover:bg-red-50 hover:text-destructive"
+                        <Button variant="outline" size="sm" disabled={blocked} aria-label={`${t.settings.deleteCategory}: ${item.name}`} className="h-7 border-[1.5px] border-ink px-2 hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => { setDeleting(item); setDeleteError(null); setEditing(null); setName(""); }}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -200,7 +200,7 @@ export function CategoriesSettingsSection({ disabled }: { disabled?: boolean }) 
               <DialogFooter className="border-t-[3px] border-ink pt-3">
                 <Button type="button" variant="outline" size="sm" disabled={pending} onClick={closeDialogs}>{t.settings.taxonomyCancel}</Button>
                 <Button type="button" size="sm" disabled={pending}
-                  className="border-1.5 border-black bg-red-600 font-mono text-xs font-bold text-white shadow-neo-sm hover:bg-red-700"
+                  className="border-[1.5px] border-black bg-destructive font-mono text-xs font-bold text-white shadow-hard-sm hover:brightness-95"
                   onClick={remove}>{pending ? t.products.persistent.pending : t.settings.taxonomyDeleteConfirm}</Button>
               </DialogFooter>
             </div>

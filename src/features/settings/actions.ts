@@ -16,6 +16,7 @@ export async function updateShopSettingsAction(input: unknown): Promise<Settings
   const result = await updateShopSettings(input);
   if (result.ok) {
     revalidatePath("/settings");
+    revalidatePath("/dashboard");
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath("/inventory");
