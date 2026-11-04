@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn } from "@/features/auth/actions";
@@ -79,10 +78,6 @@ export function LoginForm() {
             {pending ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{t.common.loading}</> : <>{t.auth.signInButton}<ArrowRight className="h-4 w-4" aria-hidden="true" /></>}
           </button>
         </form>
-        <div className="flex flex-wrap items-center justify-between gap-x-4">
-          <Link href="/reset" className="inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">{t.auth.forgotPassword}</Link>
-          <Link href="/signup" className="inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">{t.auth.setupTitle}</Link>
-        </div>
       </div>
       <div aria-hidden="true" className="border-t-[3px] border-ink bg-primary px-6 py-3 font-mono text-xs font-bold text-primary-foreground">/ LOGIN</div>
     </div>
