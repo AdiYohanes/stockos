@@ -19,7 +19,7 @@ export default function RootError({
         error={error}
         onRetry={() => retry()}
         retryLabel="Coba Lagi"
-        homeHref="/"
+        homeHref="/dashboard"
         homeLabel="Dashboard"
         logLabel="Root Application Error:"
       />

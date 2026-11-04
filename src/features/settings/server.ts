@@ -31,6 +31,8 @@ const settingsMessages: Record<ProductErrorCode, string> = {
   VERSION_CONFLICT: "Pengaturan telah diperbarui oleh sesi lain. Muat ulang dan periksa data terbaru sebelum menyimpan.",
   REQUEST_ID_CONFLICT: "ID permintaan telah digunakan untuk payload yang berbeda.",
   LIMIT_EXCEEDED: "Batas data terlampaui.",
+  TAXONOMY_EXISTS: "Nama kategori atau pemasok sudah digunakan.",
+  TAXONOMY_IN_USE: "Data master ini masih dipakai oleh produk. Pindahkan atau hapus produk terkait dahulu.",
   INTERNAL_ERROR: "Permintaan gagal dikonfirmasi. Coba lagi dengan ID permintaan yang sama.",
 };
 
@@ -56,6 +58,7 @@ function validationFailure(error: z.ZodError): ProductFailure {
   }
   return settingsFailure("VALIDATION_ERROR", fieldErrors);
 }
+export { validationFailure as settingsValidationFailure };
 
 function transportFailure(error: { message: string; code?: string }): ProductFailure {
   if (error.code === "42501" && error.message === "UNAUTHENTICATED") return settingsFailure("UNAUTHENTICATED");
@@ -63,11 +66,13 @@ function transportFailure(error: { message: string; code?: string }): ProductFai
   if (error.code === "42501" && error.message === "FORBIDDEN") return settingsFailure("FORBIDDEN");
   return settingsFailure("INTERNAL_ERROR");
 }
+export { transportFailure as settingsTransportFailure };
 
 function rpcFailure(data: unknown): ProductFailure | null {
   const parsed = ProductRpcFailureSchema.safeParse(data);
   return parsed.success ? settingsFailure(parsed.data.code, undefined, parsed.data.traceId) : null;
 }
+export { rpcFailure as settingsRpcFailure };
 
 export async function getShopSettings(
   input: unknown = {},

@@ -7,8 +7,8 @@ import { NAV_ITEMS } from "@/components/layout/sidebar";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
-// We select top 4 items for mobile bottom nav
-const MOBILE_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
+// We select primary 5 items for mobile bottom nav
+const MOBILE_NAV_ITEMS = NAV_ITEMS.slice(0, 5);
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -18,8 +18,8 @@ export function MobileBottomNav() {
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-card border-t-[3px] border-border flex">
       {MOBILE_NAV_ITEMS.map((item) => {
         const isActive =
-          item.href === "/"
-            ? pathname === "/"
+          item.href === "/dashboard"
+            ? pathname === "/dashboard"
             : pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         const title = t.nav[item.titleKey];

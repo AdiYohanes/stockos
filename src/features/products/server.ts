@@ -8,10 +8,12 @@ import {
   ProductHistoryPageSchema, ProductMetricsInputSchema, ProductMetricsSchema,
   ProductMutationSuccessSchema, ProductRpcFailureSchema, ProductsPageSchema,
   TextSuggestionsInputSchema, TextSuggestionsSchema,
-  type ProductErrorCode, type ProductFailure, type ProductMutationResult, type ProductReadResult,
+  type ProductErrorCode, type ProductFailure, type ProductMutationResult,
 } from "./schemas/product-rpc.schema";
 
 type SessionClient = Awaited<ReturnType<typeof createSessionClient>>;
+export type ProductReadResult<T> = { ok: true; data: T } | ProductFailure;
+export type SessionClientType = SessionClient;
 const messages: Record<ProductErrorCode, string> = {
   VALIDATION_ERROR: "Check the submitted fields.",
   UNAUTHENTICATED: "Sign in again. Your unsaved changes are preserved.",
@@ -26,6 +28,8 @@ const messages: Record<ProductErrorCode, string> = {
   VERSION_CONFLICT: "Product changed. Review current data before submitting again.",
   REQUEST_ID_CONFLICT: "This request ID was already used for a different submission.",
   LIMIT_EXCEEDED: "This change exceeds the supported stock or cost limit.",
+  TAXONOMY_EXISTS: "This category or supplier name is already in use.",
+  TAXONOMY_IN_USE: "This master data is still used by products. Reassign or remove them first.",
   INTERNAL_ERROR: "Request could not be confirmed. Retry with the same request ID.",
 };
 

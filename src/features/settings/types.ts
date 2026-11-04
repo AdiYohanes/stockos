@@ -1,6 +1,6 @@
 import type { ShopSettingsDto, UpdateShopSettingsInput } from "./schemas/settings-rpc.schema";
 
-export type SettingsTab = "company" | "inventory";
+export type SettingsTab = "company" | "inventory" | "categories" | "suppliers";
 
 export type TimezoneCode = "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
 

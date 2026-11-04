@@ -105,7 +105,7 @@ export const ProductMutationDataSchema = z.strictObject({ product: ProductDtoSch
 export const ProductErrorCodeSchema = z.enum([
   "VALIDATION_ERROR", "UNAUTHENTICATED", "EMAIL_UNVERIFIED", "FORBIDDEN", "NOT_FOUND", "SKU_EXISTS",
   "PRODUCT_ARCHIVED", "PRODUCT_HAS_STOCK", "PRODUCT_HAS_HISTORY", "IDENTITY_LOCKED", "INSUFFICIENT_STOCK", "VERSION_CONFLICT",
-  "REQUEST_ID_CONFLICT", "LIMIT_EXCEEDED", "INTERNAL_ERROR",
+  "REQUEST_ID_CONFLICT", "LIMIT_EXCEEDED", "TAXONOMY_EXISTS", "TAXONOMY_IN_USE", "INTERNAL_ERROR",
 ]);
 export const ProductRpcFailureSchema = z.strictObject({
   ok: z.literal(false), code: ProductErrorCodeSchema, message: z.string(), traceId: z.uuid().optional(),

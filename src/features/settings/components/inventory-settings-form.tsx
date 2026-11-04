@@ -36,7 +36,7 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="defaultLowStockThreshold" className="text-xs font-semibold text-ink">
-                {t.settings.defaultLowStock} <span className="text-red-500">*</span>
+                {t.settings.defaultLowStock} <span className="text-destructive">*</span>
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -65,7 +65,7 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-ink">
-              {t.settings.defaultUnitMeasure} <span className="text-red-500">*</span>
+              {t.settings.defaultUnitMeasure} <span className="text-destructive">*</span>
             </Label>
             <div className="flex gap-2">
               <Select
@@ -105,9 +105,9 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
             </p>
           </div>
 
-          <div className="rounded-none border border-amber-200 bg-amber-50/60 p-3 flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-900 leading-relaxed">
+          <div className="rounded-none border-[2px] border-ink bg-status-warning/15 p-3 flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-status-warning shrink-0 mt-0.5" />
+            <p className="text-[11px] text-ink leading-relaxed">
               <strong>Prinsip Integritas Data:</strong> Mengubah satuan atau ambang batas di sini tidak mengubah riwayat mutasi stok lama atau produk yang sudah ada di katalog.
             </p>
           </div>
@@ -125,13 +125,13 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
-          <div className="rounded-none border-[3px] border-ink bg-slate-50 p-4 space-y-3.5">
+          <div className="rounded-none border-[3px] border-ink bg-paper p-4 space-y-3.5">
             <div className="flex items-start gap-2.5">
-              <Calculator className="h-4 w-4 text-[#543afd] shrink-0 mt-0.5" />
+              <Calculator className="h-4 w-4 text-acid shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-ink">Metode Valuasi HPP</span>
-                  <Badge className="bg-purple-100 text-purple-900 border-purple-300 text-[10px] font-mono">
+                  <Badge className="rounded-none border-[1.5px] border-ink bg-acid text-white text-[10px] font-mono font-bold uppercase">
                     Rata-Rata Tertimbang
                   </Badge>
                 </div>
@@ -141,12 +141,12 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="border-t-2 border-ink/15 pt-3 flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-ink">Integritas Saldo Fisik</span>
-                  <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono">
+                  <Badge className="rounded-none border-[1.5px] border-ink bg-status-healthy/20 text-ink text-[10px] font-mono font-bold uppercase">
                     Non-Negatif
                   </Badge>
                 </div>
@@ -156,12 +156,12 @@ export function InventorySettingsForm({ values: formData, disabled = false, onCh
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
-              <Boxes className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <div className="border-t-2 border-ink/15 pt-3 flex items-start gap-2.5">
+              <Boxes className="h-4 w-4 text-status-transit shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-ink">Stok Opname & Koreksi</span>
-                  <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-[10px] font-mono">
+                  <Badge className="rounded-none border-[1.5px] border-ink bg-status-transit/15 text-ink text-[10px] font-mono font-bold uppercase">
                     Audit Terikat
                   </Badge>
                 </div>

@@ -4,5 +4,7 @@ export * from "./components/settings-header";
 export * from "./components/settings-tab-nav";
 export * from "./components/company-settings-form";
 export * from "./components/inventory-settings-form";
+export * from "./components/categories-settings-section";
+export * from "./components/suppliers-settings-section";
 export * from "./components/system-reset-modal";
 export * from "./components/settings-container";

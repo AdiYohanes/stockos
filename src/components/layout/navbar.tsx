@@ -17,8 +17,8 @@ export function Navbar({ user }: NavbarProps) {
   const { t } = useI18n();
 
   const currentNav = NAV_ITEMS.find((item) =>
-    item.href === "/"
-      ? pathname === "/"
+    item.href === "/dashboard"
+      ? pathname === "/dashboard"
       : pathname === item.href || pathname.startsWith(`${item.href}/`)
   );
 

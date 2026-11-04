@@ -22,7 +22,7 @@ export default function NotFound() {
         </p>
 
         <Link
-          href="/"
+          href="/dashboard"
           className="press inline-flex items-center justify-center gap-2 border-[3px] border-ink bg-acid px-6 py-3 font-display text-xs font-[900] uppercase tracking-wider text-ink shadow-hard-sm hover:brightness-105 cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />

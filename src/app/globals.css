@@ -348,6 +348,33 @@
   .stock-loader-box { animation: none; }
 }
 
+/* ==========================================================================
+   Marketing Ticker & Subtle Tactile Motion
+   ========================================================================== */
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
+
 /* Checkmarks (keep for UI) */
 @keyframes checkmark-draw-circle { 0% { stroke-dashoffset: 160; } 100% { stroke-dashoffset: 0; } }
 @keyframes checkmark-draw-check { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }

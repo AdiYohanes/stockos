@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #000000;
+        --ink: #ffffff;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-xhzx"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="11.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Scene 1: Hook & Value Prop -->
+      <div data-hf-id="hf-865u"
+        id="hook"
+        class="clip"
+        data-composition-id="hook"
+        data-composition-src="compositions/hook.html"
+        data-start="0"
+        data-duration="2.2"
+        data-track-index="0"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 2: Interactive Tally Register -->
+      <div data-hf-id="hf-e3bo"
+        id="tally"
+        class="clip"
+        data-composition-id="tally"
+        data-composition-src="compositions/tally.html"
+        data-start="2.2"
+        data-duration="4.0"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 3: Tutup Kasir & Rekonsiliasi Modal -->
+      <div data-hf-id="hf-eeou"
+        id="closing"
+        class="clip"
+        data-composition-id="closing"
+        data-composition-src="compositions/closing.html"
+        data-start="6.2"
+        data-duration="2.8"
+        data-track-index="2"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Scene 4: Bukti Penutupan Sukses & Outro -->
+      <div data-hf-id="hf-h7rf"
+        id="success"
+        class="clip"
+        data-composition-id="success"
+        data-composition-src="compositions/success.html"
+        data-start="9.0"
+        data-duration="2.5"
+        data-track-index="3"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <!-- Sound Effects (SFX) Track -->
+      <!-- Scene 1: Hook -->
+      <audio id="sfx-intro-whoosh" src="assets/sfx/whoosh.mp3" data-start="0.0" data-media-start="0.2" data-duration="0.8" data-volume="0.35"></audio>
+      <audio id="sfx-intro-pop" src="assets/sfx/pop.mp3" data-start="0.3" data-media-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+
+      <!-- Scene 2: Tally Interaction -->
+      <audio id="sfx-tally-whoosh" src="assets/sfx/whoosh.mp3" data-start="2.2" data-media-start="0.2" data-duration="0.8" data-volume="0.25"></audio>
+      <audio id="sfx-click-1" src="assets/sfx/click.mp3" data-start="3.05" data-media-start="1.82" data-duration="0.25" data-volume="0.4"></audio>
+      <audio id="sfx-pop-1" src="assets/sfx/pop.mp3" data-start="3.1" data-media-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+
+      <audio id="sfx-click-2" src="assets/sfx/click.mp3" data-start="3.85" data-media-start="1.82" data-duration="0.25" data-volume="0.4"></audio>
+      <audio id="sfx-pop-2" src="assets/sfx/pop.mp3" data-start="3.9" data-media-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+
+      <audio id="sfx-click-3" src="assets/sfx/click.mp3" data-start="4.6" data-media-start="1.82" data-duration="0.25" data-volume="0.4"></audio>
+      <audio id="sfx-pop-3" src="assets/sfx/pop.mp3" data-start="4.65" data-media-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+
+      <audio id="sfx-click-4" src="assets/sfx/click.mp3" data-start="5.25" data-media-start="1.82" data-duration="0.25" data-volume="0.4"></audio>
+      <audio id="sfx-pop-4" src="assets/sfx/pop.mp3" data-start="5.3" data-media-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+
+      <audio id="sfx-click-tutup" src="assets/sfx/click.mp3" data-start="5.95" data-media-start="1.82" data-duration="0.25" data-volume="0.5"></audio>
+
+      <!-- Scene 3: Closing Modal -->
+      <audio id="sfx-modal-whoosh" src="assets/sfx/whoosh.mp3" data-start="6.2" data-media-start="0.2" data-duration="0.8" data-volume="0.3"></audio>
+      <audio id="sfx-status-klop" src="assets/sfx/pop.mp3" data-start="6.9" data-media-start="0.05" data-duration="0.4" data-volume="0.45"></audio>
+      <audio id="sfx-click-confirm" src="assets/sfx/click.mp3" data-start="8.38" data-media-start="1.82" data-duration="0.25" data-volume="0.5"></audio>
+
+      <!-- Scene 4: Success Chime / Cash Register -->
+      <audio id="sfx-success-cash" src="assets/sfx/cash-register.mp3" data-start="9.0" data-media-start="0.38" data-duration="2.1" data-volume="0.5"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

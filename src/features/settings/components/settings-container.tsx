@@ -6,6 +6,8 @@ import {
   SettingsTabNav,
   CompanySettingsForm,
   InventorySettingsForm,
+  CategoriesSettingsSection,
+  SuppliersSettingsSection,
   SystemResetModal,
   SettingsTab,
   type ShopSettingsDto,
@@ -202,10 +204,10 @@ export function SettingsContainer({
   const handleConfirmReset = () => React.startTransition(() => { void execute("reset"); });
 
   const feedback = <>
-    {conflict && <div role="alert" className="border-[3px] border-amber-600 bg-amber-50 p-4 text-amber-950 rounded-none shadow-hard-sm space-y-3">
-      <p className="text-sm">{t.settings.persistentConflict}</p>
-      {current && <dl id="settings-current" className="font-mono text-xs space-y-1 break-words">
-        <dt>{p.reviewCurrent} · Rev {current.version}</dt>
+    {conflict && <div role="alert" className="border-[3px] border-ink bg-status-warning/15 p-4 text-ink rounded-none shadow-hard-sm space-y-3">
+      <p className="text-sm font-bold uppercase tracking-wide">{t.settings.persistentConflict}</p>
+      {current && <dl id="settings-current" className="font-mono text-xs space-y-1 break-words border-2 border-ink bg-white p-3">
+        <dt className="font-bold">{p.reviewCurrent} · Rev {current.version}</dt>
         <dd>{current.name} · {current.ownerName}</dd><dd>{current.phone} · {current.address}</dd>
         <dd>{current.timezone} · {current.defaultUnit} · {current.defaultMinStock}</dd>
       </dl>}
@@ -215,9 +217,9 @@ export function SettingsContainer({
         <Button type="button" variant="outline" disabled={blocked || !current} onClick={() => review(true)}>{t.settings.loadCurrent}</Button>
       </div>
     </div>}
-    {errorMessage && <div role="alert" className="border-[3px] border-red-600 bg-red-50 p-4 text-red-950 rounded-none shadow-hard-sm flex items-start gap-3">
-      <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
-      <div className="space-y-1"><h4 className="font-bold text-sm">{t.common.error}</h4><p className="text-xs leading-relaxed">{errorMessage}</p></div>
+    {errorMessage && <div role="alert" className="border-[3px] border-ink bg-destructive/10 p-4 text-ink rounded-none shadow-hard-sm flex items-start gap-3">
+      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+      <div className="space-y-1"><h4 className="font-bold text-sm uppercase tracking-wide">{t.common.error}</h4><p className="text-xs leading-relaxed">{errorMessage}</p></div>
     </div>}
     {(uncertain || refreshFailed) && <Button type="button" disabled={pending} onClick={() => React.startTransition(() => { void execute(); })}>{p.retry}</Button>}
     {pending && <p role="status">{p.pending}</p>}
@@ -230,6 +232,7 @@ export function SettingsContainer({
         hasUnsavedChanges={hasUnsavedChanges}
         lastSavedMessage={saveMessage}
         updatedAt={updatedAt}
+        version={baseline.version}
         timezone={baseline.timezone}
         isSaving={pending}
         disabled={blocked || conflict}
@@ -264,6 +267,10 @@ export function SettingsContainer({
             onChange={changeDraft}
           />
         )}
+
+        {activeTab === "categories" && <CategoriesSettingsSection disabled={blocked} />}
+
+        {activeTab === "suppliers" && <SuppliersSettingsSection disabled={blocked} />}
       </div>
 
       {/* System Reset Modal */}

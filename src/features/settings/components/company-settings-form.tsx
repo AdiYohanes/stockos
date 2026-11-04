@@ -37,7 +37,7 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
             <Label htmlFor="companyName" className="text-xs font-semibold text-ink">
-              {t.settings.storeName} <span className="text-red-500">*</span>
+              {t.settings.storeName} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="companyName"
@@ -51,7 +51,7 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
 
           <div className="space-y-1.5">
             <Label htmlFor="ownerName" className="flex items-center gap-1 text-xs font-semibold text-ink">
-              <User className="h-3.5 w-3.5 text-ink/60" /> {t.settings.fullName} <span className="text-red-500">*</span>
+              <User className="h-3.5 w-3.5 text-ink/60" /> {t.settings.fullName} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="ownerName"
@@ -69,8 +69,8 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
                 <Label htmlFor="ownerEmail" className="flex items-center gap-1 text-xs font-semibold text-ink">
                   <Mail className="h-3.5 w-3.5 text-ink/60" /> {t.settings.officialEmail}
                 </Label>
-                <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono font-semibold">
-                  <ShieldCheck className="h-3 w-3 mr-1 text-emerald-700" /> Terverifikasi
+                <Badge className="rounded-none border-[1.5px] border-ink bg-status-healthy/20 text-ink text-[10px] font-mono font-bold uppercase">
+                  <ShieldCheck className="h-3 w-3 mr-1" /> Terverifikasi
                 </Badge>
               </div>
               <Input
@@ -79,7 +79,7 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
                 value={ownerEmail}
                 readOnly
                 disabled
-                className="h-9 text-xs font-mono bg-slate-100 text-slate-700 border-[3px] border-ink rounded-none cursor-not-allowed"
+                className="h-9 text-xs font-mono bg-paper text-ink/60 border-[3px] border-ink rounded-none cursor-not-allowed opacity-70"
               />
             </div>
           )}
@@ -128,7 +128,7 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
         <CardContent className="space-y-4 pt-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-ink">
-              {t.settings.timezone} <span className="text-red-500">*</span>
+              {t.settings.timezone} <span className="text-destructive">*</span>
             </Label>
             <Select value={formData.timezone} onValueChange={handleTimezoneChange} disabled={disabled}>
               <SelectTrigger className="w-full h-9 text-xs input-focus border-[3px] border-ink rounded-none">
@@ -145,13 +145,13 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
             </p>
           </div>
 
-          <div className="rounded-none border-[3px] border-ink bg-slate-50 p-4 space-y-3.5">
+          <div className="rounded-none border-[3px] border-ink bg-paper p-4 space-y-3.5">
             <div className="flex items-start gap-2.5">
-              <Coins className="h-4 w-4 text-[#543afd] shrink-0 mt-0.5" />
+              <Coins className="h-4 w-4 text-acid shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-ink">Mata Uang Operasional</span>
-                  <Badge className="bg-slate-200 text-ink border-black text-[10px] font-mono">
+                  <Badge className="rounded-none border-[1.5px] border-ink bg-white text-ink text-[10px] font-mono font-bold uppercase">
                     IDR (Rp)
                   </Badge>
                 </div>
@@ -161,12 +161,12 @@ export function CompanySettingsForm({ values: formData, disabled = false, ownerE
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-3 flex items-start gap-2.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="border-t-2 border-ink/15 pt-3 flex items-start gap-2.5">
+              <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5" />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-ink">Cakupan Warung Tunggal</span>
-                  <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-mono">
+                  <Badge className="rounded-none border-[1.5px] border-ink bg-status-healthy/20 text-ink text-[10px] font-mono font-bold uppercase">
                     Single Owner
                   </Badge>
                 </div>
