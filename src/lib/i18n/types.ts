@@ -372,6 +372,28 @@ export interface Translations {
     exportPdf: string;
     exportCsv: string;
     dateRange: string;
+    pagination: string;
+    retry: string;
+    categories: string;
+    products: string;
+    printVisible: string;
+    exportTitle: string;
+    fileFormat: string;
+    exportLimits: string;
+    downloadStarted: string;
+    downloadCsv: string;
+    printPage: string;
+    processing: string;
+    chartScale: string;
+    potentialGrossProfit: string;
+    movementVolume: string;
+    stockAlerts: string;
+    cost: string;
+    sold: string;
+    received: string;
+    opening: string;
+    low: string;
+    empty: string;
   };
   settings: {
     title: string;

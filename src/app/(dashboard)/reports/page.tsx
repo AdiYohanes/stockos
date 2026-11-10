@@ -1,123 +1,55 @@
-import { Suspense } from "react";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ReportsContainer } from "@/features/reports";
-import {
-  getValuationReport,
-  getMovementReport,
-  getLowStockReport,
-} from "@/features/reports/server";
+import { getValuationReport, getMovementReport, getLowStockReport } from "@/features/reports/server";
 import { getTextSuggestions } from "@/features/products/server";
+import { getShopSettings } from "@/features/settings/server";
+import { getReportDates } from "@/features/reports/dates";
 import type { ReportTab, ReportTimeframe } from "@/features/reports/types";
 
-export const metadata: Metadata = {
-  title: "Laporan | StockOS",
-  description: "Laporan valuasi aset, mutasi stok, dan analisis pengadaan toko.",
-};
+export const metadata: Metadata = { title: "Laporan | StockOS", description: "Laporan valuasi dan pergerakan stok warung." };
 
-function getTimeframeDates(tf: ReportTimeframe = "30d"): { startDate: string; endDate: string } {
-  const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  let days = 30;
-  if (tf === "7d") days = 7;
-  else if (tf === "30d") days = 30;
-  else if (tf === "90d") days = 90;
-  else if (tf === "12m") days = 365;
-
-  const start = new Date(end.getTime() - (days + 1) * 86400000);
-  const toYmd = (d: Date) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  };
-  return { startDate: toYmd(start), endDate: toYmd(end) };
-}
-
-function ReportsLoadingSkeleton() {
-  return (
-    <div className="flex flex-col gap-6 pb-12 animate-pulse w-full">
-      <div className="h-16 w-72 bg-ink/10 border-[3px] border-ink" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 bg-white border-[3px] border-ink shadow-hard-sm" />
-        ))}
-      </div>
-      <div className="h-96 bg-white border-[3px] border-ink shadow-hard-lg" />
-    </div>
-  );
-}
-
-export default async function ReportsPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function ReportsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const one = (key: string) => (typeof params[key] === "string" ? params[key] : undefined);
-
-  const valid = <T,>(
-    schema: { safeParse: (value: unknown) => { success: boolean; data?: T } },
-    value: unknown,
-    fallback: T
-  ): T => {
+  const one = (key: string) => typeof params[key] === "string" ? params[key] : undefined;
+  const valid = <T,>(schema: { safeParse: (value: unknown) => { success: boolean; data?: T } }, value: unknown, fallback: T): T => {
     const result = schema.safeParse(value);
     return result.success && result.data !== undefined ? result.data : fallback;
   };
-
-  const tab = valid(
-    z.enum(["valuation", "velocity", "reorder"]),
-    one("tab"),
-    "valuation" as ReportTab
-  );
-
-  const timeframe = valid(
-    z.enum(["7d", "30d", "90d", "12m"]),
-    one("timeframe"),
-    "30d" as ReportTimeframe
-  );
-
+  const tab = valid(z.enum(["valuation", "velocity", "reorder"]), one("tab"), "valuation" as ReportTab);
+  const timeframe = valid(z.enum(["7d", "30d", "90d", "12m"]), one("timeframe"), "30d" as ReportTimeframe);
   const search = valid(z.string().trim().max(120), one("q"), "");
-  const category = valid(z.string().trim().max(120), one("category"), "");
-
-  const catFilter = category && category !== "all" ? category : undefined;
-  const searchFilter = search ? search : undefined;
-
-  const { startDate, endDate } = getTimeframeDates(timeframe);
-
-  const [valuationResult, movementResult, lowStockResult, suggestionsResult] = await Promise.all([
-    getValuationReport({ search: searchFilter, category: catFilter }),
-    getMovementReport({ startDate, endDate, category: catFilter }),
-    getLowStockReport({ search: searchFilter, category: catFilter }),
+  const category = valid(z.string().trim().max(120), one("category"), "all");
+  const integer = (key: string, max: number, fallback: number) => valid(z.number().int().min(1).max(max), Number(one(key)), fallback);
+  const page = integer("page", 1_000_000_000, 1), pageSize = integer("pageSize", 100, 25);
+  const filters = { search: search || undefined, category: category && category !== "all" ? category : undefined };
+  const mode = (active: ReportTab) => tab === active ? { mode: "screen" as const, page, pageSize } : { mode: "summary" as const };
+  let settings = await getShopSettings();
+  if (!settings.ok) {
+    if (settings.code === "UNAUTHENTICATED") redirect("/login");
+    return <ReportsContainer filterState={{ tab, timeframe, searchQuery: search, category, page, pageSize }} failure={settings} />;
+  }
+  let dates = getReportDates(timeframe, settings.data.timezone);
+  const [valuationResult, initialMovement, lowStockResult, suggestionsResult] = await Promise.all([
+    getValuationReport({ ...filters, ...mode("valuation") }),
+    getMovementReport({ ...filters, ...dates, ...mode("velocity") }),
+    getLowStockReport({ ...filters, ...mode("reorder") }),
     getTextSuggestions({ kind: "category" }),
   ]);
-
-  const failure = [valuationResult, movementResult, lowStockResult, suggestionsResult].find(
-    (res) => !res.ok
-  );
-
-  if (failure && !failure.ok && failure.code === "UNAUTHENTICATED") {
-    redirect("/login");
+  let movementResult = initialMovement;
+  if (!movementResult.ok && movementResult.code === "VERSION_CONFLICT") {
+    settings = await getShopSettings();
+    if (settings.ok) {
+      dates = getReportDates(timeframe, settings.data.timezone);
+      movementResult = await getMovementReport({ ...filters, ...dates, ...mode("velocity") });
+    } else movementResult = settings;
   }
-
-  const filterState = {
-    tab,
-    timeframe,
-    searchQuery: search,
-    category: category || "all",
-  };
-
-  return (
-    <Suspense fallback={<ReportsLoadingSkeleton />}>
-      <ReportsContainer
-        filterState={filterState}
-        valuationReport={valuationResult.ok ? valuationResult.data : null}
-        movementReport={movementResult.ok ? movementResult.data : null}
-        lowStockReport={lowStockResult.ok ? lowStockResult.data : null}
-        categories={suggestionsResult.ok ? suggestionsResult.data : []}
-        failure={failure && !failure.ok ? failure : null}
-      />
-    </Suspense>
-  );
+  const results = { valuation: valuationResult, velocity: movementResult, reorder: lowStockResult };
+  if (Object.values(results).some(result => !result.ok && result.code === "UNAUTHENTICATED")) redirect("/login");
+  const active = results[tab];
+  return <ReportsContainer filterState={{ tab, timeframe, searchQuery: search, category, page, pageSize }}
+    valuationReport={valuationResult.ok ? valuationResult.data : null} movementReport={movementResult.ok ? movementResult.data : null}
+    lowStockReport={lowStockResult.ok ? lowStockResult.data : null} categories={suggestionsResult.ok ? suggestionsResult.data : []}
+    failure={!active.ok ? active : null} />;
 }

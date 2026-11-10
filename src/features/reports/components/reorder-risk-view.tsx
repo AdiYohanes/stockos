@@ -4,7 +4,8 @@ import * as React from "react";
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { ReorderRiskItem, RiskUrgency } from "../types";
 
@@ -109,10 +110,10 @@ export function ReorderRiskView({ reorderItems, onInspect }: ReorderRiskViewProp
                         +{formatNumber(item.suggestedReorderQty)}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-right text-muted-foreground">
-                        {formatCurrency(item.unitCost)}
+                        {formatProductMoney(item.unitCost)}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-right font-bold text-foreground">
-                        {formatCurrency(item.totalReorderCost)}
+                        {formatProductMoney(item.totalReorderCost)}
                       </TableCell>
                     </TableRow>
                   ))

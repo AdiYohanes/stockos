@@ -7,16 +7,16 @@ export interface CategoryValuation {
   categoryName: string;
   itemCount: number;
   stockQty: number;
-  totalCost: number;
-  totalRetailValue: number;
+  totalCost: string;
+  totalRetailValue: string;
   marginPercent: number;
   ratioPercent: number;
 }
 
 export interface ValuationSummary {
-  totalValuation: number;
-  totalCost: number;
-  grossMargin: number;
+  totalValuation: string;
+  totalCost: string;
+  grossMargin: string;
   marginPercent: number;
   totalSKUs: number;
   categories: CategoryValuation[];
@@ -49,8 +49,8 @@ export interface ReorderRiskItem {
   currentStock: number;
   minThreshold: number;
   suggestedReorderQty: number;
-  unitCost: number;
-  totalReorderCost: number;
+  unitCost: string;
+  totalReorderCost: string;
   urgency: RiskUrgency;
   supplierName: string;
   daysRemaining?: number;

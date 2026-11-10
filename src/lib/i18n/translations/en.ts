@@ -370,6 +370,12 @@ export const enTranslations: Translations = {
     exportPdf: "Export PDF",
     exportCsv: "Export CSV",
     dateRange: "Date Range",
+    pagination: "Report pages", retry: "Try again", categories: "categories", products: "products",
+    printVisible: "Print includes visible page only.", exportTitle: "Export Report Data", fileFormat: "File Format",
+    exportLimits: "CSV: all filtered results, maximum 10,000 rows and 5 MiB. Print / PDF: visible page only, not all results.",
+    downloadStarted: "Download started. Check browser downloads.", downloadCsv: "Download CSV", printPage: "Print Page", processing: "Processing...",
+    chartScale: "Common scale: 100% is the larger of total stock cost and total potential selling value across all filtered categories. Exact IDR values in tooltip and table.",
+    potentialGrossProfit: "Potential Gross Profit", movementVolume: "Movement Volume", stockAlerts: "Stock Alerts", cost: "Cost", sold: "sold", received: "Received", opening: "Opening", low: "Low", empty: "Out of stock",
   },
   settings: {
     title: "System Settings",

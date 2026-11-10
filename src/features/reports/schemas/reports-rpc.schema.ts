@@ -1,18 +1,27 @@
 import { z } from "zod";
 
-export const ValuationReportInputSchema = z.strictObject({
-  search: z.string().trim().max(120).optional(),
-  category: z.string().trim().max(120).optional(),
-});
+const filters = { search: z.string().trim().max(120).optional(), category: z.string().trim().min(1).max(120).optional() };
+const pagination = { page: z.number().int().min(1).max(1_000_000_000).default(1), pageSize: z.number().int().min(1).max(100).default(25) };
+const money = z.string().regex(/^-?\d+(?:\.\d{1,6})?$/);
+const timezone = z.enum(["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura"]);
+function reportInput<T extends z.ZodRawShape>(shape: T) {
+  return z.discriminatedUnion("mode", [
+    z.strictObject({ ...shape, mode: z.literal("screen"), ...pagination }),
+    z.strictObject({ ...shape, mode: z.literal("summary") }),
+    z.strictObject({ ...shape, mode: z.literal("export") }),
+  ]);
+}
+
+export const ValuationReportInputSchema = reportInput(filters);
 export type ValuationReportInput = z.infer<typeof ValuationReportInputSchema>;
 
 export const CategoryValuationDtoSchema = z.strictObject({
   categoryName: z.string(),
   itemCount: z.number().int().nonnegative(),
   stockQty: z.number().int().nonnegative(),
-  totalCost: z.string(),
-  totalRetailValue: z.string(),
-  grossMargin: z.string(),
+  totalCost: money,
+  totalRetailValue: money,
+  grossMargin: money,
   marginPercent: z.string(),
   ratioPercent: z.string(),
 });
@@ -21,21 +30,24 @@ export type CategoryValuationDto = z.infer<typeof CategoryValuationDtoSchema>;
 export const TotalValuationDtoSchema = z.strictObject({
   totalSKUs: z.number().int().nonnegative(),
   totalUnits: z.number().int().nonnegative(),
-  totalCost: z.string(),
-  totalValuation: z.string(),
-  grossMargin: z.string(),
+  totalCost: money,
+  totalValuation: money,
+  grossMargin: money,
   marginPercent: z.string(),
   asOf: z.string(),
 });
 export type TotalValuationDto = z.infer<typeof TotalValuationDtoSchema>;
 
-export const ValuationReportDtoSchema = z.strictObject({
-  total: TotalValuationDtoSchema,
-  categories: z.array(CategoryValuationDtoSchema),
-});
+export const ValuationReportDtoSchema = z.discriminatedUnion("mode", [
+  z.strictObject({ mode: z.literal("screen"), total: TotalValuationDtoSchema, categories: z.array(CategoryValuationDtoSchema).max(100), count: z.number().int().nonnegative(), ...pagination }),
+  z.strictObject({ mode: z.literal("summary"), total: TotalValuationDtoSchema }),
+  z.strictObject({ mode: z.literal("export"), total: TotalValuationDtoSchema, categories: z.array(CategoryValuationDtoSchema).max(10_000), count: z.number().int().nonnegative() }),
+]);
 export type ValuationReportDto = z.infer<typeof ValuationReportDtoSchema>;
 
-export const MovementReportInputSchema = z.strictObject({
+export const MovementReportInputSchema = reportInput({
+  ...filters,
+  expectedTimezone: timezone,
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   category: z.string().trim().max(120).optional(),
@@ -46,7 +58,7 @@ export type MovementReportInput = z.infer<typeof MovementReportInputSchema>;
 export const MovementSummaryDtoSchema = z.strictObject({
   startDate: z.string(),
   endDate: z.string(),
-  timezone: z.string(),
+  timezone,
   totalOpeningQty: z.number().int().nonnegative(),
   totalStockInQty: z.number().int().nonnegative(),
   totalStockOutQty: z.number().int().nonnegative(),
@@ -82,17 +94,14 @@ export const MovementTrendPointDtoSchema = z.strictObject({
 });
 export type MovementTrendPointDto = z.infer<typeof MovementTrendPointDtoSchema>;
 
-export const MovementReportDtoSchema = z.strictObject({
-  summary: MovementSummaryDtoSchema,
-  items: z.array(MovementItemDtoSchema),
-  trends: z.array(MovementTrendPointDtoSchema),
-});
+export const MovementReportDtoSchema = z.discriminatedUnion("mode", [
+  z.strictObject({ mode: z.literal("screen"), summary: MovementSummaryDtoSchema, items: z.array(MovementItemDtoSchema).max(100), trends: z.array(MovementTrendPointDtoSchema).max(366), count: z.number().int().nonnegative(), ...pagination }),
+  z.strictObject({ mode: z.literal("summary"), summary: MovementSummaryDtoSchema }),
+  z.strictObject({ mode: z.literal("export"), summary: MovementSummaryDtoSchema, items: z.array(MovementItemDtoSchema).max(10_000), count: z.number().int().nonnegative() }),
+]);
 export type MovementReportDto = z.infer<typeof MovementReportDtoSchema>;
 
-export const LowStockReportInputSchema = z.strictObject({
-  search: z.string().trim().max(120).optional(),
-  category: z.string().trim().max(120).optional(),
-});
+export const LowStockReportInputSchema = reportInput(filters);
 export type LowStockReportInput = z.infer<typeof LowStockReportInputSchema>;
 
 export const LowStockSummaryDtoSchema = z.strictObject({
@@ -115,20 +124,23 @@ export const LowStockItemDtoSchema = z.strictObject({
   minStock: z.number().int().nonnegative(),
   stockStatus: z.enum(["out_of_stock", "low_stock"]),
   deficit: z.number().int().nonnegative(),
-  sellingPrice: z.string(),
-  inventoryCostValue: z.string(),
-  averagePurchaseCost: z.string().nullable(),
+  sellingPrice: money,
+  inventoryCostValue: money,
+  averagePurchaseCost: money.nullable(),
 });
 export type LowStockItemDto = z.infer<typeof LowStockItemDtoSchema>;
 
-export const LowStockReportDtoSchema = z.strictObject({
-  summary: LowStockSummaryDtoSchema,
-  items: z.array(LowStockItemDtoSchema),
-});
+export const LowStockReportDtoSchema = z.discriminatedUnion("mode", [
+  z.strictObject({ mode: z.literal("screen"), summary: LowStockSummaryDtoSchema, items: z.array(LowStockItemDtoSchema).max(100), count: z.number().int().nonnegative(), ...pagination }),
+  z.strictObject({ mode: z.literal("summary"), summary: LowStockSummaryDtoSchema }),
+  z.strictObject({ mode: z.literal("export"), summary: LowStockSummaryDtoSchema, items: z.array(LowStockItemDtoSchema).max(10_000), count: z.number().int().nonnegative() }),
+]);
 export type LowStockReportDto = z.infer<typeof LowStockReportDtoSchema>;
 
 export const ExportReportInputSchema = z.strictObject({
   kind: z.enum(["valuation", "movements", "low_stock"]),
+  timeframe: z.enum(["7d", "30d", "90d", "12m"]).optional(),
+  expectedTimezone: timezone.optional(),
   search: z.string().trim().max(120).optional(),
   category: z.string().trim().max(120).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),

@@ -12,9 +12,11 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { formatProductMoney } from "@/features/products/format";
 import { useI18n } from "@/lib/i18n/context";
 import type { ValuationSummary } from "../types";
+import { moneyChartShare } from "../chart";
 
 interface ValuationReportViewProps {
   summary: ValuationSummary;
@@ -34,9 +36,10 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
     return summary.categories.map((c) => ({
       name: c.categoryName.split(" ")[0], // short name for x-axis
       fullName: c.categoryName,
-      cost: c.totalCost,
-      retail: c.totalRetailValue,
-      margin: c.totalRetailValue - c.totalCost,
+      cost: moneyChartShare(c.totalCost, [summary.totalCost, summary.totalValuation]),
+      retail: moneyChartShare(c.totalRetailValue, [summary.totalCost, summary.totalValuation]),
+      costExact: c.totalCost,
+      retailExact: c.totalRetailValue,
     }));
   }, [summary]);
 
@@ -55,13 +58,14 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                 <span className="text-muted-foreground">Asset Cost</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-none bg-[#09090b]" />
+                <span className="h-3 w-3 rounded-none bg-[#a23cb8]" />
                 <span className="text-muted-foreground">Retail Value</span>
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          <p className="mb-3 font-mono text-xs text-muted-foreground">{t.reports.chartScale}</p>
           <div className="h-[280px] w-full">
             {isMounted ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -69,7 +73,8 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }} />
                   <YAxis
-                    tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                    domain={[0, 100]}
+                    tickFormatter={(val) => `${val}%`}
                     tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
                   />
                   <Tooltip
@@ -80,16 +85,15 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                         <div className="rounded-none border-[3px] border-ink bg-white p-3 font-mono text-xs shadow-neo">
                           <p className="font-bold text-foreground mb-1">{data.fullName}</p>
                           <div className="space-y-1">
-                            <p className="text-[#543afd]">Total Cost: {formatCurrency(data.cost)}</p>
-                            <p className="text-[#09090b]">Retail Value: {formatCurrency(data.retail)}</p>
-                            <p className="font-bold text-[#15803d]">Margin: {formatCurrency(data.margin)}</p>
+                            <p className="text-foreground">Total Cost: {formatProductMoney(data.costExact)}</p>
+                            <p className="text-[#09090b]">Retail Value: {formatProductMoney(data.retailExact)}</p>
                           </div>
                         </div>
                       );
                     }}
                   />
                   <Bar dataKey="cost" fill="#543afd" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="retail" fill="#09090b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="retail" fill="#a23cb8" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -135,14 +139,14 @@ export function ValuationReportView({ summary }: ValuationReportViewProps) {
                       {formatNumber(cat.stockQty)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right font-bold text-[#543afd]">
-                      {formatCurrency(cat.totalCost)}
+                      {formatProductMoney(cat.totalCost)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right font-bold text-foreground">
-                      {formatCurrency(cat.totalRetailValue)}
+                      {formatProductMoney(cat.totalRetailValue)}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-right">
                       <span className="inline-flex rounded-none bg-[#dcfce7] px-1.5 py-0.5 font-bold text-[#15803d]">
-                        +{cat.marginPercent}%
+                        {cat.marginPercent}%
                       </span>
                     </TableCell>
                     <TableCell>
