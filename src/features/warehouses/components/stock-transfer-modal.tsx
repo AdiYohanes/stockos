@@ -147,16 +147,21 @@ function StockTransferInner({
       return;
     }
 
-    onTransfer({
-      sourceWarehouseId,
-      destinationWarehouseId,
-      sku: selectedItem.sku,
-      itemName: selectedItem.name,
-      quantity,
-      reference: reference.trim().toUpperCase(),
-      notes: notes.trim() || undefined,
-      dispatchedBy: dispatchedBy.trim() || "Operations Team",
-    });
+    try {
+      onTransfer({
+        sourceWarehouseId,
+        destinationWarehouseId,
+        sku: selectedItem.sku,
+        itemName: selectedItem.name,
+        quantity,
+        reference: reference.trim().toUpperCase(),
+        notes: notes.trim() || undefined,
+        dispatchedBy: dispatchedBy.trim() || "Operations Team",
+      });
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to transfer stock");
+    }
   };
 
   return (
@@ -190,7 +195,10 @@ function StockTransferInner({
         <form onSubmit={handleSubmit}>
           <div className="max-h-[70vh] overflow-y-auto p-5 space-y-4 text-xs">
             {error && (
-              <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800">
+              <div
+                role="alert"
+                className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800"
+              >
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>

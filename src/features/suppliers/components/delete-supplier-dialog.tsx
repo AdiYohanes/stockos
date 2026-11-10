@@ -18,7 +18,18 @@ export function DeleteSupplierDialog({
   onClose,
   onConfirm,
 }: DeleteSupplierDialogProps) {
+  const [error, setError] = React.useState<string | null>(null);
+
   if (!open || !supplier) return null;
+
+  const handleConfirm = () => {
+    try {
+      onConfirm(supplier.id);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete supplier");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
@@ -49,6 +60,16 @@ export function DeleteSupplierDialog({
 
         {/* Content */}
         <div className="p-5 space-y-3 text-xs">
+          {error && (
+            <div
+              role="alert"
+              className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800"
+            >
+              <AlertTriangle className="h-4 w-4 shrink-0 text-red-700" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <p className="text-slate-700">
             Are you sure you want to remove{" "}
             <strong className="text-foreground">{supplier.name}</strong> (
@@ -89,7 +110,7 @@ export function DeleteSupplierDialog({
           <Button
             type="button"
             size="sm"
-            onClick={() => onConfirm(supplier.id)}
+            onClick={handleConfirm}
             className="h-9 bg-red-600 hover:bg-red-700 text-white border border-black shadow-neo-sm font-semibold text-xs active:translate-x-0.5 active:translate-y-0.5 transition-all gap-1.5"
           >
             <Trash2 className="h-3.5 w-3.5" />

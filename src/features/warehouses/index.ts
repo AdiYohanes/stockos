@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./mock-data";
+export * from "./store";
 export * from "./hooks/use-warehouses";
 export { WarehousesContainer } from "./components/warehouses-container";
 export { WarehousesHeader } from "./components/warehouses-header";

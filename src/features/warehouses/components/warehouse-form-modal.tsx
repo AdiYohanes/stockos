@@ -126,20 +126,25 @@ function WarehouseFormInner({
       return;
     }
 
-    onSave({
-      name: name.trim(),
-      code: code.trim().toUpperCase(),
-      type,
-      status,
-      street: street.trim() || "Industrial Zone",
-      city: city.trim(),
-      province: province.trim() || "Indonesia",
-      postalCode: postalCode.trim() || "10000",
-      managerName: managerName.trim(),
-      managerEmail: managerEmail.trim() || "manager@stockos.internal",
-      managerPhone: managerPhone.trim() || "+62 811-0000-0000",
-      totalCapacityUnits,
-    });
+    try {
+      onSave({
+        name: name.trim(),
+        code: code.trim().toUpperCase(),
+        type,
+        status,
+        street: street.trim() || "Industrial Zone",
+        city: city.trim(),
+        province: province.trim() || "Indonesia",
+        postalCode: postalCode.trim() || "10000",
+        managerName: managerName.trim(),
+        managerEmail: managerEmail.trim() || "manager@stockos.internal",
+        managerPhone: managerPhone.trim() || "+62 811-0000-0000",
+        totalCapacityUnits,
+      });
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save warehouse");
+    }
   };
 
   return (
@@ -173,7 +178,10 @@ function WarehouseFormInner({
         <form onSubmit={handleSubmit}>
           <div className="max-h-[70vh] overflow-y-auto p-5 space-y-4 text-xs">
             {error && (
-              <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800">
+              <div
+                role="alert"
+                className="flex items-center gap-2 rounded-md border border-red-300 bg-red-50 p-2.5 text-xs text-red-800"
+              >
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>
