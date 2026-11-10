@@ -13,7 +13,7 @@ The sole account holder who registers and operates the single warung in StockOS.
 _Avoid_: Customer, supplier
 
 **SKU**:
-The warung's required unique product code, retained across product archives. It identifies the product independently of its packaging barcode.
+The warung's required unique product code, retained across product archives. It identifies the product independently of its packaging barcode. Only eligible permanent deletion releases a SKU for reuse by a new product; retained evidence still identifies the original product.
 _Avoid_: Barcode, product name
 
 **Barcode**:
@@ -39,6 +39,10 @@ _Avoid_: Separate carton inventory
 **Arsip produk**:
 Deactivation of a product with zero remaining stock while preserving its identity, SKU, and movement history. An archived product can be reactivated; its SKU is not reassigned to a different product.
 _Avoid_: Permanent deletion, history deletion
+
+**Hapus permanen produk (Permanent product deletion)**:
+Removal of an active or archived product only when current stock is zero and no inventory event of any kind exists. Unchanged opname and cost adjustment count as history and permanently block deletion. Administrative evidence and durable retry results remain, with original product ID/snapshot retained after administrative FK detachment. Eligible deletion releases the SKU; archive does not.
+_Avoid_: History deletion, operational data wipe, deleting sold-out products with history
 
 **Stok opname**:
 A physical count reconciled against system stock, retained even when no adjustment is needed; it preserves the current average cost unless previously empty stock is found and its cost must be supplied. If stock changes after counting begins, the count must be checked again before reconciliation. Physical discrepancies and quantity-entry corrections are not sold quantity.

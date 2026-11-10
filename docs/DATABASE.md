@@ -76,7 +76,7 @@ A row-lock/compare-and-set claim commits before the provider call; do not hold a
 
 Stock status is derived: quantity zero = out of stock; 0 < quantity <= minimum = low stock; otherwise in stock. Archive state is separate from stock health. No editable status, reserved stock, or independently maintained available stock.
 
-SKU/base unit may change only before any inventory event exists. Receipt carton count and units per carton are input details, not another balance or an immutable conversion on the product. Carton size may vary per receipt without changing the base unit.
+SKU/base unit may change only before any inventory event exists. Permanent deletion approved 2026-10-23 requires locked `current_stock = 0` and no `inventory_events` row of any kind, including unchanged opname and cost adjustment; both active and archived products may qualify. A product with any inventory history is never deleted. Eligible deletion releases its SKU; archive alone does not. Receipt carton count and units per carton are input details, not another balance or an immutable conversion on the product. Carton size may vary per receipt without changing the base unit.
 
 ### `inventory_events` — append-only stock, count, and cost evidence
 
@@ -117,11 +117,13 @@ No sales transaction is inferred from a price snapshot: sold quantity is manual 
 
 Committed rows contain successes only. Request reservation, business writes, audit, and result commit in one transaction; failed requests roll back the reservation. After authentication and strict input normalization, a duplicate request with the same actor/operation/hash returns original success before checking current entity constraints, SKU uniqueness, archive state, or stale versions. A create-product replay must not fail because its own committed SKU now exists. Different payload/operation for a reused ID is a conflict. Do not hash raw object key order or client-supplied hashes.
 
-Keep successful request identities while related audit/history is retained; no automatic expiry in first release. Concurrent identical submissions serialize on uniqueness and return the same result. No new stock operation is created during a replay.
+Keep successful request identities while related audit/history is retained; no automatic expiry in first release. Eligible product deletion never removes or rewrites durable results: replay of creation, edits, lifecycle or deletion still returns its original committed snapshot before checking whether the product exists or its SKU has been reused. Delete success retains the pre-deletion Product DTO in the existing mutation result shape. Concurrent identical submissions serialize on uniqueness and return the same result. No new stock operation is created during a replay.
 
 ### `administrative_events` — metadata/settings lifecycle evidence
 
-UUID PK; `kind` (`product_created`, `product_updated`, `product_archived`, `product_reactivated`, `settings_updated`); optional product FK; owner actor FK; request FK; bounded changed-field before/after values; server timestamp. No secrets or provider credentials. Append in the same transaction as successful business mutation. An operation may have both administrative and inventory evidence, such as product creation with opening stock.
+UUID PK; `kind` (`product_created`, `product_updated`, `product_archived`, `product_reactivated`, `product_deleted`, `settings_updated`); nullable product FK; owner actor FK; request FK; bounded changed-field before/after values; server timestamp. No secrets or provider credentials. Append in the same transaction as successful business mutation. An operation may have both administrative and inventory evidence, such as product creation with opening stock.
+
+Eligible product deletion preserves every administrative row, its existing changed-field values, actor, request and timestamp. Before detaching `product_id` to null, retain original product ID and pre-deletion snapshot in `changes.deletedProduct`; the new `product_deleted` evidence also retains that snapshot. This narrowly scoped FK detachment/snapshot addition is not permission to rewrite or remove historical evidence. Inventory-event product FKs remain deletion-restricted.
 
 ## 4. Cost Rules
 
@@ -145,6 +147,7 @@ Each function verifies owner binding, validates allowed fields/limits, claims/re
 - Receipt/sold operations apply against locked current balance; no client absolute balance write. Two sold requests for 4 units against Q=5 cannot both succeed.
 - Opname/cost adjustment require expected `stock_version`. Metadata edits require expected `metadata_version`. Archive requires both revisions and locked zero stock; reactivation requires metadata revision. Stale errors leave all state unchanged.
 - Creation, opening stock, event, administrative evidence, and retry record are one transaction. Zero opening quantity produces no inventory event; metadata creation is still audited.
+- Deletion requires both expected metadata/stock revisions under the product row lock, zero current stock, and absence of every inventory-event kind, not merely a zero balance or nonzero-delta check. Evidence snapshot/detachment, `product_deleted` evidence, product removal and durable retry result commit or roll back together. Existing row-lock/FK boundaries serialize concurrent stock, edit and lifecycle operations; no history can be orphaned.
 - Product update DTO cannot write balances, history, actor, versions, or calculated modal values.
 - Lock ordering is request identity then affected entity; keep ordering consistent. Deadlock/serialization failures roll back and may retry internally a bounded number of times with the same request ID.
 - Returned success reflects the committed operation. On replay it is the original snapshot, so UI refreshes current data instead of treating old DTO as current truth.
@@ -169,7 +172,7 @@ Each report statement owns its settings/filter/aggregate/probe/detail snapshot. 
 
 ## 7. Retention, Migrations, and Provider Recovery
 
-Products with history are never hard-deleted through the app. Owner deletion/transfer, factory data wipe, historical rewriting, and retention automation are outside scope. Archive preserves foreign keys and SKU ownership. Passwords/sessions are managed by Supabase Auth, not duplicated here.
+Products with any inventory history are never hard-deleted through the app, including zero-difference opname or cost-only history. The 2026-10-23 approval permits only zero-stock, inventory-event-free active/archived product deletion, with administrative evidence and durable retry results preserved as above. Owner deletion/transfer, factory data wipe, historical rewriting, and retention automation remain outside scope. Archive preserves foreign keys and SKU ownership; only eligible deletion releases the SKU. This slice prepares a new forward migration, not a Cloud application/migration or actual data deletion; runtime database/browser proof is pending and Docker-backed proof is not permitted under the cloud-only restriction. Passwords/sessions are managed by Supabase Auth, not duplicated here.
 
 When implementation is approved: create versioned migrations with explicit schema/grants/functions, production-empty seeds (singleton defaults only), and forward/recovery procedures. No mock product/customer credentials in production seeds. Test migrations and restore in isolated nonproduction resources. Verify PostgreSQL function contracts under anonymous, unrelated-user, and owner credentials.
 
