@@ -1,11 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { MOCK_PURCHASE_ORDERS } from "../mock-data";
-import type { PurchaseOrder, POStatus, POSummaryMetrics } from "../types";
+import { usePurchaseOrdersStore } from "@/components/providers/feature-stores-provider";
+import type { PurchaseOrder, POSummaryMetrics } from "../types";
 
 export function usePurchaseOrders() {
-  const [orders, setOrders] = React.useState<PurchaseOrder[]>(MOCK_PURCHASE_ORDERS);
+  const orders = usePurchaseOrdersStore((state) => state.orders);
+  const createPurchaseOrder = usePurchaseOrdersStore((state) => state.createPurchaseOrder);
+  const receiveGoods = usePurchaseOrdersStore((state) => state.receiveGoods);
+
   const [activeTab, setActiveTab] = React.useState<string>("all");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [selectedSupplier, setSelectedSupplier] = React.useState<string>("all");
@@ -68,77 +71,25 @@ export function usePurchaseOrders() {
     setSelectedWarehouse("all");
   }, []);
 
-  const handleCreatePo = React.useCallback((newPo: PurchaseOrder) => {
-    setOrders((prev) => [newPo, ...prev]);
-    setIsCreateModalOpen(false);
-  }, []);
+  const handleCreatePo = React.useCallback(
+    (newPo: PurchaseOrder) => {
+      createPurchaseOrder(newPo);
+      setIsCreateModalOpen(false);
+    },
+    [createPurchaseOrder]
+  );
 
   const handleReceiveGoods = React.useCallback(
-    (poId: string, receivedItems: { lineItemId: string; quantityReceived: number }[], warehouseId: string, notes?: string) => {
-      setOrders((prev) =>
-        prev.map((po) => {
-          if (po.id !== poId) return po;
-
-          // Update line items received qty
-          let totalOrdered = 0;
-          let totalReceivedAfter = 0;
-
-          const updatedLineItems = po.lineItems.map((item) => {
-            const match = receivedItems.find((r) => r.lineItemId === item.id);
-            const addedQty = match ? match.quantityReceived : 0;
-            const newReceivedQty = item.receivedQuantity + addedQty;
-
-            totalOrdered += item.orderedQuantity;
-            totalReceivedAfter += newReceivedQty;
-
-            return {
-              ...item,
-              receivedQuantity: newReceivedQty,
-            };
-          });
-
-          // Determine new status
-          let newStatus: POStatus = po.status;
-          if (totalReceivedAfter >= totalOrdered) {
-            newStatus = "RECEIVED";
-          } else if (totalReceivedAfter > 0) {
-            newStatus = "PARTIALLY_RECEIVED";
-          }
-
-          // Create new receipt log entry
-          const newReceipt = {
-            id: `rc-${Date.now()}`,
-            poId,
-            receivedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
-            warehouseId,
-            warehouseName: po.destinationWarehouseName,
-            items: updatedLineItems
-              .filter((item) => {
-                const match = receivedItems.find((r) => r.lineItemId === item.id);
-                return match && match.quantityReceived > 0;
-              })
-              .map((item) => {
-                const match = receivedItems.find((r) => r.lineItemId === item.id)!;
-                return {
-                  sku: item.sku,
-                  productName: item.productName,
-                  quantityReceived: match.quantityReceived,
-                };
-              }),
-            notes,
-          };
-
-          return {
-            ...po,
-            status: newStatus,
-            lineItems: updatedLineItems,
-            receipts: [newReceipt, ...po.receipts],
-          };
-        })
-      );
+    (
+      poId: string,
+      receivedItems: { lineItemId: string; quantityReceived: number }[],
+      warehouseId: string,
+      notes?: string
+    ) => {
+      receiveGoods(poId, receivedItems, warehouseId, notes);
       setReceivingPoId(null);
     },
-    []
+    [receiveGoods]
   );
 
   return {

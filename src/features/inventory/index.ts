@@ -1,5 +1,7 @@
 export * from "./types";
 export * from "./mock-data";
+export * from "./store";
+export * from "./schemas/inventory.schema";
 export * from "./hooks/use-inventory";
 export * from "./components/inventory-container";
 export * from "./components/inventory-header";

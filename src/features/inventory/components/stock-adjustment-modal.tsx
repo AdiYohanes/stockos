@@ -95,7 +95,11 @@ function StockAdjustmentForm({
       return;
     }
 
-    onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+    try {
+      onSubmit(activeItem.id, newStockNum, reason, reference.trim().toUpperCase(), note.trim() || undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to adjust stock");
+    }
   };
 
   return (
@@ -234,7 +238,10 @@ function StockAdjustmentForm({
 
         {/* Error message */}
         {error && (
-          <div className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2">
+          <div
+            role="alert"
+            className="rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-700 dark:text-rose-400 font-sans flex items-center gap-2"
+          >
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
