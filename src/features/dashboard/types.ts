@@ -29,7 +29,7 @@ export interface StockMovementData {
 export interface HealthDistribution {
   count: number;
   percentage: number;
-  value: number;
+  value: string;
 }
 
 export interface InventoryHealthData {
@@ -52,13 +52,4 @@ export interface AttentionItem {
   unit: string;
   status: AttentionStatus;
   lastRestocked: string;
-}
-
-
-export interface QuickActionItem {
-  id: string;
-  title: string;
-  description: string;
-  icon: "plus" | "arrow-down" | "arrow-up";
-  badge?: string;
 }

@@ -21,7 +21,6 @@ import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { StockMovementData, StockMovementItem } from "../types";
-import { MOCK_STOCK_MOVEMENT_7D, MOCK_STOCK_MOVEMENT_30D } from "../mock-data";
 
 interface TooltipPayloadItem {
   name: string;
@@ -105,13 +104,13 @@ function CustomChartTooltip({ active, payload, label }: CustomTooltipProps) {
 const emptySubscribe = () => () => {};
 
 interface StockMovementChartProps {
-  movements?: {
+  movements: {
     days7: StockMovementData;
     days30: StockMovementData;
   };
 }
 
-export function StockMovementChart({ movements }: StockMovementChartProps = {}) {
+export function StockMovementChart({ movements }: StockMovementChartProps) {
   const { t } = useI18n();
   const [timeframe, setTimeframe] = React.useState<"7d" | "30d">("7d");
   const mounted = React.useSyncExternalStore(
@@ -120,12 +119,7 @@ export function StockMovementChart({ movements }: StockMovementChartProps = {}) 
     () => false
   );
 
-  const currentData: StockMovementData = React.useMemo(() => {
-    if (movements) {
-      return timeframe === "7d" ? movements.days7 : movements.days30;
-    }
-    return timeframe === "7d" ? MOCK_STOCK_MOVEMENT_7D : MOCK_STOCK_MOVEMENT_30D;
-  }, [movements, timeframe]);
+  const currentData: StockMovementData = timeframe === "7d" ? movements.days7 : movements.days30;
 
   // Calculate high volume period
   const peakItem = React.useMemo(() => {

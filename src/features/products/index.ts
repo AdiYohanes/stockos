@@ -1,5 +1,4 @@
 export * from "./types";
-export * from "./mock-data";
 export * from "./hooks/use-products";
 export * from "./components/products-container";
 export * from "./components/products-header";

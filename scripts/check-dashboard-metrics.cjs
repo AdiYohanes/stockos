@@ -12,24 +12,25 @@ require.extensions[".ts"] = (module, filename) => {
   module._compile(outputText, filename);
 };
 
-const { MOCK_FINANCIAL_SUMMARY: financials, MOCK_OVERVIEW_METRICS: metrics } = require("../src/features/dashboard/mock-data.ts");
-const { formatCurrency } = require("../src/lib/format.ts");
-const { idTranslations: id } = require("../src/lib/i18n/translations/id.ts");
-const { enTranslations: en } = require("../src/lib/i18n/translations/en.ts");
+const { DashboardMetricDtoSchema } = require("../src/features/dashboard/schemas/dashboard-rpc.schema.ts");
+const { formatProductMoney } = require("../src/features/products/format.ts");
 
-assert.deepEqual(metrics.map((metric) => metric.id), ["products", "revenue", "net_profit", "out_of_stock"]);
-const revenue = metrics.find((metric) => metric.id === "revenue");
-const profit = metrics.find((metric) => metric.id === "net_profit");
-assert.equal(revenue.rawValue, financials.revenue);
-assert.equal(profit.rawValue, financials.revenue - financials.costOfGoodsSold - financials.operatingExpenses);
-assert.equal(profit.rawValue, 1825000);
-for (const metric of [revenue, profit]) {
-  assert.equal(metric.value, formatCurrency(metric.rawValue));
-  assert.equal(metric.change, undefined, "No financial trend without comparison data");
+// Glossary stock potentials: 15 units at Rp10,000, modal Rp52,500 after selling 5.
+const metrics = DashboardMetricDtoSchema.parse({
+  totalProducts: 1, inStockCount: 1, lowStockCount: 0, outOfStockCount: 0,
+  potentialSellingValue: "150000", potentialGrossProfit: "97500.000000", totalCostValue: "52500.000000",
+});
+assert.equal(formatProductMoney(metrics.potentialSellingValue), "Rp 150.000");
+assert.equal(formatProductMoney(metrics.potentialGrossProfit), "Rp 97.500");
+assert.equal(formatProductMoney(metrics.totalCostValue), "Rp 52.500");
+
+const negative = DashboardMetricDtoSchema.parse({ ...metrics, potentialGrossProfit: "-0.000001" });
+assert.equal(formatProductMoney(negative.potentialGrossProfit), "Rp -0,000001");
+const large = DashboardMetricDtoSchema.parse({ ...metrics, potentialSellingValue: "1000000000000000000000" });
+assert.equal(formatProductMoney(large.potentialSellingValue), "Rp 1.000.000.000.000.000.000.000");
+for (const invalid of [150000, "1e21", "NaN", "0.0000001"]) {
+  assert.equal(DashboardMetricDtoSchema.safeParse({ ...metrics, potentialSellingValue: invalid }).success, false);
 }
-for (const translation of [id, en]) {
-  for (const key of ["revenue", "estimatedNetProfit", "demoData", "financialPeriod", "revenueSupportingText", "netProfitSupportingText"]) {
-    assert.ok(translation.dashboard[key], `Missing dashboard translation: ${key}`);
-  }
-}
-console.log("Dashboard metric checks passed.");
+assert.equal(DashboardMetricDtoSchema.safeParse({ ...metrics, revenue: "150000" }).success, false);
+assert.equal(DashboardMetricDtoSchema.safeParse({ ...metrics, net_profit: "97500" }).success, false);
+console.log("Dashboard stock-potential DTO and exact-money checks passed.");

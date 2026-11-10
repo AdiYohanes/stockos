@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/features/auth/server";
 import { AppShell } from "@/components/layout/app-shell";
-import { FeatureStoresProvider } from "@/components/providers/feature-stores-provider";
 
 export default async function DashboardLayout({
   children,
@@ -14,9 +13,5 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return (
-    <FeatureStoresProvider>
-      <AppShell user={user}>{children}</AppShell>
-    </FeatureStoresProvider>
-  );
+  return <AppShell user={user}>{children}</AppShell>;
 }
