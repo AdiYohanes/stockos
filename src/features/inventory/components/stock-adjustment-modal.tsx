@@ -23,6 +23,7 @@ import { recordOpnameAction } from "../actions";
 import { useProductSubmission, type OnProductCommitted } from "@/features/products/hooks/use-product-submission";
 import type { ProductDto } from "@/features/products/schemas/product-rpc.schema";
 import type { InventoryItem } from "../types";
+import { mapProductToInventoryItem } from "../adapters";
 
 export interface StockAdjustmentModalProps {
   open: boolean;
@@ -37,7 +38,10 @@ interface FormInnerProps {
   initialItem: InventoryItem | null;
   allItems: InventoryItem[];
   rawProducts: ProductDto[];
+  selectedId: string;
+  onSelect: (id: string) => void;
   onClose: () => void;
+  onBlocked: (blocked: boolean) => void;
   onCommitted?: OnProductCommitted;
 }
 
@@ -45,17 +49,20 @@ function StockAdjustmentForm({
   initialItem,
   allItems,
   rawProducts,
+  selectedId,
+  onSelect,
   onClose,
+  onBlocked,
   onCommitted,
 }: FormInnerProps) {
   const { t } = useI18n();
   const c = t.products.persistent;
 
-  const [selectedItemId, setSelectedItemId] = React.useState<string>(
-    initialItem ? initialItem.id : allItems[0]?.id || ""
+  const [snapshot, setSnapshot] = React.useState<ProductDto | InventoryItem | null>(() =>
+    rawProducts.find((p) => p.id === selectedId) ?? allItems.find((i) => i.id === selectedId) ?? initialItem
   );
-  const activeItem = allItems.find((i) => i.id === selectedItemId) || initialItem;
-  const activeProduct = rawProducts.find((p) => p.id === selectedItemId);
+  const activeItem = snapshot && ("archivedAt" in snapshot ? mapProductToInventoryItem(snapshot) : snapshot);
+  const archived = snapshot && "archivedAt" in snapshot ? !!snapshot.archivedAt : false;
 
   const [newStockStr, setNewStockStr] = React.useState<string>(
     activeItem ? activeItem.currentStock.toString() : "0"
@@ -67,6 +74,8 @@ function StockAdjustmentForm({
     if (onCommitted) await onCommitted(product);
     onClose();
   });
+  React.useEffect(() => { onBlocked(submission.blocked); return () => onBlocked(false); }, [submission.blocked, onBlocked]);
+  const conflict = submission.code === "VERSION_CONFLICT";
 
   const currentStock = activeItem ? activeItem.currentStock : 0;
   const newStockNum = newStockStr.trim() ? Number(newStockStr) : NaN;
@@ -75,7 +84,7 @@ function StockAdjustmentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (submission.blocked) return;
+    if (submission.blocked || conflict || archived) return;
 
     if (!Number.isSafeInteger(newStockNum) || newStockNum < 0 || newStockNum > 1_000_000_000) {
       submission.reportError("Please enter a valid physical count (0 to 1,000,000,000).");
@@ -92,7 +101,7 @@ function StockAdjustmentForm({
       return;
     }
 
-    const version = activeProduct?.stockVersion || activeItem.stockVersion || "0";
+    const version = snapshot?.stockVersion || "0";
 
     submission.submit({
       productId: activeItem.id,
@@ -123,6 +132,26 @@ function StockAdjustmentForm({
           </div>
         )}
 
+        {conflict && <section className="border-[3px] border-ink p-3 space-y-2">
+          <p className="font-bold">{c.conflict}</p>
+          {submission.current ? <>
+            <p>{c.currentState}: {submission.current.name} · {submission.current.currentStock} {submission.current.unit}</p>
+            <p className="font-mono">{c.stockVersion}: {submission.current.stockVersion}</p>
+            <p>{c.reviewCurrent}</p>
+            <Button type="button" variant="outline" disabled={submission.pending} onClick={() => {
+              if (!submission.current || submission.current.id !== selectedId) return;
+              setSnapshot(submission.current);
+              setNewStockStr("");
+              setFoundCost("0");
+              submission.review();
+            }}>{c.reviewed}</Button>
+          </> : <>
+            <p>{c.reviewCurrent}</p>
+            <Button type="button" variant="outline" disabled={submission.pending} onClick={submission.reloadCurrent}>{c.retry}</Button>
+          </>}
+        </section>}
+        {archived && <p role="status">{c.archivedHelp}</p>}
+
         {/* 1. Item Selection */}
         <div className="space-y-1.5">
           <Label htmlFor="itemSelect" className="text-xs font-mono uppercase tracking-wider text-ink/70">
@@ -131,26 +160,22 @@ function StockAdjustmentForm({
           {initialItem ? (
             <div className="p-3 border-[3px] border-ink bg-paper text-xs flex items-center justify-between">
               <div className="flex flex-col gap-1 min-w-0 pr-2">
-                <SkuBadge code={initialItem.sku} />
-                <span className="font-sans font-bold text-ink truncate">{initialItem.name}</span>
+                <SkuBadge code={activeItem?.sku || initialItem.sku} />
+                <span className="font-sans font-bold text-ink truncate">{activeItem?.name || initialItem.name}</span>
                 <span className="font-mono text-[10px] text-ink/60">
-                  {t.inventory.storageBin}: {initialItem.locationBin}
+                  {t.inventory.storageBin}: {activeItem?.locationBin || initialItem.locationBin}
                 </span>
               </div>
               <span className="font-mono text-xs font-bold text-ink shrink-0 text-right">
-                {initialItem.currentStock} {initialItem.unit}
+                {currentStock} {activeItem?.unit || initialItem.unit}
                 <span className="block text-[10px] font-sans text-ink/60 font-normal">{t.inventory.onHandLabel}</span>
               </span>
             </div>
           ) : (
             <select
               id="itemSelect"
-              value={selectedItemId}
-              onChange={(e) => {
-                setSelectedItemId(e.target.value);
-                const nextItem = allItems.find((i) => i.id === e.target.value);
-                if (nextItem) setNewStockStr(nextItem.currentStock.toString());
-              }}
+              value={selectedId}
+              onChange={(e) => onSelect(e.target.value)}
               disabled={submission.blocked}
               className="w-full h-9 border-[3px] border-ink bg-white px-3 text-xs font-bold text-ink focus:outline-none"
             >
@@ -185,7 +210,7 @@ function StockAdjustmentForm({
               max={1_000_000_000}
               step={1}
               required
-              disabled={submission.blocked}
+              disabled={submission.blocked || conflict || archived}
               value={newStockStr}
               onChange={(e) => setNewStockStr(e.target.value)}
               className="h-8 text-xs font-mono font-bold bg-white border-ink"
@@ -281,7 +306,7 @@ function StockAdjustmentForm({
         ) : (
           <Button
             type="submit"
-            disabled={submission.pending}
+            disabled={submission.pending || conflict || archived}
             className="bg-acid hover:bg-acid/90 text-ink border-[3px] border-ink shadow-hard-sm font-bold uppercase"
           >
             {submission.pending ? c.pending : t.inventory.applyAdjustment}
@@ -300,17 +325,23 @@ export function StockAdjustmentModal({
   rawProducts = [],
   onCommitted,
 }: StockAdjustmentModalProps) {
+  const [blocked, setBlocked] = React.useState(false);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const itemId = targetItem?.id || selectedId || allItems[0]?.id || "";
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
+    <DialogRoot open={open} onOpenChange={next => { if (next || !blocked) onOpenChange(next); }}>
       <DialogPortal>
         <DialogBackdrop />
         <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
           <StockAdjustmentForm
-            key={targetItem?.id || "new-adjust"}
+            key={itemId}
             initialItem={targetItem}
             allItems={allItems}
             rawProducts={rawProducts}
+            selectedId={itemId}
+            onSelect={setSelectedId}
             onClose={() => onOpenChange(false)}
+            onBlocked={setBlocked}
             onCommitted={onCommitted}
           />
         </DialogPopup>

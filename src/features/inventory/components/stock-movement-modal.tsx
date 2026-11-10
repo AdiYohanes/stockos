@@ -39,6 +39,7 @@ interface FormInnerProps {
   initialType: "in" | "out" | null;
   allItems: InventoryItem[];
   onClose: () => void;
+  onBlocked: (blocked: boolean) => void;
   onCommitted?: OnProductCommitted;
 }
 
@@ -47,6 +48,7 @@ function StockMovementForm({
   initialType,
   allItems,
   onClose,
+  onBlocked,
   onCommitted,
 }: FormInnerProps) {
   const { t } = useI18n();
@@ -75,6 +77,7 @@ function StockMovementForm({
     if (onCommitted) await onCommitted(product);
     onClose();
   });
+  React.useEffect(() => { onBlocked(submission.blocked); return () => onBlocked(false); }, [submission.blocked, onBlocked]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,8 +393,9 @@ export function StockMovementModal({
   allItems,
   onCommitted,
 }: StockMovementModalProps) {
+  const [blocked, setBlocked] = React.useState(false);
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
+    <DialogRoot open={open} onOpenChange={next => { if (next || !blocked) onOpenChange(next); }}>
       <DialogPortal>
         <DialogBackdrop />
         <DialogPopup className="max-w-md overflow-hidden rounded-none border-[3px] border-ink bg-white shadow-hard-lg">
@@ -401,6 +405,7 @@ export function StockMovementModal({
             initialType={defaultType}
             allItems={allItems}
             onClose={() => onOpenChange(false)}
+            onBlocked={setBlocked}
             onCommitted={onCommitted}
           />
         </DialogPopup>
