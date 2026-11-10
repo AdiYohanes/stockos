@@ -387,6 +387,11 @@ export interface Translations {
     language: string;
     saveChanges: string;
     settingsSaved: string;
+    persistentConflict: string;
+    loadCurrent: string;
+    resetSaved: string;
+    resetTitle: string;
+    resetSubmit: string;
     devModeText: string;
     resetWarningMessage: string;
     resetWarningDetails: string;

@@ -12,7 +12,9 @@ import {
   type CompanySettings,
   type InventorySettings,
 } from "@/features/settings";
-import { updateShopSettingsAction } from "@/features/settings/actions";
+import { getShopSettingsAction, updateShopSettingsAction } from "@/features/settings/actions";
+import type { SettingsMutationResult, UpdateShopSettingsInput } from "../schemas/settings-rpc.schema";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Server, ShieldCheck, Activity, Database, AlertCircle } from "lucide-react";
@@ -23,6 +25,24 @@ interface SettingsContainerProps {
   ownerEmail?: string;
 }
 
+type SettingsDraft = CompanySettings & InventorySettings;
+function settingsDraft(settings: ShopSettingsDto): SettingsDraft {
+  return { name: settings.name, ownerName: settings.ownerName, phone: settings.phone ?? "", address: settings.address ?? "",
+    timezone: settings.timezone, defaultUnit: settings.defaultUnit, defaultMinStock: settings.defaultMinStock };
+}
+function sameDraft(left: SettingsDraft, right: SettingsDraft) {
+  return (Object.keys(left) as (keyof SettingsDraft)[]).every(key => Object.is(left[key], right[key]));
+}
+
+function settingsSnapshotMode(incomingVersion: string, baselineVersion: string, blocked: boolean, dirty: boolean, conflict: boolean) {
+  if (BigInt(incomingVersion) <= BigInt(baselineVersion)) return "ignore";
+  return blocked || dirty || conflict ? "review" : "load";
+}
+
+function canReviewSettings(currentVersion: string, newestVersion: string, blocked: boolean, running: boolean) {
+  return !blocked && !running && BigInt(currentVersion) >= BigInt(newestVersion);
+}
+
 export function SettingsContainer({
   initialSettings,
   ownerEmail,
@@ -31,138 +51,180 @@ export function SettingsContainer({
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("company");
   const [isResetModalOpen, setIsResetModalOpen] = React.useState(false);
 
-  const [currentVersion, setCurrentVersion] = React.useState(initialSettings.version);
-  const [updatedAt, setUpdatedAt] = React.useState(initialSettings.updatedAt);
-
-  const [companyForm, setCompanyForm] = React.useState<CompanySettings>({
-    name: initialSettings.name,
-    ownerName: initialSettings.ownerName,
-    phone: initialSettings.phone || "",
-    address: initialSettings.address || "",
-    timezone: initialSettings.timezone,
-  });
-
-  const [inventoryForm, setInventoryForm] = React.useState<InventorySettings>({
-    defaultUnit: initialSettings.defaultUnit,
-    defaultMinStock: initialSettings.defaultMinStock,
-  });
-
-  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-  const [isSaving, setIsSaving] = React.useState(false);
+  const p = t.products.persistent;
+  const [baseline, setBaseline] = React.useState(initialSettings);
+  const [draft, setDraft] = React.useState(() => settingsDraft(initialSettings));
+  const [expectedVersion, setExpectedVersion] = React.useState(initialSettings.version);
+  const [current, setCurrent] = React.useState<ShopSettingsDto | null>(null);
+  const [conflict, setConflict] = React.useState(false);
+  const [seenVersion, setSeenVersion] = React.useState(initialSettings.version);
+  const [pending, setPending] = React.useState(false);
+  const [uncertain, setUncertain] = React.useState(false);
+  const [refreshFailed, setRefreshFailed] = React.useState(false);
   const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [conflictWarning, setConflictWarning] = React.useState<string | null>(null);
+  const running = React.useRef(false);
+  const request = React.useRef<Readonly<{ payload: UpdateShopSettingsInput; intent: "save" | "reset" }> | null>(null);
+  const committed = React.useRef<ShopSettingsDto | null>(null);
+  const unresolved = React.useRef(false);
+  const newestVersion = React.useRef(initialSettings.version);
+  React.useLayoutEffect(() => {
+    for (const version of [initialSettings.version, baseline.version, current?.version]) {
+      if (version && BigInt(version) > BigInt(newestVersion.current)) newestVersion.current = version;
+    }
+  }, [initialSettings.version, baseline.version, current?.version]);
+  const blocked = pending || uncertain || refreshFailed;
+  const hasUnsavedChanges = !sameDraft(draft, settingsDraft(baseline));
+  const currentVersion = expectedVersion;
+  const updatedAt = baseline.updatedAt;
 
-  const handleCompanyChange = React.useCallback((updated: Partial<CompanySettings>) => {
-    setCompanyForm((prev) => ({ ...prev, ...updated }));
-    setHasUnsavedChanges(true);
+  if (BigInt(initialSettings.version) > BigInt(seenVersion)) {
+    setSeenVersion(initialSettings.version);
+    const mode = settingsSnapshotMode(initialSettings.version, baseline.version, blocked, hasUnsavedChanges, conflict);
+    if (mode !== "ignore") {
+      if (mode === "review") {
+        setCurrent(previous => !previous || BigInt(initialSettings.version) > BigInt(previous.version) ? initialSettings : previous);
+        if (!blocked) setConflict(true);
+      } else {
+        setBaseline(initialSettings);
+        setDraft(settingsDraft(initialSettings));
+        setExpectedVersion(initialSettings.version);
+      }
+    }
+  }
+
+  if (!blocked && !conflict && current && BigInt(current.version) > BigInt(expectedVersion)) setConflict(true);
+
+  function changeDraft(updated: Partial<SettingsDraft>) {
+    if (blocked || running.current) return;
+    setDraft(previous => ({ ...previous, ...updated }));
     setSaveMessage(null);
     setErrorMessage(null);
-  }, []);
+  }
 
-  const handleInventoryChange = React.useCallback((updated: Partial<InventorySettings>) => {
-    setInventoryForm((prev) => ({ ...prev, ...updated }));
-    setHasUnsavedChanges(true);
-    setSaveMessage(null);
+  async function readCurrent() {
+    const result = await getShopSettingsAction();
+    if (!result.ok) throw new Error(p.errors[result.code] || t.common.error);
+    if (BigInt(result.data.version) < BigInt(newestVersion.current)) throw new Error(p.refreshError);
+    newestVersion.current = result.data.version;
+    return result.data;
+  }
+
+  async function reloadConflict() {
+    if (running.current) return;
+    running.current = true;
+    setPending(true);
     setErrorMessage(null);
-  }, []);
+    try {
+      const latest = await readCurrent();
+      setCurrent(previous => !previous || BigInt(latest.version) >= BigInt(previous.version) ? latest : previous);
+    } catch { setErrorMessage(t.common.error); }
+    finally { running.current = false; setPending(false); }
+  }
 
-  const submitSettings = React.useCallback(
-    async (
-      fields: {
-        name: string;
-        ownerName: string;
-        address: string | null;
-        phone: string | null;
-        timezone: "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
-        defaultUnit: string;
-        defaultMinStock: number;
-      },
-      successNotice: string,
-      onSuccess?: (updated: ShopSettingsDto) => void
-    ) => {
-      if (isSaving) return;
-      setIsSaving(true);
-      setErrorMessage(null);
-      setConflictWarning(null);
+  function review(load: boolean) {
+    if (!current || !canReviewSettings(current.version, newestVersion.current, blocked, running.current)) return;
+    setBaseline(current);
+    setExpectedVersion(current.version);
+    if (load) setDraft(settingsDraft(current));
+    setCurrent(null);
+    setConflict(false);
+    setErrorMessage(null);
+    setSaveMessage(null);
+  }
 
-      const requestId = crypto.randomUUID();
-      try {
-        const result = await updateShopSettingsAction({
-          ...fields,
-          requestId,
-          expectedVersion: currentVersion,
-        });
-
-        if (result.ok) {
-          const newSettings = result.data.settings;
-          setCurrentVersion(newSettings.version);
-          setUpdatedAt(newSettings.updatedAt);
-          setHasUnsavedChanges(false);
-          setSaveMessage(result.replayed ? "Permintaan telah diproses sebelumnya." : successNotice);
-          setTimeout(() => setSaveMessage(null), 4000);
-          onSuccess?.(newSettings);
-        } else {
-          if (result.code === "VERSION_CONFLICT") {
-            setConflictWarning(
-              "Konflik revisi: Pengaturan telah diperbarui di sesi lain. Draf Anda dipertahankan. Silakan periksa kembali sebelum menyimpan."
-            );
-          } else {
-            setErrorMessage(result.message);
-          }
+  async function execute(intent?: "save" | "reset") {
+    if (running.current || (intent && (blocked || conflict))) return;
+    running.current = true;
+    setPending(true);
+    setErrorMessage(null);
+    setSaveMessage(null);
+    try {
+      if (!committed.current) {
+        if (!request.current) {
+          if (!intent) return;
+          const fields = intent === "reset" ? { name: "Warung Berkah", ownerName: draft.ownerName.trim() || baseline.ownerName,
+            phone: null, address: null, timezone: "Asia/Jakarta" as const, defaultUnit: "Pcs", defaultMinStock: 15 } : {
+            name: draft.name.trim(), ownerName: draft.ownerName.trim(), phone: draft.phone.trim() || null,
+            address: draft.address.trim() || null, timezone: draft.timezone,
+            defaultUnit: draft.defaultUnit.trim(), defaultMinStock: draft.defaultMinStock };
+          request.current = Object.freeze({ intent, payload: Object.freeze({ ...fields, requestId: crypto.randomUUID(), expectedVersion }) });
         }
+        let result: SettingsMutationResult;
+        try { result = await updateShopSettingsAction(request.current.payload); }
+        catch {
+          unresolved.current = true;
+          setUncertain(true);
+          setErrorMessage(p.uncertain);
+          return;
+        }
+        if (!result.ok) {
+          if (unresolved.current || result.code === "INTERNAL_ERROR") {
+            unresolved.current = true;
+            setUncertain(true);
+            setErrorMessage(p.uncertain);
+            return;
+          }
+          request.current = null;
+          setUncertain(false);
+          setErrorMessage(p.errors[result.code] || t.common.error);
+          if (result.code === "VERSION_CONFLICT") {
+            setConflict(true);
+            setCurrent(null);
+            try { setCurrent(await readCurrent()); }
+            catch { setErrorMessage(t.common.error); }
+          }
+          return;
+        }
+        committed.current = result.data.settings;
+        unresolved.current = false;
+        setUncertain(false);
+      }
+      try {
+        const latest = await readCurrent();
+        if (BigInt(latest.version) < BigInt(committed.current.version) || BigInt(latest.version) < BigInt(newestVersion.current)) throw new Error(p.refreshError);
+        const saved = request.current?.intent;
+        setBaseline(latest);
+        setExpectedVersion(latest.version);
+        setDraft(settingsDraft(latest));
+        setCurrent(null);
+        setConflict(false);
+        setRefreshFailed(false);
+        setSaveMessage(saved === "reset" ? t.settings.resetSaved : t.settings.settingsSaved);
+        if (saved === "reset") setIsResetModalOpen(false);
+        request.current = null;
+        committed.current = null;
       } catch {
-        setErrorMessage("Gagal menghubungkan ke server. Silakan coba lagi.");
-      } finally {
-        setIsSaving(false);
+        setRefreshFailed(true);
+        setErrorMessage(p.refreshError);
       }
-    },
-    [currentVersion, isSaving]
-  );
+    } finally { running.current = false; setPending(false); }
+  }
 
-  const handleSave = () => {
-    submitSettings(
-      {
-        name: companyForm.name.trim(),
-        ownerName: companyForm.ownerName.trim(),
-        address: companyForm.address.trim() ? companyForm.address.trim() : null,
-        phone: companyForm.phone.trim() ? companyForm.phone.trim() : null,
-        timezone: companyForm.timezone,
-        defaultUnit: inventoryForm.defaultUnit.trim(),
-        defaultMinStock: inventoryForm.defaultMinStock,
-      },
-      t.settings.settingsSaved
-    );
-  };
+  const handleSave = () => React.startTransition(() => { void execute("save"); });
+  const handleConfirmReset = () => React.startTransition(() => { void execute("reset"); });
 
-  const handleConfirmReset = () => {
-    submitSettings(
-      {
-        name: "Warung Berkah",
-        ownerName: companyForm.ownerName.trim() || initialSettings.ownerName,
-        address: null,
-        phone: null,
-        timezone: "Asia/Jakarta",
-        defaultUnit: "Pcs",
-        defaultMinStock: 15,
-      },
-      "Pengaturan dikembalikan ke standar awal warung.",
-      (updated) => {
-        setCompanyForm({
-          name: updated.name,
-          ownerName: updated.ownerName,
-          address: "",
-          phone: "",
-          timezone: updated.timezone,
-        });
-        setInventoryForm({
-          defaultUnit: updated.defaultUnit,
-          defaultMinStock: updated.defaultMinStock,
-        });
-        setIsResetModalOpen(false);
-      }
-    );
-  };
+  const feedback = <>
+    {conflict && <div role="alert" className="border-[3px] border-amber-600 bg-amber-50 p-4 text-amber-950 rounded-none shadow-hard-sm space-y-3">
+      <p className="text-sm">{t.settings.persistentConflict}</p>
+      {current && <dl id="settings-current" className="font-mono text-xs space-y-1 break-words">
+        <dt>{p.reviewCurrent} · Rev {current.version}</dt>
+        <dd>{current.name} · {current.ownerName}</dd><dd>{current.phone} · {current.address}</dd>
+        <dd>{current.timezone} · {current.defaultUnit} · {current.defaultMinStock}</dd>
+      </dl>}
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" disabled={blocked} onClick={() => React.startTransition(() => { void reloadConflict(); })}>{p.reviewCurrent}</Button>
+        <Button type="button" disabled={blocked || !current} onClick={() => review(false)}>{p.reviewed}</Button>
+        <Button type="button" variant="outline" disabled={blocked || !current} onClick={() => review(true)}>{t.settings.loadCurrent}</Button>
+      </div>
+    </div>}
+    {errorMessage && <div role="alert" className="border-[3px] border-red-600 bg-red-50 p-4 text-red-950 rounded-none shadow-hard-sm flex items-start gap-3">
+      <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
+      <div className="space-y-1"><h4 className="font-bold text-sm">{t.common.error}</h4><p className="text-xs leading-relaxed">{errorMessage}</p></div>
+    </div>}
+    {(uncertain || refreshFailed) && <Button type="button" disabled={pending} onClick={() => React.startTransition(() => { void execute(); })}>{p.retry}</Button>}
+    {pending && <p role="status">{p.pending}</p>}
+  </>;
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -172,54 +234,37 @@ export function SettingsContainer({
         lastSavedMessage={saveMessage}
         updatedAt={updatedAt}
         version={currentVersion}
-        isSaving={isSaving}
+        isSaving={pending}
+        disabled={blocked || conflict}
         onSave={handleSave}
-        onResetModalOpen={() => setIsResetModalOpen(true)}
+        onResetModalOpen={() => { if (!blocked && !conflict && !running.current) setIsResetModalOpen(true); }}
       />
 
-      {/* Conflict or Error feedback */}
-      {conflictWarning && (
-        <div className="border-[3px] border-amber-600 bg-amber-50 p-4 text-amber-950 rounded-none shadow-hard-sm flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="font-bold text-sm">Peringatan Konflik Versi</h4>
-            <p className="text-xs leading-relaxed">{conflictWarning}</p>
-          </div>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="border-[3px] border-red-600 bg-red-50 p-4 text-red-950 rounded-none shadow-hard-sm flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="font-bold text-sm">Gagal Menyimpan</h4>
-            <p className="text-xs leading-relaxed">{errorMessage}</p>
-          </div>
-        </div>
-      )}
+      {!isResetModalOpen && feedback}
 
       {/* Tab Navigation */}
       <SettingsTabNav
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        disabled={blocked}
+        onTabChange={tab => { if (!blocked && !running.current) setActiveTab(tab); }}
       />
 
       {/* Main Tab Content */}
       <div className="pt-2">
         {activeTab === "company" && (
           <CompanySettingsForm
-            key={`company-${currentVersion}`}
-            initialValues={companyForm}
+            values={draft}
+            disabled={blocked}
             ownerEmail={ownerEmail}
-            onChange={handleCompanyChange}
+            onChange={changeDraft}
           />
         )}
 
         {activeTab === "inventory" && (
           <InventorySettingsForm
-            key={`inventory-${currentVersion}`}
-            initialValues={inventoryForm}
-            onChange={handleInventoryChange}
+            values={draft}
+            disabled={blocked}
+            onChange={changeDraft}
           />
         )}
 
@@ -303,10 +348,11 @@ export function SettingsContainer({
       {/* System Reset Modal */}
       <SystemResetModal
         isOpen={isResetModalOpen}
-        isPending={isSaving}
-        onClose={() => setIsResetModalOpen(false)}
+        key={String(isResetModalOpen)}
+        isPending={blocked || conflict}
+        onClose={() => { if (!blocked && !running.current) setIsResetModalOpen(false); }}
         onConfirmReset={handleConfirmReset}
-      />
+      >{feedback}</SystemResetModal>
     </div>
   );
 }
